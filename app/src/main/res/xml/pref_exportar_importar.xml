@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/exportar_importar" />
+
+    <PreferenceScreen android:title="@string/qpython" />
+    <PreferenceScreen android:title="@string/geral" />
+
+</PreferenceScreen>

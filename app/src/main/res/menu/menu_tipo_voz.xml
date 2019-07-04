@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/salvar"
+        android:icon="@drawable/ic_confirmar"
+        android:title="@string/confirmar"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/vozPadrao"
+        android:title="@string/voltar_para_voz_padrao"
+        app:showAsAction="never" />
+
+
+    <item
+        android:id="@+id/carregarRepetidas"
+        android:title="@string/carregar_todas"
+        app:showAsAction="never" />
+
+</menu>

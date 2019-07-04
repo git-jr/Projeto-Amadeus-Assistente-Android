@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ff0125</color>
+    <color name="colorPrimaryDark">#bc001b</color>
+    <color name="colorAccent">#2d2d2d</color>
+
+    <color name="cinza1">#dedede</color>
+    <color name="cinza2">#e6e6e6</color>
+    <color name="cinza3">#909090</color>
+    <color name="cinza4">#999999</color>
+    <color name="cinza5">#606060</color>
+    <color name="cinza6">#666666</color>
+    <color name="cinza7">#37474F</color>
+    <color name="cinza8">#263238</color>
+    <color name="cinza9">#263238</color>
+
+    <color name="vermelho">#ff0000</color>
+    <color name="azul_link">#4183E7</color>
+
+</resources>

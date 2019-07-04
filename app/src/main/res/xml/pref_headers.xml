@@ -1,0 +1,13 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <header
+        android:fragment="com.paradoxo.amadeus.activity.ConfiguracoesActivity$GeneralPreferenceFragment"
+        android:icon="@drawable/ic_microfone_configuracoes"
+        android:title="@string/texto_voz" />
+
+    <header
+        android:id="@+id/header_importar_qpython"
+        android:icon="@drawable/ic_armazenamento"
+        android:title="@string/qpython" />
+
+</preference-headers>

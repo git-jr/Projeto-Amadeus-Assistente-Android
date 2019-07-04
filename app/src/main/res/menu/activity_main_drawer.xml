@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_perfil"
+            android:icon="@drawable/ic_perfil"
+            android:title="@string/perfil" />
+        <item
+            android:id="@+id/nav_editarRespostas"
+            android:icon="@drawable/ic_editar"
+            android:title="@string/editar_respostas" />
+        <item
+            android:id="@+id/nav_configuracoes"
+            android:icon="@drawable/ic_dashboard"
+            android:title="@string/configs" />
+
+        <item
+            android:id="@+id/nav_troar_voz"
+            android:checked="false"
+            android:icon="@drawable/ic_tipo_voz"
+            android:title="@string/trocar_voz" />
+
+        <item
+            android:id="@+id/nav_nuvem"
+            android:checked="false"
+            android:icon="@drawable/ic_nuvem"
+            android:title="@string/nuvem"
+            android:visible="false" />
+    </group>
+
+    <item android:title="@string/opiniao">
+        <menu>
+            <item
+                android:id="@+id/nav_compartilhar"
+                android:icon="@drawable/ic_compartilhar"
+                android:title="@string/compartilhe" />
+
+            <item
+                android:id="@+id/nav_relatarBug"
+                android:icon="@drawable/ic_balao_comentario_preenchido"
+                android:title="@string/relatar_problema" />
+
+            <item
+                android:id="@+id/nav_sugerirIdeia"
+                android:icon="@drawable/ic_balao_comentario_contorno"
+                android:title="@string/sugerir_ideia" />
+
+
+            <item
+                android:id="@+id/nav_sobre"
+                android:icon="@drawable/ic_infos"
+                android:title="@string/sobre" />
+
+        </menu>
+    </item>
+</menu>
