@@ -8,6 +8,7 @@ package com.paradoxo.amadeus.util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -19,25 +20,36 @@ import com.paradoxo.amadeus.activity.MainActivity;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class SpeechToText implements RecognitionListener {
+public class SpeechToTextSegundoPlano implements RecognitionListener {
 
-    private boolean ouvindo = false;
+    private boolean chaveDetecada;
+    private final String nomeChave;
     private Intent recognizerIntent;
-    private String textoEscutado = "";
+    private boolean ouvindo = false;
+    private AudioManager audioManager;
     private SpeechRecognizer speechRecognizer;
+    private final String oQueFoiOuvidoAteAgora = null;
     public final BackgroundVoiceListener backgroundVoiceListener;
 
-    public SpeechToText(Context context){
+    public SpeechToTextSegundoPlano(Context context, String nomeChave) {
+        this.nomeChave = nomeChave;
+
         backgroundVoiceListener = new BackgroundVoiceListener();
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
 
+        int silencion = 9000;
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,context.getPackageName());
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, silencion);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, silencion);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+
+
+        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
 
     }
 
@@ -61,22 +73,22 @@ public class SpeechToText implements RecognitionListener {
 
     @Override
     public void onRmsChanged(float v) {
-        Log.e("TAG", "onRmsChanged: " + v);
-
     }
 
     @Override
     public void onPartialResults(Bundle partialResults) {
-        textoEscutado = "";
         ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-        if(matches!=null)
+        if (matches != null)
             for (String result : matches)
-                textoEscutado += result;
-        Log.e("TAG","text: " + textoEscutado);
+                if (result.contains(nomeChave)) {
+                    Log.e("Chave detectada", nomeChave);
+                    this.backgroundVoiceListener.interrupt();
+                    chaveDetecada = true;
+                } else {
+                    Log.e("Texto ouvido", "Palavra comum");
+                }
 
-        MainActivity.setEditTextMsgUsu(textoEscutado);
-        // Talvez usar biblioteca EventBus seja o ideal para o futuro aqui
         setOuvindo(false);
     }
 
@@ -87,12 +99,20 @@ public class SpeechToText implements RecognitionListener {
 
     @Override
     public void onError(int i) {
-        Log.e("Erro ao ouvir","textoEscutado: " + textoEscutado);
+        Log.e("Não escutei nada", "Mas ainda estou ouvindo");
+        this.backgroundVoiceListener.run();
     }
 
     @Override
     public void onResults(Bundle bundle) {
-        Log.e("Resultados da escuta","Terminou de gravar");
+        Log.e("Resultados da escuta", "Terminou de gravar");
+        if (!chaveDetecada) {
+            this.backgroundVoiceListener.run();
+        } else {
+            Log.e("Gravação", "interropmpida");
+            this.backgroundVoiceListener.interrupt();
+            chaveDetecada = false;
+        }
     }
 
     @Override
@@ -105,28 +125,33 @@ public class SpeechToText implements RecognitionListener {
 
     }
 
-    public class BackgroundVoiceListener{
+    public class BackgroundVoiceListener {
 
-        public void run(){
+        public void run() {
+            //audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+            // Muta o volume da música para veitar o som do beep da APi do Google
             try {
-                if(!isOuvindo()){
+                if (!isOuvindo()) {
                     setOuvindo(true);
                     speechRecognizer.startListening(recognizerIntent);
-                    Log.e("TAG","Escutando");
+                    Log.e("TAG", "Escutando");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            //audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+            // Desmuta
         }
 
         public void interrupt() {
             try {
                 speechRecognizer.stopListening();
-                Log.e("TAG","Parou de escutar");
+                Log.e("TAG", "Parou de escutar");
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
     }
 
 }

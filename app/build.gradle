@@ -54,6 +54,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:18.0.0'
     implementation 'com.google.firebase:firebase-database:18.0.0'
     implementation 'com.google.firebase:firebase-messaging:19.0.1'
+    //implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
 
     implementation 'com.google.android.gms:play-services-ads:18.0.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'

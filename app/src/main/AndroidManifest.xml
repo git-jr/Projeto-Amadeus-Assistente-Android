@@ -7,8 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
@@ -20,8 +22,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
         <activity
-            android:name=".activity.TrocarVozActivity" />
+            android:name=".activity.DialogSegundoPlanoActivity"
+            android:theme="@style/Theme.AppCompat.Translucent" />
+
+        <activity android:name=".activity.TrocarVozActivity" />
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -54,6 +60,16 @@
             android:permission="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".service.EscutadaoraService"
+            android:exported="false"
+            android:permission="true">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action android:name="SERVICE_ESCUTADORA" />
             </intent-filter>
         </service>
 
