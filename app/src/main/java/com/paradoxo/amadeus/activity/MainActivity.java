@@ -93,23 +93,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
 
+/*
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(getApplicationContext(), DialogSegundoPlanoActivity.class);
+                Intent intent = new Intent(getApplicationContext(), SegundoPlanoActivity.class);
                 startActivity(intent);
                 finish();
 
             }
         }, 1000);
+*/
 
+        iniciarEscutadoraService();
         inicializarConfiguracoes();
 
     }
 
     public void iniciarEscutadoraService() {
         Intent intent = new Intent(this, EscutadaoraService.class);
+        intent.putExtra("nomeIA", "teclado");
         startService(intent);
+        finish();
     }
 
     public void pararEscutadoraService() {
@@ -126,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             dialog_changelog();
             List<Autor> autores = carregarInformacoesIniciais();
-
             carregarNomeUsuarioIA(autores);
 
             chatbot = new Chatbot(this, autores);
@@ -756,7 +760,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }, 1000);
             } else {
-                meuToast("Falaha ao copiar o banco de dados");
+                meuToast("Falha ao copiar o banco de dados");
             }
         }
     }

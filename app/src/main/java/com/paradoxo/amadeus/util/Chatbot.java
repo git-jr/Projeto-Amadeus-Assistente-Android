@@ -44,6 +44,11 @@ public class Chatbot {
         semRespostas.add((String) this.context.getText(R.string.resposta_nao_localizada));
     }
 
+    public Chatbot(Context context) {
+        this.context = context;
+        semRespostas.add((String) this.context.getText(R.string.resposta_nao_localizada));
+    }
+
     public Mensagem gerarRespoosta(String entrada) {
         Mensagem mensagem = new Mensagem();
         Autor autor = new Autor(1, "IA");

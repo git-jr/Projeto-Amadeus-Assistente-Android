@@ -7,11 +7,10 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.paradoxo.amadeus.util.SpeechToTextSegundoPlano;
 
 public class EscutadaoraService extends Service {
-    public List<Worker> workers = new ArrayList<>();
+    SpeechToTextSegundoPlano speechToText;
 
     @Override
     public void onCreate() {
@@ -21,12 +20,12 @@ public class EscutadaoraService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("Script", "onStartCommand");
+        Log.e("Script", "onStartCommand é chamado sempre que um serviço é chamado de novo");
 
-        Worker worker = new Worker(startId);
-        worker.start();
+        String nomeIA = intent.getStringExtra("nomeIA");
 
-        workers.add(worker);
+        speechToText = new SpeechToTextSegundoPlano(getApplicationContext(), nomeIA);
+        speechToText.backgroundVoiceListener.run();
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -37,38 +36,8 @@ public class EscutadaoraService extends Service {
         return null;
     }
 
-
-    class Worker extends Thread {
-        int count = 0, startId;
-        boolean ativo = true;
-
-        public Worker(int startId) {
-            this.startId = startId;
-        }
-
-        @Override
-        public void run() {
-            while (ativo) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                count++;
-                Log.e("Script", "Count:" + count);
-            }
-            stopSelf(startId);
-        }
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        for (Worker worker : workers) {
-            worker.ativo = false;
-        }
-
     }
 }

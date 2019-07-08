@@ -15,13 +15,14 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
-import com.paradoxo.amadeus.activity.MainActivity;
+import com.paradoxo.amadeus.activity.SegundoPlanoActivity;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class SpeechToTextSegundoPlano implements RecognitionListener {
 
+    private final Context context;
     private boolean chaveDetecada;
     private final String nomeChave;
     private Intent recognizerIntent;
@@ -30,9 +31,11 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
     private SpeechRecognizer speechRecognizer;
     private final String oQueFoiOuvidoAteAgora = null;
     public final BackgroundVoiceListener backgroundVoiceListener;
+    private boolean jaEstaPreparandoResposta;
 
     public SpeechToTextSegundoPlano(Context context, String nomeChave) {
         this.nomeChave = nomeChave;
+        this.context = context;
 
         backgroundVoiceListener = new BackgroundVoiceListener();
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
@@ -83,7 +86,7 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
             for (String result : matches)
                 if (result.contains(nomeChave)) {
                     Log.e("Chave detectada", nomeChave);
-                    this.backgroundVoiceListener.interrupt();
+                    //this.backgroundVoiceListener.interrupt();
                     chaveDetecada = true;
                 } else {
                     Log.e("Texto ouvido", "Palavra comum");
@@ -109,9 +112,31 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
         if (!chaveDetecada) {
             this.backgroundVoiceListener.run();
         } else {
-            Log.e("Gravação", "interropmpida");
-            this.backgroundVoiceListener.interrupt();
-            chaveDetecada = false;
+            jaEstaPreparandoResposta = true;
+
+            Log.e("Gravação", "Interrompendo a gravação");
+
+            String resultado = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
+
+            Log.e("TextoOuvido Integral", resultado);
+
+            if (!resultado.replace(nomeChave, "").trim().isEmpty()) {
+                // Se a palavra chave estiver acompanhada de um texto vamos lidar com ela, se não reniciar a audição
+
+                this.backgroundVoiceListener.interrupt();
+                chaveDetecada = false;
+
+                String resultadoTratado = resultado.substring(resultado.indexOf(nomeChave) + nomeChave.length() + 1).toLowerCase();
+                Log.e("TextoOuvido tratado", resultadoTratado);
+
+                Intent intent = new Intent(context, SegundoPlanoActivity.class);
+                intent.putExtra("textoOuvido", resultadoTratado);
+                context.startActivity(intent);
+            } else {
+                this.backgroundVoiceListener.run();
+            }
+
+
         }
     }
 
@@ -147,6 +172,7 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
             try {
                 speechRecognizer.stopListening();
                 Log.e("TAG", "Parou de escutar");
+                setOuvindo(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }

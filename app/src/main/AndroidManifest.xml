@@ -24,7 +24,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".activity.DialogSegundoPlanoActivity"
+            android:name=".activity.SegundoPlanoActivity"
             android:theme="@style/Theme.AppCompat.Translucent" />
 
         <activity android:name=".activity.TrocarVozActivity" />
