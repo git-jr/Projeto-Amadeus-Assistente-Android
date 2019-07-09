@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.modelo.Mensagem;
+import com.paradoxo.amadeus.service.EscutadaoraService;
 import com.paradoxo.amadeus.util.Chatbot;
 
 import java.util.Locale;
@@ -40,8 +41,13 @@ public class SegundoPlanoActivity extends AppCompatActivity {
 
     }
 
+    public void iniciarEscutadoraService() {
+        Intent intent = new Intent(this, EscutadaoraService.class);
+        startService(intent);
+        finish();
+    }
 
-    private void configurarFalaIA(final String texto) {
+    private void falarTexto(final String texto) {
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -54,7 +60,11 @@ public class SegundoPlanoActivity extends AppCompatActivity {
                         String estiloDeVozPadrao = getPrefString("estiloDeVozPadrao");
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             textToSpeech.setVoice(new Voice(estiloDeVozPadrao, Locale.getDefault(), 1, 1, false, null));
-                            falar(texto);
+                            textToSpeech.speak(texto, TextToSpeech.QUEUE_FLUSH, null);
+
+                            if (!texto.equals(getString(R.string.finalizando_segundo_plano)))
+                                iniciarEscutadoraService();
+
                         }
                     }
 
@@ -63,9 +73,6 @@ public class SegundoPlanoActivity extends AppCompatActivity {
         });
     }
 
-    public void falar(String texto) {
-        textToSpeech.speak(texto, TextToSpeech.QUEUE_FLUSH, null);
-    }
 
     private String getPrefString(String nomeShared) {
         SharedPreferences sharedPreferences = getSharedPreferences("PrefsUsu", MODE_PRIVATE);
@@ -95,7 +102,7 @@ public class SegundoPlanoActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            configurarFalaIA(resposta.getConteudo());
+            falarTexto(resposta.getConteudo());
             Log.e("Resposta ao texto dito", resposta.getConteudo());
 
         }

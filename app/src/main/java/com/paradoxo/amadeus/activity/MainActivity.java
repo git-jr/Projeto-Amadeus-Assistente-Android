@@ -93,18 +93,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
 
-/*
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(getApplicationContext(), SegundoPlanoActivity.class);
-                startActivity(intent);
-                finish();
-
-            }
-        }, 1000);
-*/
-
+        //pararEscutadoraService();
         iniciarEscutadoraService();
         inicializarConfiguracoes();
 
@@ -112,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void iniciarEscutadoraService() {
         Intent intent = new Intent(this, EscutadaoraService.class);
-        intent.putExtra("nomeIA", "teclado");
         startService(intent);
         finish();
     }

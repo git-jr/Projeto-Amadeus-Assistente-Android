@@ -2,6 +2,7 @@ package com.paradoxo.amadeus.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -22,7 +23,9 @@ public class EscutadaoraService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("Script", "onStartCommand é chamado sempre que um serviço é chamado de novo");
 
-        String nomeIA = intent.getStringExtra("nomeIA");
+        // String nomeIA = getPrefString("nomeIA").toLowerCase();
+
+        String nomeIA = "teste";
 
         speechToText = new SpeechToTextSegundoPlano(getApplicationContext(), nomeIA);
         speechToText.backgroundVoiceListener.run();
@@ -39,5 +42,10 @@ public class EscutadaoraService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    private String getPrefString(String nomeShared) {
+        SharedPreferences sharedPreferences = getSharedPreferences("PrefsUsu", MODE_PRIVATE);
+        return sharedPreferences.getString(nomeShared, "");
     }
 }

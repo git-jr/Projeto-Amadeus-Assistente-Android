@@ -12,6 +12,7 @@ import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
+import com.paradoxo.amadeus.service.EscutadaoraService;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -36,7 +37,7 @@ public class Chatbot {
     private List<Autor> autores;
     private static final String NENHUM = "NENHUM";
     private List<String> semRespostas = new ArrayList<>();
-    private static final int SEM_ACAO = 0, ACAO_ABRIR_APP = 1, ACAO_TOCAR_MUSICA = 2, ACAO_APP_NAO_ENCONTRADO = 3;
+    private static final int SEM_ACAO = 0, ACAO_ABRIR_APP = 1, ACAO_TOCAR_MUSICA = 2, ACAO_APP_NAO_ENCONTRADO = 3, ACAO_FECHAR_SEGUNDO_PLANO = 4;
 
     public Chatbot(Context context, List<Autor> autores) {
         this.context = context;
@@ -74,6 +75,12 @@ public class Chatbot {
                     mensagem.setConteudo(context.getString(R.string.funcao_disponivel_em_breve));
                     break;
                 }
+
+                case ACAO_FECHAR_SEGUNDO_PLANO: {
+                    mensagem.setConteudo(context.getString(R.string.finalizando_segundo_plano));
+                    pararEscutadoraService();
+                    break;
+                }
             }
 
         } else {
@@ -104,11 +111,12 @@ public class Chatbot {
 
         List<String> comandosAbrirApp = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_abrir_app));
         List<String> comandosTocarMusica = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_tocar_musica));
+        List<String> comandosPararSegundoPlano = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_parar_segundo_plano));
 
         List<List<String>> listaDasListasDeComandos = new ArrayList<>();
         listaDasListasDeComandos.add(ACAO_ABRIR_APP - 1, comandosAbrirApp);
-        // Aproveitando as constantes para apotar para os indices e poupar switch/case dentro do loop for à seguir
         listaDasListasDeComandos.add(ACAO_TOCAR_MUSICA - 1, comandosTocarMusica);
+        // Aproveitando as constantes para apotar para os indices e poupar switch/case dentro do loop for à seguir
 
         for (List<String> listaDeComandos : listaDasListasDeComandos) {
             for (String comandoEmSi : listaDeComandos) {
@@ -123,6 +131,7 @@ public class Chatbot {
                             } else {
                                 tipoDeAcao = ACAO_APP_NAO_ENCONTRADO;
                             }
+                            break;
                         }
                         case ACAO_TOCAR_MUSICA: {
                             // Implementar
@@ -133,6 +142,13 @@ public class Chatbot {
                 }
             }
         }
+
+        for (String comandoUnico : comandosPararSegundoPlano) {
+            if (entrada.equals(comandoUnico)) {
+                tipoDeAcao = ACAO_FECHAR_SEGUNDO_PLANO;
+            }
+        }
+
         return tipoDeAcao;
     }
 
@@ -275,6 +291,11 @@ public class Chatbot {
         }
         setPrefLong(System.currentTimeMillis());
         return quantoTempoFaz;
+    }
+
+    private void pararEscutadoraService() {
+        Intent intent = new Intent(context, EscutadaoraService.class);
+        context.stopService(intent);
     }
 
     private void setPrefLong(long texto) {

@@ -58,6 +58,12 @@
         <item>toque a música</item>
     </string-array>
 
+    <string-array name="intencoes_parar_segundo_plano">
+        <item>parar segundo plano</item>
+        <item>parar background</item>
+        <item>cala a boca</item>
+    </string-array>
+
     <string-array name="saudacoes_primarias">
         <item>bom dia</item>
         <item>boa noite</item>
@@ -235,5 +241,6 @@
     <string name="aviso_vozes_repetidas">Algumas vozes podem ser muito parecidas com as outras dependendo da configuração atual do seu aparelho. Ainda assim ativar essa opção pode exibir vozes que talvez não estivessem disponioveis antes.</string>
     <string name="numero_vozes_econtradas">Vozes encontradas</string>
     <string name="voz_padrao_selecionada">Voz alterada para padrão do sistema</string>
+    <string name="finalizando_segundo_plano">Finalizando atividades em segundo plano</string>
 
 </resources>
