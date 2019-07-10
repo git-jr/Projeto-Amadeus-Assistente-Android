@@ -20,7 +20,10 @@ import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.Voice;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,7 +56,6 @@ import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
 import com.paradoxo.amadeus.service.EscutadaoraService;
-import com.paradoxo.amadeus.service.TratarRespostaService;
 import com.paradoxo.amadeus.util.Arquivo;
 import com.paradoxo.amadeus.util.Chatbot;
 import com.paradoxo.amadeus.util.Classificador;
@@ -92,25 +94,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-/*        Intent intent = new Intent(this, TratarRespostaService.class);
-        startService(intent);
-*/
-
-
-        //finalizar();
         inicializarConfiguracoes();
-
     }
 
-    private void finalizar() {
-        Intent intent = new Intent(getApplicationContext(), VozSegundoPlanoActivity.class);
-        intent.putExtra("textoOuvido", "parar");
-
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        getApplicationContext().startActivity(intent);
-        finish();
-    }
 
     public void iniciarEscutadoraService() {
         Intent intent = new Intent(this, EscutadaoraService.class);
@@ -365,6 +351,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ((TextView) builder.findViewById(R.id.tituloTextView)).setText(versao);
         ((TextView) builder.findViewById(R.id.conteudoTextView)).setText(getText(R.string.lista_mundacas_versao));
+        ((TextView) builder.findViewById(R.id.linkGitHubTextView)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent activityAmadeusYouTube = new Intent(Intent.ACTION_VIEW);
+                activityAmadeusYouTube.setData(Uri.parse(getString(R.string.linkRepositorioGitHub)));
+                startActivity(activityAmadeusYouTube);
+
+                // Feito dessa maneira devido problemas como funcionamento do AutoLink
+            }
+        });
 
         final String finalVersaoTemp = versao;
         (builder.findViewById(R.id.fecharButton)).setOnClickListener(new View.OnClickListener() {

@@ -24,7 +24,7 @@ MensagemDAO:
 
 Classificador.normalizar:
     > Trabalhar a retirada de acentos;
-    > Busca de sinônimos usando o Google talvez.
+    > Busca de sinônimos (usando o Google talvez).
 
 Enum:
     > Reavaliar as constantes das outras classes e ver se vale a pena transforma-las em ENUM;
