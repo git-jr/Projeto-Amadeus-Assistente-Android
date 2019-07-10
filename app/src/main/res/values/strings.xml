@@ -1,12 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="lista_mundacas_versao">
-    ● Adicionada a opção de troca de voz da IA
-        \n\n● Icone de envio de mensagem modificado
-        \n\n● Animações mais fluidas graças a API Lottie by Airbnb
-        \n\n● Correção de diversos bugs, ajustes e aperfeiçoamento no código do app.
+    ● O Reconhecimento de voz em segundo plano entra em testes nessa versão, confira os vídeos do YouTube para mais detalhes.
         \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
-
     </string>
 
     <string name="app_name">Amadeus</string>
@@ -250,5 +246,8 @@
     <string name="permissao_nescessaria">Sem essa permissão não é possível utilizar essa função</string>
     <string name="sumario_voz_segundo_plano">Como o reconhecimento de voz irá funcionar quando o app não estiver aberto</string>
     <string name="sobre_reconhecimento_voz_segundo_plano">Quando ativado permite que a IA ouça comandos de voz mesmo quando o app não estiver aberto ou a tela ligada.</string>
+    <string name="agora_open_source">O Projeto Amadeus agora é Open Source novamente, você pode conferir seu código fonte no GitHub</string>
+    <string name="clicando_aqui">clicando aqui</string>
+    <string name="linkRepositorioGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
 
 </resources>

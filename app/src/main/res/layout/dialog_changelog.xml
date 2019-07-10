@@ -73,9 +73,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_medium"
+                android:autoLink="all"
+                android:linksClickable="true"
+                android:text="@string/lista_mundacas_versao"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@color/cinza4"
-                tools:text="- Correção de bugs e melhorias de desempenho" />
+                android:textColor="@color/cinza4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margem_activity"
+                android:text="@string/agora_open_source"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/cinza4" />
+
+            <TextView
+                android:id="@+id/linkGitHubTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:linksClickable="true"
+                android:text="@string/clicando_aqui"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/azul_link"
+                android:textStyle="bold" />
+
 
         </LinearLayout>
 
