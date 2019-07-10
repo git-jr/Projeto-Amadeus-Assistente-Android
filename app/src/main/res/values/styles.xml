@@ -12,8 +12,7 @@
     </style>
 
 
-    <style name="UI.Translucent" parent="android:Theme.Translucent.NoTitleBar">
-    </style>
+    <style name="UI.Translucent" parent="android:Theme.Translucent.NoTitleBar"></style>
 
     <style name="UI.Translucent.Old" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="windowNoTitle">true</item>

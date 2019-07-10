@@ -17,6 +17,7 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 
 import com.paradoxo.amadeus.activity.VozSegundoPlanoActivity;
+import com.paradoxo.amadeus.service.TratarRespostaService;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -124,9 +125,17 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
                     String resultadoTratado = resultado.substring(resultado.indexOf(nomeChave) + nomeChave.length() + 1).toLowerCase().trim();
                     Log.e("TextoOuvido tratado", resultadoTratado);
 
+/*
                     Intent intent = new Intent(context, VozSegundoPlanoActivity.class);
                     intent.putExtra("textoOuvido", resultadoTratado);
                     context.startActivity(intent);
+*/
+
+                    Intent intent2 = new Intent(context, TratarRespostaService.class);
+                    intent2.putExtra("textoOuvido", resultadoTratado);
+                    context.startService(intent2);
+
+
                 } catch (Exception e) {
                     this.backgroundVoiceListener.run();
                 }

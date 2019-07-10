@@ -40,7 +40,6 @@ public class VozSegundoPlanoActivity extends Activity {
         buscaInteracao.setEntradaUsuario(textoOuvido);
         buscaInteracao.execute();
 
-
     }
 
     public void iniciarEscutadoraService() {

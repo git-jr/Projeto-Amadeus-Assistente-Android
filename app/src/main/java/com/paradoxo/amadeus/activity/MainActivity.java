@@ -93,8 +93,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent intent = new Intent(this, TratarRespostaService.class);
+/*        Intent intent = new Intent(this, TratarRespostaService.class);
         startService(intent);
+*/
 
 
         //finalizar();

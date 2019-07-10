@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.paradoxo.amadeus.dao.AutorDAO;
 import com.paradoxo.amadeus.util.SpeechToTextSegundoPlano;
 
 public class EscutadaoraService extends Service {
@@ -23,9 +24,8 @@ public class EscutadaoraService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("Script", "onStartCommand é chamado sempre que um serviço é chamado de novo");
 
-        // String nomeIA = getPrefString("nomeIA").toLowerCase();
-
-        String nomeIA = "teste";
+        AutorDAO autorDAO = new AutorDAO(this);
+        String nomeIA = autorDAO.listar().get(0).getNome().toLowerCase();
 
         speechToText = new SpeechToTextSegundoPlano(getApplicationContext(), nomeIA);
         speechToText.backgroundVoiceListener.run();
