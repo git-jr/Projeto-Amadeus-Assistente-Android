@@ -16,7 +16,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
-import com.paradoxo.amadeus.activity.SegundoPlanoActivity;
+import com.paradoxo.amadeus.activity.VozSegundoPlanoActivity;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -120,12 +120,16 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
             if (!resultado.replace(nomeChave, "").trim().isEmpty()) {
                 // Se a palavra chave estiver acompanhada de um texto vamos lidar com ela, se não reniciar a audição
 
-                String resultadoTratado = resultado.substring(resultado.indexOf(nomeChave) + nomeChave.length() + 1).toLowerCase().trim();
-                Log.e("TextoOuvido tratado", resultadoTratado);
+                try {
+                    String resultadoTratado = resultado.substring(resultado.indexOf(nomeChave) + nomeChave.length() + 1).toLowerCase().trim();
+                    Log.e("TextoOuvido tratado", resultadoTratado);
 
-                Intent intent = new Intent(context, SegundoPlanoActivity.class);
-                intent.putExtra("textoOuvido", resultadoTratado);
-                context.startActivity(intent);
+                    Intent intent = new Intent(context, VozSegundoPlanoActivity.class);
+                    intent.putExtra("textoOuvido", resultadoTratado);
+                    context.startActivity(intent);
+                } catch (Exception e) {
+                    this.backgroundVoiceListener.run();
+                }
 
             } else {
                 this.backgroundVoiceListener.run();
@@ -165,7 +169,7 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
                 public void run() {
                     audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                 }
-            },500);
+            }, 500);
             // Desmuta
         }
 

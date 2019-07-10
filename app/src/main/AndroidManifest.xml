@@ -7,10 +7,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
@@ -24,10 +23,11 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".activity.SegundoPlanoActivity"
-            android:theme="@style/Theme.AppCompat.Translucent" />
+            android:name=".activity.VozSegundoPlanoActivity"
+            android:theme="@style/UI.Translucent" />
 
         <activity android:name=".activity.TrocarVozActivity" />
+
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -35,25 +35,28 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".nuvem.MeusBancosActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".nuvem.BancosOnlineActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.ConfiguracoesActivity"
             android:label="@string/title_activity_settings" />
+
         <activity android:name=".activity.LoadActivity" />
         <activity android:name=".activity.SobreActivity" />
         <activity android:name=".activity.QPythonActivity" />
         <activity android:name=".activity.AlteraRespostasActivity" />
         <activity android:name=".activity.ListarRespostasActivity" />
         <activity android:name=".activity.LicencaAnimacoesActivity" />
+        <activity android:name=".activity.VozSegundoPlanoConfiguracaoActivity" />
 
         <service
             android:name=".firebase.MessasingService"
@@ -72,6 +75,7 @@
                 <action android:name="SERVICE_ESCUTADORA" />
             </intent-filter>
         </service>
+        <service android:name=".service.TratarRespostaService" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

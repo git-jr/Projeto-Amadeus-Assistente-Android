@@ -62,6 +62,7 @@
         <item>parar segundo plano</item>
         <item>parar background</item>
         <item>cala a boca</item>
+        <item>parar</item>
     </string-array>
 
     <string-array name="saudacoes_primarias">
@@ -242,5 +243,12 @@
     <string name="numero_vozes_econtradas">Vozes encontradas</string>
     <string name="voz_padrao_selecionada">Voz alterada para padrão do sistema</string>
     <string name="finalizando_segundo_plano">Finalizando atividades em segundo plano</string>
+    <string name="reconhecimento_voz_segundo_plano">Voz em segundo plano</string>
+    <string name="status_atual">Status atual</string>
+    <string name="ativo">Ativado</string>
+    <string name="desativado">Desativado</string>
+    <string name="permissao_nescessaria">Sem essa permissão não é possível utilizar essa função</string>
+    <string name="sumario_voz_segundo_plano">Como o reconhecimento de voz irá funcionar quando o app não estiver aberto</string>
+    <string name="sobre_reconhecimento_voz_segundo_plano">Quando ativado permite que a IA ouça comandos de voz mesmo quando o app não estiver aberto ou a tela ligada.</string>
 
 </resources>

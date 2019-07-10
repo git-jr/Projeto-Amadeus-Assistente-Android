@@ -53,6 +53,7 @@ import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
 import com.paradoxo.amadeus.service.EscutadaoraService;
+import com.paradoxo.amadeus.service.TratarRespostaService;
 import com.paradoxo.amadeus.util.Arquivo;
 import com.paradoxo.amadeus.util.Chatbot;
 import com.paradoxo.amadeus.util.Classificador;
@@ -92,11 +93,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent intent = new Intent(this, TratarRespostaService.class);
+        startService(intent);
 
-        //pararEscutadoraService();
-        iniciarEscutadoraService();
+
+        //finalizar();
         inicializarConfiguracoes();
 
+    }
+
+    private void finalizar() {
+        Intent intent = new Intent(getApplicationContext(), VozSegundoPlanoActivity.class);
+        intent.putExtra("textoOuvido", "parar");
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        getApplicationContext().startActivity(intent);
+        finish();
     }
 
     public void iniciarEscutadoraService() {

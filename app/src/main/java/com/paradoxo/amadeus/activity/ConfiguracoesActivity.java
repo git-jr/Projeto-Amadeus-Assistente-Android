@@ -1,13 +1,11 @@
 package com.paradoxo.amadeus.activity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -40,10 +38,17 @@ public class ConfiguracoesActivity extends AppCompatPreferenceActivity {
     public void onHeaderClick(Header header, int position) {
         super.onHeaderClick(header, position);
 
-        if (header.id == R.id.header_importar_qpython) {
-            Intent qpythonActivity = new Intent(this, QPythonActivity.class);
-            startActivity(qpythonActivity);
+        switch ((int) header.id) {
+            case R.id.header_importar_qpython: {
+                Intent qpythonActivity = new Intent(this, QPythonActivity.class);
+                startActivity(qpythonActivity);
+                break;
+            }
 
+            case R.id.header_segundo_plano: {
+                Intent segundoPlanoConfiguracaoActivity = new Intent(this, VozSegundoPlanoConfiguracaoActivity.class);
+                startActivity(segundoPlanoConfiguracaoActivity);
+            }
         }
     }
 

@@ -7,7 +7,13 @@
 
     <header
         android:id="@+id/header_importar_qpython"
-        android:icon="@drawable/ic_armazenamento"
+        android:icon="@drawable/ic_importar"
         android:title="@string/qpython" />
+    <header
+        android:id="@+id/header_segundo_plano"
+        android:icon="@drawable/ic_armazenamento"
+        android:title="@string/reconhecimento_voz_segundo_plano"
+        android:summary="@string/sumario_voz_segundo_plano"/>
+
 
 </preference-headers>
