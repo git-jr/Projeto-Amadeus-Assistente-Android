@@ -87,7 +87,7 @@ public class SpeechToText implements RecognitionListener {
 
     @Override
     public void onError(int i) {
-        Log.e("Erro aou ouvir","textoEscutado: " + textoEscutado);
+        Log.e("Erro ao ouvir","textoEscutado: " + textoEscutado);
     }
 
     @Override

@@ -52,6 +52,8 @@ import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
+import com.paradoxo.amadeus.service.EscutadaoraService;
+import com.paradoxo.amadeus.service.TratarRespostaService;
 import com.paradoxo.amadeus.util.Arquivo;
 import com.paradoxo.amadeus.util.Chatbot;
 import com.paradoxo.amadeus.util.Classificador;
@@ -91,9 +93,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+/*        Intent intent = new Intent(this, TratarRespostaService.class);
+        startService(intent);
+*/
+
+
+        //finalizar();
         inicializarConfiguracoes();
 
     }
+
+    private void finalizar() {
+        Intent intent = new Intent(getApplicationContext(), VozSegundoPlanoActivity.class);
+        intent.putExtra("textoOuvido", "parar");
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        getApplicationContext().startActivity(intent);
+        finish();
+    }
+
+    public void iniciarEscutadoraService() {
+        Intent intent = new Intent(this, EscutadaoraService.class);
+        startService(intent);
+        finish();
+    }
+
+    public void pararEscutadoraService() {
+        Intent intent = new Intent(this, EscutadaoraService.class);
+        stopService(intent);
+    }
+
 
     private void inicializarConfiguracoes() {
 
@@ -103,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             dialog_changelog();
             List<Autor> autores = carregarInformacoesIniciais();
-
             carregarNomeUsuarioIA(autores);
 
             chatbot = new Chatbot(this, autores);
@@ -308,7 +336,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-
     public void dialog_changelog() {
         String versao = "";
         try {
@@ -411,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (id) {
             case R.id.nav_perfil: {
+                iniciarEscutadoraService();
                 carregarNomeUsuarioIA(carregarInformacoesIniciais());
                 // Atualizando os nomes para o caso de uma importação ter sido feita via Qpython
 
@@ -428,6 +456,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             case R.id.nav_configuracoes: {
+                pararEscutadoraService();
                 Intent settingsActivity = new Intent(MainActivity.this, ConfiguracoesActivity.class);
                 startActivity(settingsActivity);
                 break;
@@ -518,7 +547,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
 
-        Log.e("Saiu", "Mas apassou aqui");
         item.setCheckable(false);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -733,7 +761,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }, 1000);
             } else {
-                meuToast("Falaha ao copiar o banco de dados");
+                meuToast("Falha ao copiar o banco de dados");
             }
         }
     }
