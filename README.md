@@ -1,6 +1,7 @@
 # Projeto Amadeus Chatbot Android
 
 Amadeus é um app de assistência virtual para celulares Android, está de sendo desenvolvido ao longo de uma série de vídeos no YouTube que podem ser conferidos através do link: http://bit.ly/2XHnXlL 
+
 Seu primeiro protótipo foi feito em Python, codificado por um dispositivo Android e com auxílio de dicas e sugestões de todos que acompanham os vídeo dessa série. Porém existem limitações para o que se pode fazer apenas com essas ferramentas.
 
 ## Objetivo atual ##
