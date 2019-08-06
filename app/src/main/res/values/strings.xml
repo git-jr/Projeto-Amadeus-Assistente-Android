@@ -50,7 +50,10 @@
 
     <string-array name="intencoes_tocar_musica">
         <item>toca</item>
+        <item>tocar</item>
         <item>toque</item>
+        <item>toque uma música</item>
+        <item>tocar uma música</item>
         <item>toque a música</item>
     </string-array>
 
@@ -60,6 +63,7 @@
         <item>cala a boca</item>
         <item>parar</item>
     </string-array>
+
 
     <string-array name="saudacoes_primarias">
         <item>bom dia</item>

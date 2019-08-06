@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.dao.MensagemDAO;
@@ -106,49 +107,43 @@ public class Chatbot {
         return mensagem;
     }
 
+
     private int indentificarAcao(String entrada) {
-        int tipoDeAcao = SEM_ACAO;
 
-        List<String> comandosAbrirApp = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_abrir_app));
-        List<String> comandosTocarMusica = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_tocar_musica));
-        List<String> comandosPararSegundoPlano = Arrays.asList(context.getResources().getStringArray(R.array.intencoes_parar_segundo_plano));
+        String[] comandosAbrirApp = context.getResources().getStringArray(R.array.intencoes_abrir_app);
+        String[] comandosTocarMusica = context.getResources().getStringArray(R.array.intencoes_tocar_musica);
+        String[] comandosPararSegundoPlano = context.getResources().getStringArray(R.array.intencoes_parar_segundo_plano);
 
-        List<List<String>> listaDasListasDeComandos = new ArrayList<>();
-        listaDasListasDeComandos.add(ACAO_ABRIR_APP - 1, comandosAbrirApp);
-        listaDasListasDeComandos.add(ACAO_TOCAR_MUSICA - 1, comandosTocarMusica);
-        // Aproveitando as constantes para apotar para os indices e poupar switch/case dentro do loop for à seguir
+        SparseArray<String[]> listaDasListasDeComandos = new SparseArray<>();
+        listaDasListasDeComandos.put(ACAO_ABRIR_APP, comandosAbrirApp);
+        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusica);
+        listaDasListasDeComandos.put(ACAO_FECHAR_SEGUNDO_PLANO, comandosPararSegundoPlano);
 
-        for (List<String> listaDeComandos : listaDasListasDeComandos) {
-            for (String comandoEmSi : listaDeComandos) {
-                if (entrada.contains(comandoEmSi) && !entrada.replace(comandoEmSi, "").isEmpty()) {
-                    tipoDeAcao = listaDasListasDeComandos.indexOf(listaDeComandos) + 1;
-                    // Retorna qual o número que aponta para o tipo de ação esperada
+        for (int i = 0; i < listaDasListasDeComandos.size(); i++) {
+            int tipoAcao = listaDasListasDeComandos.keyAt(i);
+            String[] listaDeComandos = listaDasListasDeComandos.get(tipoAcao);
 
-                    switch (tipoDeAcao) {
-                        case ACAO_ABRIR_APP: {
-                            if (!qualAppEstaNestaEntrada(entrada).equals(NENHUM)) {
-                                break;
-                            } else {
-                                tipoDeAcao = ACAO_APP_NAO_ENCONTRADO;
-                            }
-                            break;
-                        }
-                        case ACAO_TOCAR_MUSICA: {
-                            // Implementar
-                        }
+            for (String comandoEMSi : listaDeComandos) {
+                if (entrada.contains(comandoEMSi)) {
+                    if (tipoAcao == ACAO_ABRIR_APP) {
+                        return getTipoDeAcaoDesseApp(entrada);
+                    } else {
+                        return tipoAcao;
                     }
-                    if (tipoDeAcao != SEM_ACAO)
-                        break;
                 }
             }
         }
 
-        for (String comandoUnico : comandosPararSegundoPlano) {
-            if (entrada.equals(comandoUnico)) {
-                tipoDeAcao = ACAO_FECHAR_SEGUNDO_PLANO;
-            }
-        }
+        return SEM_ACAO;
+    }
 
+    private int getTipoDeAcaoDesseApp(String entrada) {
+        int tipoDeAcao;
+        if (!qualAppEstaNestaEntrada(entrada).equals(NENHUM)) {
+            tipoDeAcao = ACAO_ABRIR_APP;
+        } else {
+            tipoDeAcao = ACAO_APP_NAO_ENCONTRADO;
+        }
         return tipoDeAcao;
     }
 
