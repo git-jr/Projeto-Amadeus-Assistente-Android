@@ -6,8 +6,8 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 14
-        versionName "1.0.10"
+        versionCode 15
+        versionName "1.0.11"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true

@@ -1,7 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="lista_mundacas_versao">
-    ● O Reconhecimento de voz em segundo plano entra em testes nessa versão, confira os vídeos do YouTube para mais detalhes.
+    ● Toque uma música ♪
+        \n\n● Diga algo como \"toque uma música\" ou \"ouvir música\" para escutar uma música aleatória
+        \n\n● Diga algo como \"tocar nomeDaMúsica\" ou \"toque nomeDaMúsica\" para escutar uma música específica que você tenha em seu aparelho
         \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
     </string>
 
@@ -47,19 +49,30 @@
         <item>abrir app</item>
         <item>iniciar o aplicativo</item>
     </string-array>
+    
+    <string-array name="intencoes_tocar_musica_aleatoria">
+        <item>toque uma música</item>
+        <item>tocar uma música</item>
+        <item>ouvir música</item>
+        <item>ouvir uma música</item>
+    </string-array>
 
-    <string-array name="intencoes_tocar_musica">
-        <item>toca</item>
+    <string-array name="intencoes_tocar_musica_especifica">
+        <item>tocar</item>
         <item>toque</item>
-        <item>toque a música</item>
+    </string-array>
+
+    <string-array name="intencoes_parar_musica">
+        <item>parar música</item>
+        <item>pare a música</item>
     </string-array>
 
     <string-array name="intencoes_parar_segundo_plano">
         <item>parar segundo plano</item>
         <item>parar background</item>
         <item>cala a boca</item>
-        <item>parar</item>
     </string-array>
+
 
     <string-array name="saudacoes_primarias">
         <item>bom dia</item>
@@ -249,5 +262,6 @@
     <string name="agora_open_source">O Projeto Amadeus agora é Open Source novamente, você pode conferir seu código fonte no GitHub</string>
     <string name="clicando_aqui">clicando aqui</string>
     <string name="linkRepositorioGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
+    <string name="permissao_requerida_melhor_funcionamento">Essa permissão é requerida para melhor funcionamento do app, habilite-a nas configurações do seu aparelho a qualquer momento</string>
 
 </resources>

@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -52,6 +53,7 @@ import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
 import com.paradoxo.amadeus.dao.AutorDAO;
 import com.paradoxo.amadeus.dao.BDGateway;
 import com.paradoxo.amadeus.dao.MensagemDAO;
+import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
@@ -68,8 +70,14 @@ import java.util.Locale;
 import java.util.Objects;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.paradoxo.amadeus.enums.AcaoEnum.ACAO_ACESSAR_ARMAZENAMENTO;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final int PERMISSAO_ACESSO_ARMAZENAMENTO = 1002;
+    private static final int PERMISSAO_ACESSO_MICROFONE = 1001;
+    private final int RESULT_CODE_LOAD_ACTIVITY = 1000;
+    private String respostaPendente = null;
 
     private TextToSpeech textToSpeech;
     private boolean envioViaVoz = false;
@@ -87,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ProgressDialog dialogCarregandoBancoInicial;
     private boolean vozIaAtiva, vozIaAtivaMesmoSemResposta;
 
-    private final int RESULT_CODE_LOAD_ACTIVITY = 1000;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -291,8 +298,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void solicitarPermissaoMicrofone() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 1001);
+                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSAO_ACESSO_MICROFONE);
             }
+        }
+    }
+
+    private void solicitarAcessoArmazenamento() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSAO_ACESSO_ARMAZENAMENTO);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            meuToast(getString(R.string.permissao_requerida_melhor_funcionamento));
+        } else {
+            if (requestCode == PERMISSAO_ACESSO_ARMAZENAMENTO && respostaPendente != null) {
+                obterResposta();
+            }
+
         }
     }
 
@@ -645,8 +668,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void obterResposta() {
+        String entradaUsuario;
         Classificador classificador = new Classificador();
-        String entradaUsuario = String.valueOf(getEditText_msgUsu().getText());
+        if (respostaPendente != null) {
+            entradaUsuario = respostaPendente;
+            respostaPendente = null;
+        } else {
+            entradaUsuario = String.valueOf(getEditText_msgUsu().getText());
+        }
+
         entradaUsuario = classificador.normalizar(entradaUsuario);
 
         if (entradaUsuario.length() > 0) {
@@ -792,52 +822,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return null;
         }
 
+
         @Override
         protected void onPostExecute(Void aVoid) {
             removeInterecaoProgresso();
             addInterecao(resposta);
 
+            if (resposta.getAcao() == ACAO_ACESSAR_ARMAZENAMENTO) {
+                solicitarAcessoArmazenamento();
+                respostaPendente = entradaUsuario;
+            } else {
+                respostaPendente = null;
+            }
+
+
         }
     }
 }
-
-/*
-    @SuppressLint("StaticFieldLeak")
-    private void acionarRespostaAssincrona() {
-        // Método para adição de mensagens na tela de tempos em tempos através de um proesso em Background;
-        // Deverá ser mais útil quando o funcionamento da IA em segundo plano for implementado
-
-        AsyncTask TesteAsK = new AsyncTask<Object, Object, Object>() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-
-                for (int i = 1000; i != 5000; i += 100) {
-
-                    try {
-                        Thread.sleep(i);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Log.e("Faaha ", "Na Thread de espera");
-
-                    }
-
-                    final int finalI = i;
-                    MainActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Mensagem objMensagem = new Mensagem(finalI + "º Nova mensagem", autorIA);
-                            addInterecao(objMensagem);
-                        }
-                    });
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-            }
-        };
-
-        TesteAsK.execute();
-    }
-*/

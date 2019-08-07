@@ -37,7 +37,6 @@ public class SobreActivity extends AppCompatActivity {
         (findViewById(R.id.irParaYouTubeButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 Intent activityAmadeusYouTube = new Intent(Intent.ACTION_VIEW);
                 activityAmadeusYouTube.setData(Uri.parse(linkPlaylistAmadeusYouTube));
                 startActivity(activityAmadeusYouTube);
