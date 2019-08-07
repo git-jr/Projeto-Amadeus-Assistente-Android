@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -13,6 +15,7 @@ import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
+import com.paradoxo.amadeus.modelo.Musica;
 import com.paradoxo.amadeus.service.EscutadaoraService;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -33,21 +36,24 @@ import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
 public class Chatbot {
+    GerenciaMusica gerenciaMusica;
 
     private Context context;
     private List<Autor> autores;
     private static final String NENHUM = "NENHUM";
     private List<String> semRespostas = new ArrayList<>();
-    private static final int SEM_ACAO = 0, ACAO_ABRIR_APP = 1, ACAO_TOCAR_MUSICA = 2, ACAO_APP_NAO_ENCONTRADO = 3, ACAO_FECHAR_SEGUNDO_PLANO = 4;
+    private static final int SEM_ACAO = 0, ACAO_ABRIR_APP = 1, ACAO_TOCAR_MUSICA_ALEATORIA = 2, ACAO_APP_NAO_ENCONTRADO = 3, ACAO_FECHAR_SEGUNDO_PLANO = 4, ACAO_MUSICA_NAO_ENCONTRADA = 5, ACAO_TOCAR_MUSICA_ESPECIFICA = 6, ACAO_TOCAR_MUSICA = 7, ACAO_PARAR_MUSICA = 8;
 
     public Chatbot(Context context, List<Autor> autores) {
         this.context = context;
         this.autores = autores;
         semRespostas.add((String) this.context.getText(R.string.resposta_nao_localizada));
+        gerenciaMusica = new GerenciaMusica(context);
     }
 
     public Chatbot(Context context) {
         this.context = context;
+        gerenciaMusica = new GerenciaMusica(context);
         semRespostas.add((String) this.context.getText(R.string.resposta_nao_localizada));
     }
 
@@ -72,8 +78,29 @@ public class Chatbot {
                     mensagem.setAcao(AcaoEnum.ACAO_APP_NAO_ENCONTRADO);
                     break;
                 }
-                case ACAO_TOCAR_MUSICA: {
-                    mensagem.setConteudo(context.getString(R.string.funcao_disponivel_em_breve));
+                case ACAO_TOCAR_MUSICA_ALEATORIA: {
+                    mensagem.setConteudo("Reproduzindo música aleatória");
+                    break;
+                }
+
+                case ACAO_TOCAR_MUSICA_ESPECIFICA: {
+                    mensagem.setConteudo("Reproduzindo música específica");
+                    break;
+                }
+                case ACAO_MUSICA_NAO_ENCONTRADA: {
+                    mensagem.setConteudo("Você não tem uma música com esse nome");
+                    mensagem.setAcao(AcaoEnum.ACAO_MUSICA_NAO_ENCONTRADA);
+                    break;
+                }
+
+                case ACAO_PARAR_MUSICA: {
+                    if (gerenciaMusica.musicaEstaTocando()) {
+                        gerenciaMusica.pararMusicaSeEstiverTocando();
+                        mensagem.setConteudo("Parando música");
+                    } else {
+                        mensagem.setConteudo("Não estou tocando nenhuma música nesse momento");
+                    }
+
                     break;
                 }
 
@@ -111,12 +138,16 @@ public class Chatbot {
     private int indentificarAcao(String entrada) {
 
         String[] comandosAbrirApp = context.getResources().getStringArray(R.array.intencoes_abrir_app);
-        String[] comandosTocarMusica = context.getResources().getStringArray(R.array.intencoes_tocar_musica);
+        String[] comandosTocarMusicaAleatoria = context.getResources().getStringArray(R.array.intencoes_tocar_musica_aleatoria);
+        String[] comandosTocarMusicaEspecifica = context.getResources().getStringArray(R.array.intencoes_tocar_musica_especifica);
+        String[] comandosPararMusica = context.getResources().getStringArray(R.array.intencoes_parar_musica);
         String[] comandosPararSegundoPlano = context.getResources().getStringArray(R.array.intencoes_parar_segundo_plano);
 
         SparseArray<String[]> listaDasListasDeComandos = new SparseArray<>();
         listaDasListasDeComandos.put(ACAO_ABRIR_APP, comandosAbrirApp);
-        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusica);
+        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusicaAleatoria);
+        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusicaEspecifica);
+        listaDasListasDeComandos.put(ACAO_PARAR_MUSICA, comandosPararMusica);
         listaDasListasDeComandos.put(ACAO_FECHAR_SEGUNDO_PLANO, comandosPararSegundoPlano);
 
         for (int i = 0; i < listaDasListasDeComandos.size(); i++) {
@@ -127,6 +158,13 @@ public class Chatbot {
                 if (entrada.contains(comandoEMSi)) {
                     if (tipoAcao == ACAO_ABRIR_APP) {
                         return getTipoDeAcaoDesseApp(entrada);
+                    } else if (tipoAcao == ACAO_TOCAR_MUSICA) {
+                        for (String comando : comandosTocarMusicaAleatoria) {
+                            if (entrada.contains(comando)) {
+                                return qualMusicaEstaAqui(entrada.replace(comando, "").trim(), ACAO_TOCAR_MUSICA_ALEATORIA);
+                            }
+                        }
+                        return qualMusicaEstaAqui(entrada.replace(comandoEMSi, "").trim(), ACAO_TOCAR_MUSICA_ESPECIFICA);
                     } else {
                         return tipoAcao;
                     }
@@ -135,6 +173,43 @@ public class Chatbot {
         }
 
         return SEM_ACAO;
+    }
+
+    private int qualMusicaEstaAqui(String entrada, int tipoAcao) {
+        Musica musica = new Musica();
+
+        if (tipoAcao == ACAO_TOCAR_MUSICA_ALEATORIA) {
+            musica = gerenciaMusica.encontrarMusica(null);
+            gerenciaMusica.configurarMediPlayer(musica);
+            return ACAO_TOCAR_MUSICA_ALEATORIA;
+        }
+
+        if (tipoAcao == ACAO_TOCAR_MUSICA_ESPECIFICA) {
+            Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    String caminho = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+                    String nomeMusica = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+
+                    if (!caminho.contains("WhatsApp") && !caminho.contains("RecForge") && !caminho.contains("hangouts")) {
+                        if (nomeMusica.toLowerCase().contains(entrada)) {
+                            musica.setNome(nomeMusica);
+                            musica.setCaminho(caminho);
+                            musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+                            musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+                            Log.e("Nome", musica.getNome());
+                            Log.e("Caminho AÇÃO", musica.getCaminho());
+
+                            gerenciaMusica.configurarMediPlayer(musica);
+                            return ACAO_TOCAR_MUSICA_ESPECIFICA;
+                        }
+                    }
+                }
+                cursor.close();
+            }
+        }
+
+        return ACAO_MUSICA_NAO_ENCONTRADA;
     }
 
     private int getTipoDeAcaoDesseApp(String entrada) {

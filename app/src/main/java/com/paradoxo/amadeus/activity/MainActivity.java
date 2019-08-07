@@ -52,6 +52,7 @@ import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
 import com.paradoxo.amadeus.dao.AutorDAO;
 import com.paradoxo.amadeus.dao.BDGateway;
 import com.paradoxo.amadeus.dao.MensagemDAO;
+import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         inicializarConfiguracoes();
+
     }
 
 

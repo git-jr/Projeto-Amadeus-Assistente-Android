@@ -69,6 +69,7 @@
                 android:background="@android:color/transparent"
                 android:hint="@string/digite_algo"
                 android:maxLines="6"
+                android:text="toque natural"
                 tools:ignore="Autofill,TextFields" />
 
             <Button
