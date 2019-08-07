@@ -2,8 +2,8 @@
 
     <string name="lista_mundacas_versao">
     ● Toque uma música ♪
-        \n\n● Diga algo como \"Toque uma música\" ou \"Ouvir música\" para escutar uma música aleatória
-        \n\n● Diga algo como \"Tocar nomeDaMúsica\" ou \"Toque nomeDaMúsica\" para escutar uma música específica que você tenha em seu aparelho
+        \n\n● Diga algo como \"toque uma música\" ou \"ouvir música\" para escutar uma música aleatória
+        \n\n● Diga algo como \"tocar nomeDaMúsica\" ou \"toque nomeDaMúsica\" para escutar uma música específica que você tenha em seu aparelho
         \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
     </string>
 
@@ -262,5 +262,6 @@
     <string name="agora_open_source">O Projeto Amadeus agora é Open Source novamente, você pode conferir seu código fonte no GitHub</string>
     <string name="clicando_aqui">clicando aqui</string>
     <string name="linkRepositorioGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
+    <string name="permissao_requerida_melhor_funcionamento">Essa permissão é requerida para melhor funcionamento do app, habilite-a nas configurações do seu aparelho a qualquer momento</string>
 
 </resources>

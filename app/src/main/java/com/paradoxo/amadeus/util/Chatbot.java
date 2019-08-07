@@ -1,5 +1,6 @@
 package com.paradoxo.amadeus.util;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +11,11 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.util.SparseArray;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.paradoxo.amadeus.R;
+import com.paradoxo.amadeus.activity.MainActivity;
 import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
@@ -36,7 +41,8 @@ import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
 public class Chatbot {
-    GerenciaMusica gerenciaMusica;
+    private GerenciaMusica gerenciaMusica;
+    private static final int ACAO_ACESSAR_ARMAZENAMENTO = 9;
 
     private Context context;
     private List<Autor> autores;
@@ -78,13 +84,13 @@ public class Chatbot {
                     mensagem.setAcao(AcaoEnum.ACAO_APP_NAO_ENCONTRADO);
                     break;
                 }
+
                 case ACAO_TOCAR_MUSICA_ALEATORIA: {
-                    mensagem.setConteudo("Reproduzindo música aleatória");
+                    mensagem.setConteudo("Reproduzindo " + gerenciaMusica.getMusicaAtual());
                     break;
                 }
-
                 case ACAO_TOCAR_MUSICA_ESPECIFICA: {
-                    mensagem.setConteudo("Reproduzindo música específica");
+                    mensagem.setConteudo("Reproduzindo " + gerenciaMusica.getMusicaAtual());
                     break;
                 }
                 case ACAO_MUSICA_NAO_ENCONTRADA: {
@@ -92,7 +98,6 @@ public class Chatbot {
                     mensagem.setAcao(AcaoEnum.ACAO_MUSICA_NAO_ENCONTRADA);
                     break;
                 }
-
                 case ACAO_PARAR_MUSICA: {
                     if (gerenciaMusica.musicaEstaTocando()) {
                         gerenciaMusica.pararMusicaSeEstiverTocando();
@@ -101,6 +106,12 @@ public class Chatbot {
                         mensagem.setConteudo("Não estou tocando nenhuma música nesse momento");
                     }
 
+                    break;
+                }
+
+                case ACAO_ACESSAR_ARMAZENAMENTO: {
+                    mensagem.setConteudo("Preciso de acesso aos seus arquivos para concluir essa ação");
+                    mensagem.setAcao(AcaoEnum.ACAO_ACESSAR_ARMAZENAMENTO);
                     break;
                 }
 
@@ -136,7 +147,6 @@ public class Chatbot {
 
 
     private int indentificarAcao(String entrada) {
-
         String[] comandosAbrirApp = context.getResources().getStringArray(R.array.intencoes_abrir_app);
         String[] comandosTocarMusicaAleatoria = context.getResources().getStringArray(R.array.intencoes_tocar_musica_aleatoria);
         String[] comandosTocarMusicaEspecifica = context.getResources().getStringArray(R.array.intencoes_tocar_musica_especifica);
@@ -145,8 +155,8 @@ public class Chatbot {
 
         SparseArray<String[]> listaDasListasDeComandos = new SparseArray<>();
         listaDasListasDeComandos.put(ACAO_ABRIR_APP, comandosAbrirApp);
-        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusicaAleatoria);
-        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA, comandosTocarMusicaEspecifica);
+        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA_ALEATORIA, comandosTocarMusicaAleatoria);
+        listaDasListasDeComandos.put(ACAO_TOCAR_MUSICA_ESPECIFICA, comandosTocarMusicaEspecifica);
         listaDasListasDeComandos.put(ACAO_PARAR_MUSICA, comandosPararMusica);
         listaDasListasDeComandos.put(ACAO_FECHAR_SEGUNDO_PLANO, comandosPararSegundoPlano);
 
@@ -158,13 +168,8 @@ public class Chatbot {
                 if (entrada.contains(comandoEMSi)) {
                     if (tipoAcao == ACAO_ABRIR_APP) {
                         return getTipoDeAcaoDesseApp(entrada);
-                    } else if (tipoAcao == ACAO_TOCAR_MUSICA) {
-                        for (String comando : comandosTocarMusicaAleatoria) {
-                            if (entrada.contains(comando)) {
-                                return qualMusicaEstaAqui(entrada.replace(comando, "").trim(), ACAO_TOCAR_MUSICA_ALEATORIA);
-                            }
-                        }
-                        return qualMusicaEstaAqui(entrada.replace(comandoEMSi, "").trim(), ACAO_TOCAR_MUSICA_ESPECIFICA);
+                    } else if (tipoAcao == ACAO_TOCAR_MUSICA_ALEATORIA || tipoAcao == ACAO_TOCAR_MUSICA_ESPECIFICA) {
+                        return qualMusicaEstaAqui(entrada.replace(comandoEMSi, "").trim(), tipoAcao);
                     } else {
                         return tipoAcao;
                     }
@@ -176,40 +181,47 @@ public class Chatbot {
     }
 
     private int qualMusicaEstaAqui(String entrada, int tipoAcao) {
-        Musica musica = new Musica();
 
-        if (tipoAcao == ACAO_TOCAR_MUSICA_ALEATORIA) {
-            musica = gerenciaMusica.encontrarMusica(null);
-            gerenciaMusica.configurarMediPlayer(musica);
-            return ACAO_TOCAR_MUSICA_ALEATORIA;
-        }
+        if (acessoAoArmazenamentoFoiPermitido()) {
+            Musica musica = new Musica();
 
-        if (tipoAcao == ACAO_TOCAR_MUSICA_ESPECIFICA) {
-            Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    String caminho = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
-                    String nomeMusica = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+            if (tipoAcao == ACAO_TOCAR_MUSICA_ALEATORIA) {
+                musica = gerenciaMusica.encontrarMusica(null);
+                gerenciaMusica.configurarMediPlayer(musica);
+                return ACAO_TOCAR_MUSICA_ALEATORIA;
+            }
 
-                    if (!caminho.contains("WhatsApp") && !caminho.contains("RecForge") && !caminho.contains("hangouts")) {
-                        if (nomeMusica.toLowerCase().contains(entrada)) {
-                            musica.setNome(nomeMusica);
-                            musica.setCaminho(caminho);
-                            musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-                            musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                            Log.e("Nome", musica.getNome());
-                            Log.e("Caminho AÇÃO", musica.getCaminho());
+            if (tipoAcao == ACAO_TOCAR_MUSICA_ESPECIFICA) {
+                Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+                if (cursor != null) {
+                    while (cursor.moveToNext()) {
+                        String caminho = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+                        String nomeMusica = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
 
-                            gerenciaMusica.configurarMediPlayer(musica);
-                            return ACAO_TOCAR_MUSICA_ESPECIFICA;
+                        if (!caminho.contains("WhatsApp") && !caminho.contains("RecForge") && !caminho.contains("hangouts")) {
+                            if (nomeMusica.toLowerCase().contains(entrada)) {
+                                musica.setNome(nomeMusica.substring(0, nomeMusica.lastIndexOf('.')));
+                                musica.setCaminho(caminho);
+                                musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+                                musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+                                gerenciaMusica.configurarMediPlayer(musica);
+                                gerenciaMusica.setMusicaAtual(musica.getNome());
+                                return ACAO_TOCAR_MUSICA_ESPECIFICA;
+                            }
                         }
                     }
+                    cursor.close();
                 }
-                cursor.close();
             }
+        } else {
+            return ACAO_ACESSAR_ARMAZENAMENTO;
         }
 
         return ACAO_MUSICA_NAO_ENCONTRADA;
+    }
+
+    private boolean acessoAoArmazenamentoFoiPermitido() {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private int getTipoDeAcaoDesseApp(String entrada) {

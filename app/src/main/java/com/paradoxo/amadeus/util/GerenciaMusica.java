@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -15,7 +17,8 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class GerenciaMusica {
     private Context context;
-    MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer;
+    private String musicaAtual;
 
     public GerenciaMusica() {
     }
@@ -38,12 +41,11 @@ public class GerenciaMusica {
 
                 if (!caminho.contains("WhatsApp") && !caminho.contains("RecForge") && !caminho.contains("hangouts")) {
                     if (aleatorio || nomeMusica.toLowerCase().contains(nomeMusicaBusada)) {
-                        musica.setNome(nomeMusica);
+                        musica.setNome(nomeMusica.substring(0, nomeMusica.lastIndexOf('.')));
                         musica.setCaminho(caminho);
                         musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
                         musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                        Log.e("Nome", musica.getNome());
-                        Log.e("Caminho", musica.getCaminho());
+                        musicaAtual = musica.getNome();
                         break;
                     }
                 } else if (aleatorio) {
@@ -91,7 +93,6 @@ public class GerenciaMusica {
 
     public void configurarMediPlayer(final Musica musica) {
         pararMusicaSeEstiverTocando();
-
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -142,5 +143,13 @@ public class GerenciaMusica {
 
     public boolean musicaEstaTocando() {
         return mediaPlayer != null && mediaPlayer.isPlaying();
+    }
+
+    public String getMusicaAtual() {
+        return musicaAtual;
+    }
+
+    public void setMusicaAtual(String musicaAtual) {
+        this.musicaAtual = musicaAtual;
     }
 }
