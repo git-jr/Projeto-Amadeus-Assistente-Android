@@ -8,4 +8,4 @@ Seu primeiro protótipo foi feito em Python, codificado por um dispositivo Andro
 Migrar todo o protótipo feito em Python para o app em Java e adicionar as funções que não foi possível por lá, a versão em Python possuía muitos recursos que a Amadeus já possui no momento, mas ainda restam alguns dentre eles:
 - [X] Reconhecimento de voz sem segundo plano (em teste)
 - [ ] Buscas na internet
-- [ ] Comando para reprodução de músicas
+- [X] Comando para reprodução de músicas
