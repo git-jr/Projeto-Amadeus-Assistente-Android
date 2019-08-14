@@ -45,8 +45,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.material.navigation.NavigationView;
 import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
@@ -151,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         verificarModoVozAtivado();
         AtivarComandosPorVoz();
         configurarFalaIA();
-        iniciarAnuncio();
     }
 
 
@@ -331,19 +328,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         vozIaAtiva = sharedPreferences.getBoolean("switch_voz_ia", true);
     }
 
-    private void iniciarAnuncio() {
-
-        AdView adView = findViewById(R.id.adView);
-        boolean emTeste = true;
-
-        if (true) {
-            // Isso é para evitar que anúncioos sejam mostrados durante a fase de desenvolvimento
-            adView.setVisibility(View.GONE);
-        } else {
-            AdRequest adRequest = new AdRequest.Builder().build();
-            adView.loadAd(adRequest);
-        }
-    }
 
     public void dialog_changelog() {
         String versao = "";
