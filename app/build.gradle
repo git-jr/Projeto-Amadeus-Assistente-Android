@@ -49,13 +49,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
 
 
-    implementation 'com.google.firebase:firebase-core:17.0.0'
-    implementation 'com.google.firebase:firebase-auth:18.0.0'
-    implementation 'com.google.firebase:firebase-storage:18.0.0'
-    implementation 'com.google.firebase:firebase-database:18.0.0'
+    implementation 'com.google.firebase:firebase-core:17.0.1'
+    implementation 'com.google.firebase:firebase-auth:18.1.0'
+    implementation 'com.google.firebase:firebase-storage:18.1.1'
+    implementation 'com.google.firebase:firebase-database:18.0.1'
     implementation 'com.google.firebase:firebase-messaging:19.0.1'
 
-    implementation 'com.google.android.gms:play-services-ads:18.0.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
 
