@@ -3,10 +3,19 @@ package com.paradoxo.amadeus.dao.daoAuxCopia;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 public class BDHelperAuxCopia extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            db.disableWriteAheadLogging();
+        }
+    }
 
     public BDHelperAuxCopia(Context context, String nomeOutrobanco) {
         super(context, nomeOutrobanco, null, DATABASE_VERSION);
