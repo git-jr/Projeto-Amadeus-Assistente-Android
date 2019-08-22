@@ -9,3 +9,6 @@ Migrar todo o protótipo feito em Python para o app em Java e adicionar as funç
 - [X] Reconhecimento de voz sem segundo plano (em teste)
 - [ ] Buscas na internet
 - [X] Comando para reprodução de músicas
+
+
+<a href='https://play.google.com/store/apps/details?id=com.paradoxo.amadeus&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Disponível no Google Play' src='https://play.google.com/intl/pt-BR/badges/images/generic/pt-br_badge_web_generic.png' width="250px"/></a>
