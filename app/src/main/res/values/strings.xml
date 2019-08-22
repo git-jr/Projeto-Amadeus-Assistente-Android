@@ -1,9 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="lista_mundacas_versao">
-    ● Toque uma música ♪
-        \n\n● Diga algo como \"toque uma música\" ou \"ouvir música\" para escutar uma música aleatória
-        \n\n● Diga algo como \"tocar nomeDaMúsica\" ou \"toque nomeDaMúsica\" para escutar uma música específica que você tenha em seu aparelho
+    ● Adeus bugs? Essa versão traz uma série de correção de bugs, alguns mais graves outros menores mas que já estavam aí faz um tempo.
+        Espero que sua experiência seja a melhor possível dentro do app e se tiver alguma sugestão sinta-se
+        à vontade para falar conosco através dos meios dentro do app.
+        \n\n● Correção da falha que causava o fechamento do app após a inserção dos nomes da IA e do usuário;
+        \n\n● Corrigido bug ao tentar ativar a vibração em alguns aparelhos;
+        \n\n● Corrigido falha ao tentar esconder o teclado após o envio de uma mensagem;
         \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
     </string>
 

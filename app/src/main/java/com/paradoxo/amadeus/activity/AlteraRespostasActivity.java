@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -203,13 +204,15 @@ public class AlteraRespostasActivity extends AppCompatActivity {
     };
 
     public void esconderTeclado() {
-        View view = this.getCurrentFocus();
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null) {
-            assert view != null;
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        try {
+            View view = this.getCurrentFocus();
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null) {
+                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        } catch (Exception e) {
+            Log.e("Teclado", "Não pode ser carregado");
         }
-
     }
 
 

@@ -20,10 +20,7 @@ import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.Voice;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,7 +48,6 @@ import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
 import com.paradoxo.amadeus.dao.AutorDAO;
 import com.paradoxo.amadeus.dao.BDGateway;
 import com.paradoxo.amadeus.dao.MensagemDAO;
-import com.paradoxo.amadeus.enums.AcaoEnum;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
@@ -727,11 +723,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void esconderTeclado() {
-        View view = this.getCurrentFocus();
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null) {
-            assert view != null;
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        try {
+            View view = this.getCurrentFocus();
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null) {
+                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        } catch (Exception e) {
+            Log.e("Teclado", "Não pode ser carregado");
         }
     }
 
