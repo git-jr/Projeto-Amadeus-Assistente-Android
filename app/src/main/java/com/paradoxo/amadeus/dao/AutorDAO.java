@@ -28,6 +28,7 @@ public class AutorDAO {
     public List<Autor> listar() {
         List<Autor> autores = new ArrayList<>();
         Cursor cursor = bdGateway.getDatabase().rawQuery("SELECT * FROM autor", null);
+
         while (cursor.moveToNext()) {
             Autor objAutor = new Autor();
             objAutor.setId(cursor.getInt(cursor.getColumnIndex("id")));
@@ -35,6 +36,7 @@ public class AutorDAO {
             autores.add(objAutor);
         }
         cursor.close();
+
         return autores;
     }
 

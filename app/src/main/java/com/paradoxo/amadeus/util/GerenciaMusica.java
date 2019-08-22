@@ -49,10 +49,11 @@ public class GerenciaMusica {
                         break;
                     }
                 } else if (aleatorio) {
+                   if(!cursor.isClosed()) cursor.close();
                     encontrarMusica(null);
                 }
             }
-            cursor.close();
+            if(!cursor.isClosed()) cursor.close();
         }
 
         return musica;

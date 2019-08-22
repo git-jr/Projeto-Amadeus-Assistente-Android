@@ -199,7 +199,7 @@ public class Chatbot {
                         String nomeMusica = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
 
                         if (!caminho.contains("WhatsApp") && !caminho.contains("RecForge") && !caminho.contains("hangouts")) {
-                            if (nomeMusica.toLowerCase().contains(entrada)) {
+                            if (nomeMusica.toLowerCase().trim().contains(entrada)) {
                                 musica.setNome(nomeMusica.substring(0, nomeMusica.lastIndexOf('.')));
                                 musica.setCaminho(caminho);
                                 musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));

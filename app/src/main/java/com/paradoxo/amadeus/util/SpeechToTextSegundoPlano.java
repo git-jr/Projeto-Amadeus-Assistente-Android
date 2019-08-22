@@ -9,6 +9,7 @@ package com.paradoxo.amadeus.util;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
@@ -161,8 +162,15 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
     public class BackgroundVoiceListener {
 
         public void run() {
-            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+            } else {
+                audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+            }
             // Muta o volume da música para veitar o som do beep da APi do Google
+
+
             try {
                 if (!isOuvindo()) {
                     setOuvindo(true);
@@ -176,7 +184,12 @@ public class SpeechToTextSegundoPlano implements RecognitionListener {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                    } else {
+                        audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+                    }
+
                 }
             }, 500);
             // Desmuta

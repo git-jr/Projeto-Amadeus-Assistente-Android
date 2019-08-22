@@ -4,12 +4,21 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class BDHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            db.disableWriteAheadLogging();
+        }
+    }
 
     public BDHelper(Context context) {
         super(context, getNomeBancoEmUso(context), null, DATABASE_VERSION);
