@@ -23,10 +23,10 @@
                 android:layout_height="wrap_content">
 
                 <AutoCompleteTextView
-                    android:id="@+id/nomeUsuarioTextView"
+                    android:id="@+id/nomeUsuTextInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_nomeUsu"
+                    android:hint="@string/digite_seu_nome"
                     android:inputType="textPersonName"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -38,10 +38,10 @@
                 android:layout_height="wrap_content">
 
                 <AutoCompleteTextView
-                    android:id="@+id/nomeIATextView"
+                    android:id="@+id/nomeIATextInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_nomeIA"
+                    android:hint="@string/digite_um_nome_para_ia"
                     android:inputType="textPersonName"
                     android:maxLines="1"
                     android:singleLine="true" />

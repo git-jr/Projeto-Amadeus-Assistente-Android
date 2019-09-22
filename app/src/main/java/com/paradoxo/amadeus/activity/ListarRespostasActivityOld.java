@@ -3,12 +3,10 @@ package com.paradoxo.amadeus.activity;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -17,27 +15,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.activity.redesign.SimpleCallback;
 import com.paradoxo.amadeus.adapter.AdapterEditaMensagem;
 import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.modelo.Mensagem;
-import com.paradoxo.amadeus.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
-
-public class ListarRespostasActivity extends AppCompatActivity {
+public class ListarRespostasActivityOld extends AppCompatActivity {
 
     TextView textViewNenhumaMsgAinda;
     private int posicaoDaMensagemEmEdicao = -1;
@@ -56,10 +47,8 @@ public class ListarRespostasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_respostas_listar);
 
-        configurarToolBarBranca(this);
-
         progressDialogCarregandoBanco = ProgressDialog.show(this, getString(R.string.carregando_banco), getString(R.string.aguarde), true, false);
-        textViewNenhumaMsgAinda = findViewById(R.id.nenhumaMensagemAindaTextView);
+        //textViewNenhumaMsgAinda = findViewById(R.id.nenhumaMensagemAindaTextView);
 
         CarregarMensagens carregarMensagens = new CarregarMensagens();
         carregarMensagens.execute();
@@ -84,32 +73,33 @@ public class ListarRespostasActivity extends AppCompatActivity {
             }
         });
 
-        adapterEditaMensagem.setOnLongClickListener(new AdapterEditaMensagem.OnLongClickListener() {
+        adapterEditaMensagem.setOnItemClickListenerExcluir(new AdapterEditaMensagem.OnItemClickListener() {
             @Override
-            public void onLongClickListener(View view, int pos, Mensagem mensagem) {
-                vibrar();
+            public void onItemClick(View view, final int pos) {
                 excluirMensagem(pos);
             }
         });
-
-        ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SimpleCallback(adapterEditaMensagem, ListarRespostasActivity.this));
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-    }
-
-    private void vibrar() {
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        long milliseconds = 50;
-        if (vibrator != null) {
-            vibrator.vibrate(milliseconds);
-        }
     }
 
     private void excluirMensagem(final int pos) {
-        final Dialog builder = new Dialog(ListarRespostasActivity.this);
+        final Dialog builder = new Dialog(ListarRespostasActivityOld.this);
         builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
         builder.setContentView(R.layout.item_msg_excluir);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            layoutParams.copyFrom(Objects.requireNonNull(builder.getWindow()).getAttributes());
+        }
+
+
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Objects.requireNonNull(builder.getWindow()).setAttributes(layoutParams);
+        }
+
 
         TextView textViewItemPergunta = builder.findViewById(R.id.conteudoPerguntaTextView);
         TextView textViewItemResposta = builder.findViewById(R.id.conteudoRespostaTextView);
@@ -151,7 +141,6 @@ public class ListarRespostasActivity extends AppCompatActivity {
         });
 
         builder.show();
-
     }
 
     @Override

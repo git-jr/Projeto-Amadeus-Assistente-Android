@@ -21,11 +21,11 @@
     <string name="bem_vindo">Bem vindo à Amadeus</string>
     <string name="moldar_as_coisas">Antes de mais nada vamos moldar as coisas a sua maneira</string>
 
-    <string name="btn_link_start">Link Start</string>
+    <string name="btn_link_start">Link Start!</string>
     <string name="btn_load">Load</string>
 
-    <string name="prompt_nomeUsu">Digite seu nome</string>
-    <string name="prompt_nomeIA">Escolha um nome para a IA</string>
+    <string name="digite_seu_nome">Digite seu nome</string>
+    <string name="digite_um_nome_para_ia">Digite um nome para IA</string>
     <string name="digite_algo">Digite algo</string>
     <string name="resposta_nao_localizada">Não sei o que dizer sobre isso, ainda estou em fase de aprendizado 😅</string>
     <string name="resposta_gravada">Resposta gravada com sucesso!</string>
@@ -266,5 +266,13 @@
     <string name="clicando_aqui">clicando aqui</string>
     <string name="linkRepositorioGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
     <string name="permissao_requerida_melhor_funcionamento">Essa permissão é requerida para melhor funcionamento do app, habilite-a nas configurações do seu aparelho a qualquer momento</string>
+    <string name="logo_amadeus">Logo Amadeus</string>
+    <string name="projeto_amadeus">Projeto Amadeus</string>
+    <string name="nome_invalido">Nome inválido</string>
+    <string name="diga_algo">Diga Algo</string>
+    <string name="botao_enviar">Botão enviar</string>
+    <string name="carregando_banco_inicial">Carregando de dados inicial, aguarde um momento</string>
+    <string name="pesquisar_por">Pesquisar por...</string>
+    <string name="cornfimar_exclusao_item">Tem certeza que deseja excluir esse item?</string>
 
 </resources>

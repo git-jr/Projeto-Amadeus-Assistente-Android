@@ -55,10 +55,10 @@ public class AdapterMensagensHome extends RecyclerView.Adapter {
         View v;
         switch (viewType) {
             case (VIEW_ITEM_MSG_IA):
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_msg_ia, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_tipo_1, parent, false);
                 return new ViewHolder(v);
             case (VIEW_ITEM_MSG_USU):
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_msg_usu, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_tipo_2, parent, false);
                 return new ViewHolder(v);
             case (VIEW_PROGRESSO):
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_progresso, parent, false);
