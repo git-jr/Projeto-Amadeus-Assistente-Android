@@ -18,15 +18,11 @@
     <string name="nav_header_subtitle">Projeto Amadeus</string>
     <string name="nav_header_desc">Navegation Drawer</string>
 
-    <string name="bem_vindo">Bem vindo à Amadeus</string>
-    <string name="moldar_as_coisas">Antes de mais nada vamos moldar as coisas a sua maneira</string>
-
     <string name="btn_link_start">Link Start!</string>
     <string name="btn_load">Load</string>
 
     <string name="digite_seu_nome">Digite seu nome</string>
     <string name="digite_um_nome_para_ia">Digite um nome para IA</string>
-    <string name="digite_algo">Digite algo</string>
     <string name="resposta_nao_localizada">Não sei o que dizer sobre isso, ainda estou em fase de aprendizado 😅</string>
     <string name="resposta_gravada">Resposta gravada com sucesso!</string>
 
@@ -237,7 +233,6 @@
     <string name="falha_ler_arquivo">Falha ao ler arquivo</string>
     <string name="abrindo_app">Abrindo app</string>
     <string name="voce_nao_tem_esse_app">Você não tem um aplicativo com esse nome, toque para buscar</string>
-    <string name="funcao_disponivel_em_breve">Terei essa função disponível em breve ♪</string>
     <string name="erro_carregar_tente_novamente">Erro ao carregar, tente novamente</string>
     <string name="opiniao">Opinião</string>
     <string name="licencas">Licenças de código</string>
@@ -246,7 +241,6 @@
     <string name="recurso_nao_disponivel">Esse recurso não está disponívvel para seu dispostivo</string>
     <string name="trocar_voz">Trocar voz</string>
     <string name="voltar_para_voz_padrao">Voltar para voz padrão</string>
-    <string name="reproduzir_todas">Reproduzir todas</string>
     <string name="mudancas_serao_aplicadas">As mudanças serão aplicadas na próxima vez que o app for aberto</string>
     <string name="estilo_voz_de_voz_alterado">Estilo de voz alterado</string>
     <string name="agora_eh_o_estilo_padrao">Agora é o estilo padrão</string>

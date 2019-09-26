@@ -27,7 +27,6 @@
 
         <LinearLayout
             app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/layoutChatbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
@@ -36,7 +35,6 @@
             app:layout_anchorGravity="bottom">
 
             <View
-                android:id="@+id/view"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/borda_card" />

@@ -14,19 +14,6 @@
 
     <style name="UI.Translucent" parent="android:Theme.Translucent.NoTitleBar" />
 
-    <style name="UI.Translucent.Old" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowNoDisplay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:windowDisablePreview">true</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-    </style>
-
     <style name="Theme.AppCompat.Light.NoActionBar.Transparent">
         <item name="colorPrimaryDark">@android:color/darker_gray</item>
         <item name="colorPrimary">@android:color/white</item>

@@ -9,7 +9,6 @@
     tools:context=".activity.AlteraRespostasActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
@@ -17,7 +16,6 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"

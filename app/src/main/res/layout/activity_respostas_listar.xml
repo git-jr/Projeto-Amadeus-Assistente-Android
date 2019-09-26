@@ -8,7 +8,6 @@
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
@@ -16,7 +15,6 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
@@ -70,7 +68,6 @@
         tools:listitem="@layout/item_lista_tipo_4" />
 
     <LinearLayout
-        android:id="@+id/layoutChatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -79,7 +76,6 @@
         app:layout_anchorGravity="bottom">
 
         <View
-            android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/borda_card" />

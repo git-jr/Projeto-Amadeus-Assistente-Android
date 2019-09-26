@@ -43,7 +43,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     finish();
                 }
-            }, 5000);
+            }, 1500);
         } else {
            PrimeiroLoad primeiroLoad = new PrimeiroLoad();
            primeiroLoad.execute();
