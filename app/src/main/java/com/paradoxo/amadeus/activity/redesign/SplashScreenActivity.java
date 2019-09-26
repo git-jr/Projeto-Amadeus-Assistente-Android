@@ -28,9 +28,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
-
         configurarToolBarBranca(this);
-
         decidirParaOndeVai();
 
 
@@ -45,7 +43,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     finish();
                 }
-            }, 1000);
+            }, 5000);
         } else {
            PrimeiroLoad primeiroLoad = new PrimeiroLoad();
            primeiroLoad.execute();

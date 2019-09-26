@@ -29,12 +29,14 @@ public class MensagemDAO {
         return bdGateway.getDatabase().insert(TABELA_MENSAGEM, null, contentValues);
     }
 
-    public static void inserirMensagemImportada(String conteudo, int autor) {
+    public static long inserirMensagemImportada(String conteudo, int autor) {
         ContentValues contentValues = new ContentValues();
         contentValues.put("conteudo", conteudo);
         contentValues.put("fk_autor", autor);
 
-        bdGateway.getDatabase().insert(TABELA_MENSAGEM, null, contentValues);
+        long id = bdGateway.getDatabase().insert(TABELA_MENSAGEM, null, contentValues);
+
+        return id;
     }
 
     public static void inserirRespostaImportada(int pergunta, int resposta) {

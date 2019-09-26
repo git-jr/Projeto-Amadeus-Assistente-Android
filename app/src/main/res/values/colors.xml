@@ -15,10 +15,11 @@
     <color name="cinza9">#263238</color>
     <color name="cinza10">#2d2d2d</color>
 
+    <color name="borda_card">#1F000000</color>
+
     <color name="vermelho">#ff0000</color>
     <color name="azul_link">#4183E7</color>
     <color name="gray_200">#EEEEEE</color>
-    <color name="borda_card">#1F000000</color>
     <color name="gray_700">#616161</color>
     <color name="gray_300">#E0E0E0</color>
     <color name="subtitulo">#89000000</color>

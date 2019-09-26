@@ -1,5 +1,6 @@
 package com.paradoxo.amadeus.util;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,4 +23,5 @@ public class Util {
             view.setSystemUiVisibility(flags);
         }
     }
+
 }

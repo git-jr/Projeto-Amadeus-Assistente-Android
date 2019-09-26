@@ -274,5 +274,10 @@
     <string name="carregando_banco_inicial">Carregando de dados inicial, aguarde um momento</string>
     <string name="pesquisar_por">Pesquisar por...</string>
     <string name="cornfimar_exclusao_item">Tem certeza que deseja excluir esse item?</string>
+    <string name="toque_para_editar_desilize_para_excluir">Toque para editar - Deslize para excluir</string>
+    <string name="editar_resposta">Editar resposta</string>
+    <string name="nenhuma_mensagem_encontrada">Nenhuma mensagem encontrada</string>
+    <string name="buscando">Buscando...</string>
+    <string name="beta_pretty">Beta Pretty</string>
 
 </resources>

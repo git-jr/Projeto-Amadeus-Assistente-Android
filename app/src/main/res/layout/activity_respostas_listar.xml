@@ -7,37 +7,69 @@
     android:background="#FFF"
     android:fitsSystemWindows="true">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:fitsSystemWindows="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent">
 
-    <!--
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/app_bar"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
-            app:elevation="0dp">
+            app:contentScrim="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:id="@+id/toolbar_layout"
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                app:contentScrim="?attr/colorPrimary"
-                app:layout_scrollFlags="scroll|enterAlways">
+                android:layout_height="?attr/actionBarSize">
 
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
+                <TextView
+                    android:gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:navigationIcon="@drawable/ic_menu" />
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="@string/toque_para_editar_desilize_para_excluir"
+                    android:textColor="@color/gray_700" />
 
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
-        </com.google.android.material.appbar.AppBarLayout>
-    -->
+            </androidx.appcompat.widget.Toolbar>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
-        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/nenhumaMensagemAindaTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nenhuma_mensagem_encontrada">
+
+        </TextView>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/padding_bottom_card"
+        android:layout_marginEnd="@dimen/padding_bottom_card"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_lista_tipo_4" />
+
+    <LinearLayout
         android:id="@+id/layoutChatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -67,10 +99,10 @@
                 android:layout_weight="9"
                 android:background="@android:color/transparent"
                 android:hint="@string/pesquisar_por"
-                android:maxLines="6"
-                android:textColorHint="@color/gray_300"
                 android:importantForAutofill="no"
-                android:inputType="text" />
+                android:inputType="text"
+                android:maxLines="6"
+                android:textColorHint="@color/gray_300" />
 
             <ImageView
                 android:id="@+id/enviarButton"
@@ -82,39 +114,10 @@
                 android:contentDescription="@string/botao_enviar"
                 android:padding="12dp"
                 android:tint="@color/colorPrimary"
-                app:srcCompat="@drawable/ic_add" />
+                app:srcCompat="@drawable/ic_search" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/nenhumaMensagemAindaTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/nenhuma_resposta_gravada">
-
-        </TextView>
-
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/padding_bottom_card"
-        android:layout_marginEnd="@dimen/padding_bottom_card"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_lista_tipo_4" />
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

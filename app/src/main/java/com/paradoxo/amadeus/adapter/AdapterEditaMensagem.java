@@ -38,6 +38,10 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
         this.mensagens = mensagens;
     }
 
+    public void trocaTudo(List<Mensagem> mensagens) {
+        this.mensagens = mensagens;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_tipo_4, parent, false);

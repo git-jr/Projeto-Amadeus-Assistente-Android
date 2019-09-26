@@ -48,10 +48,13 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
             android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
 
+        <activity android:name=".activity.AlteraRespostasActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+            android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
 
         <activity android:name=".activity.SobreActivity" />
         <activity android:name=".activity.QPythonActivity" />
-        <activity android:name=".activity.AlteraRespostasActivity" />
 
 
         <activity
