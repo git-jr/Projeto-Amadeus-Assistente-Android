@@ -41,6 +41,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.paradoxo.amadeus.ListaComandosActivity;
 import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
 import com.paradoxo.amadeus.dao.AutorDAO;
@@ -106,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         stopService(intent);
     }
 
-
     private void inicializarConfiguracoes() {
 
         dialog_changelog();
@@ -126,8 +126,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         configurarRecycler();
         solicitarPermissaoMicrofone();
 
-        NavigationView navigationView = findViewById(R.id.navigationView);
-        navigationView.setNavigationItemSelectedListener(this);
+        configurarNavigation();
 
         configurarCaixaDeDigitacaoMensagem();
         configurarBotaoEnvioMensagem();
@@ -135,6 +134,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         verificarModoVozAtivado();
         AtivarComandosPorVoz();
         configurarFalaIA();
+
+
+    }
+
+    private void configurarNavigation() {
+        NavigationView navigationView = findViewById(R.id.navigationView);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        Menu menu = navigationView.getMenu();
+        TextView nav_editarRespostas =  menu.findItem(R.id.nav_editarRespostas).getActionView().findViewById(R.id.conteudoTextView);
+        TextView nav_comandosText =  menu.findItem(R.id.nav_comandos).getActionView().findViewById(R.id.conteudoTextView);
+
+        nav_comandosText.setText(getString(R.string.novo));
+        nav_editarRespostas.setText(getString(R.string.reformulado));
     }
 
 
@@ -306,7 +319,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         vozIaAtiva = sharedPreferences.getBoolean("switch_voz_ia", true);
     }
 
-
     public void dialog_changelog() {
         String versao = "";
         try {
@@ -437,6 +449,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_configuracoes: {
                 Intent settingsActivity = new Intent(MainActivity.this, ConfiguracoesActivity.class);
                 startActivity(settingsActivity);
+                break;
+
+            }
+
+            case R.id.nav_comandos: {
+                startActivity(new Intent(this, ListaComandosActivity.class));
                 break;
             }
 

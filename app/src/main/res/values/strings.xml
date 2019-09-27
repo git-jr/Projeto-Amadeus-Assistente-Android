@@ -1,13 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="lista_mundacas_versao">
-    ● Adeus bugs? Essa versão traz uma série de correção de bugs, alguns mais graves outros menores mas que já estavam aí faz um tempo.
-        Espero que sua experiência seja a melhor possível dentro do app e se tiver alguma sugestão sinta-se
-        à vontade para falar conosco através dos meios dentro do app.
-        \n\n● Correção da falha que causava o fechamento do app após a inserção dos nomes da IA e do usuário;
-        \n\n● Corrigido bug ao tentar ativar a vibração em alguns aparelhos;
-        \n\n● Corrigido falha ao tentar esconder o teclado após o envio de uma mensagem;
-        \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
+    ● Update Pretty
+        \n\n● Diversos ajustes na interface para adequação ao Material Design
+        \n\n● Tela de busca e edição de mensagens reformulada e muito mais funcional
+        \n\n● Lista de comandos adicionada dentro do app
+        \n\n● Teste e diga o que achou! Mais novidades em breve 😎
     </string>
 
     <string name="app_name">Amadeus</string>
@@ -42,78 +40,27 @@
 
     <string name="pref_descri_ativar_voz_ia_sem_resposta">Quando ativado permite que a fala da IA funcione mesmo que uma resposta ainda não tenha sido apredida ou uma ação encontrada</string>
 
-    <string-array name="intencoes_abrir_app">
-        <item>abrir</item>
-        <item>abrir aplicativo</item>
-        <item>abrir app</item>
-        <item>iniciar o aplicativo</item>
-    </string-array>
-    
-    <string-array name="intencoes_tocar_musica_aleatoria">
-        <item>toque uma música</item>
-        <item>tocar uma música</item>
-        <item>ouvir música</item>
-        <item>ouvir uma música</item>
-    </string-array>
-
-    <string-array name="intencoes_tocar_musica_especifica">
-        <item>tocar</item>
-        <item>toque</item>
-    </string-array>
-
-    <string-array name="intencoes_parar_musica">
-        <item>parar música</item>
-        <item>pare a música</item>
-    </string-array>
-
-    <string-array name="intencoes_parar_segundo_plano">
-        <item>parar segundo plano</item>
-        <item>parar background</item>
-        <item>cala a boca</item>
-    </string-array>
-
-
-    <string-array name="saudacoes_primarias">
-        <item>bom dia</item>
-        <item>boa noite</item>
-        <item>boa tarde</item>
-        <item>boa madrugada</item>
-    </string-array>
-
-    <string-array name="saudacoes_secundarias">
-        <item>bem vindo de volta</item>
-        <item>olá de novo</item>
-        <item>olá novamente</item>
-    </string-array>
-
-
-    <string-array name="respostas_positivas">
-        <item>sim</item>
-        <item>ss</item>
-        <item>claro</item>
-        <item>com certeza</item>
-        <item>pode crer</item>
-        <item>pode ser</item>
-    </string-array>
-
-
-    <string-array name="respostas_negativas">
-        <item>não</item>
-        <item>n</item>
-        <item>nop</item>
-        <item>com certeza não</item>
-        <item>claro que não</item>
-    </string-array>
-
     <string name="ok">OK</string>
+
     <string name="cancelar">Cancelar</string>
+
     <string name="confirmar_excluir">Confirmar exclusão</string>
+
     <string name="erro_apagar_msg">Erro ao deletar mensagem</string>
+
     <string name="msg_deletada_sucesso">Mensagem deletada com sucesso</string>
+
+
     <string name="nenhuma_resposta_gravada">Você não tem nenhuma resposta gravada atualmente</string>
+
     <string name="preencha_tudo">Por favor preencha todos dados antes de continuar</string>
+
+
     <string name="resposta_atualizada">Resposta atualizada com sucesso!</string>
+
+
     <string name="texto_voz">Texto e voz</string>
+
     <string name="reiniciar">Reiniciar agora?</string>
     <string name="alteracao_realizada">Para aplicar as mudanças é necessario reiniciar o app, desja fazer isso agora?</string>
     <string name="reiniciar_depois">Depois</string>
@@ -147,7 +94,7 @@
     <string name="place_msg_pergunta_desc">Uma pergunta aqui pergunta aqui que poder ser bem grande por isso toda essa digitação desnecessária</string>
     <string name="historico">histórico</string>
     <string name="versao">Versão</string>
-    <string name="oq_mudou">O que mudou nessa versão</string>
+    <string name="oq_mudou">Novidades da versão</string>
     <string name="clique_para_ensinar">\nClique e segure na mensagem anterior para ensinar uma resposta</string>
     <string name="texto_para_compartilhamento"><![CDATA[Conheça a inteligência artificial Amadeus:\nhttps://play.google.com/store/apps/details?id=com.paradoxo.amadeus&hl=pt_BR]]></string>
     <string name="compartilhar_com">Compartilhar com</string>
@@ -167,7 +114,6 @@
     <string name="fazendo_upload">Iniciando upload</string>
     <string name="falha_upload">Falha no upload</string>
     <string name="sucesso_upload">Upload realizado com sucesso</string>
-
     <string name="fazendo_download">Iniciando download</string>
     <string name="falha_download">Falha no download, tente novamente</string>
     <string name="sucesso_download">Download concluído com sucesso</string>
@@ -177,6 +123,7 @@
     <string name="excluir">Excluir</string>
     <string name="deslogar">Deslogar</string>
     <string name="logar">Logar</string>
+
     <string name="escolha_nome_usu">Escolha um nome de usuário</string>
     <string name="nome_usu_infos">Esse nome será exibido publicamente nos bancos que você postar</string>
     <string name="digite_verifique">Digite um nome e verifique a disponibilidade</string>
@@ -272,6 +219,74 @@
     <string name="editar_resposta">Editar resposta</string>
     <string name="nenhuma_mensagem_encontrada">Nenhuma mensagem encontrada</string>
     <string name="buscando">Buscando...</string>
-    <string name="beta_pretty">Beta Pretty</string>
+    <string name="beta_pretty">Update Pretty</string>
+    <string name="descricao_comandos">Clique e segure para copiar.
+        \nDiga um dos comandos abaixo para acionar uma ação
+    </string>
+    <string name="comandos">Comandos</string>
+    <string name="mais_comandos_com_o_tempo">Mais comandos estão sendo adicionados com o tempo</string>
+    <string name="novo">Novo</string>
+    <string name="reformulado">Reformulado</string>
+
+
+    <string-array name="intencoes_abrir_app">
+        <item>abrir</item>
+        <item>abrir aplicativo</item>
+        <item>abrir app</item>
+        <item>iniciar o aplicativo</item>
+    </string-array>
+
+    <string-array name="intencoes_tocar_musica_aleatoria">
+        <item>toque uma música</item>
+        <item>tocar uma música</item>
+        <item>ouvir música</item>
+        <item>ouvir uma música</item>
+    </string-array>
+
+    <string-array name="intencoes_tocar_musica_especifica">
+        <item>tocar</item>
+        <item>toque</item>
+    </string-array>
+
+    <string-array name="intencoes_parar_musica">
+        <item>parar música</item>
+        <item>pare a música</item>
+    </string-array>
+
+    <string-array name="intencoes_parar_segundo_plano">
+        <item>parar segundo plano</item>
+        <item>parar background</item>
+        <item>cala a boca</item>
+    </string-array>
+
+    <string-array name="saudacoes_primarias">
+        <item>bom dia</item>
+        <item>boa noite</item>
+        <item>boa tarde</item>
+        <item>boa madrugada</item>
+    </string-array>
+
+    <string-array name="saudacoes_secundarias">
+        <item>bem vindo de volta</item>
+        <item>olá de novo</item>
+        <item>olá novamente</item>
+    </string-array>
+
+    <string-array name="respostas_positivas">
+        <item>sim</item>
+        <item>ss</item>
+        <item>claro</item>
+        <item>com certeza</item>
+        <item>pode crer</item>
+        <item>pode ser</item>
+    </string-array>
+
+    <string-array name="respostas_negativas">
+        <item>não</item>
+        <item>n</item>
+        <item>nop</item>
+        <item>com certeza não</item>
+        <item>claro que não</item>
+    </string-array>
 
 </resources>

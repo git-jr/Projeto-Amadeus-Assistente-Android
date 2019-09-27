@@ -1,8 +1,9 @@
 package com.paradoxo.amadeus.activity;
 
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -11,7 +12,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
@@ -90,24 +90,41 @@ public class LoadActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void gravarDados() {
+        new AsyncTask<Void, Void, Void>() {
 
-        String nomeUsu = String.valueOf(nomeUsuarioEditText.getText()).trim();
-        String nomeIa = String.valueOf(nomeIaEditText.getText()).trim();
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                Toast.makeText(getApplicationContext(), getString(R.string.gravando_dados), Toast.LENGTH_LONG).show();
+            }
 
-        Autor objAutorUsu = new Autor(2, nomeUsu);
-        Autor objAutorIa = new Autor(1, nomeIa);
+            @Override
+            protected Void doInBackground(Void... voids) {
+                String nomeUsu = String.valueOf(nomeUsuarioEditText.getText()).trim();
+                String nomeIa = String.valueOf(nomeIaEditText.getText()).trim();
 
-        AutorDAO autorDAO = new AutorDAO(this);
-        autorDAO.alterar(objAutorIa);
-        autorDAO.alterar(objAutorUsu);
+                Autor objAutorUsu = new Autor(2, nomeUsu);
+                Autor objAutorIa = new Autor(1, nomeIa);
 
-        Toast.makeText(this, getString(R.string.gravando_dados), Toast.LENGTH_LONG).show();
+                AutorDAO autorDAO = new AutorDAO(getApplicationContext());
+                autorDAO.alterar(objAutorIa);
+                autorDAO.alterar(objAutorUsu);
 
-        setPrefBool();
-        Intent mainActivity = new Intent(LoadActivity.this, MainActivity.class);
-        startActivity(mainActivity);
-        finish();
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void v) {
+                super.onPostExecute(v);
+
+                setPrefBool();
+                Intent mainActivity = new Intent(LoadActivity.this, MainActivity.class);
+                startActivity(mainActivity);
+                finish();
+            }
+        }.execute();
     }
 
     public void verificarNomes() {
@@ -126,8 +143,6 @@ public class LoadActivity extends AppCompatActivity {
         } else {
             nomeIATextInput.setErrorEnabled(false);
         }
-
-        meuToast(getString(R.string.gravando_dados), this);
         gravarDados();
 
     }

@@ -61,7 +61,7 @@ public class SpeechToText implements RecognitionListener {
 
     @Override
     public void onRmsChanged(float v) {
-        Log.e("TAG", "onRmsChanged: " + v);
+        //Log.e("TAG", "onRmsChanged: " + v);
 
     }
 
@@ -73,7 +73,7 @@ public class SpeechToText implements RecognitionListener {
         if(matches!=null)
             for (String result : matches)
                 textoEscutado += result;
-        Log.e("TAG","text: " + textoEscutado);
+        Log.e("TAG","Texto esctuado: " + textoEscutado);
 
         MainActivity.setEditTextMsgUsu(textoEscutado);
         // Talvez usar biblioteca EventBus seja o ideal para o futuro aqui
@@ -122,7 +122,7 @@ public class SpeechToText implements RecognitionListener {
         public void interrupt() {
             try {
                 speechRecognizer.stopListening();
-                Log.e("TAG","Parou de escutar");
+                Log.e("TAG","Parou de escutar MAIN");
             } catch (Exception e) {
                 e.printStackTrace();
             }

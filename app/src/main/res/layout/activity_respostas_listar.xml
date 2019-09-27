@@ -27,6 +27,7 @@
                 android:layout_height="?attr/actionBarSize">
 
                 <TextView
+                    android:textStyle="bold"
                     android:gravity="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -110,7 +111,7 @@
                 android:contentDescription="@string/botao_enviar"
                 android:padding="12dp"
                 android:tint="@color/colorPrimary"
-                app:srcCompat="@drawable/ic_search" />
+                app:srcCompat="@drawable/ic_add" />
 
         </LinearLayout>
 

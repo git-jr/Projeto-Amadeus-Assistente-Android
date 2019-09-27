@@ -31,7 +31,6 @@ public class SplashScreenActivity extends AppCompatActivity {
         configurarToolBarBranca(this);
         decidirParaOndeVai();
 
-
     }
 
     private void decidirParaOndeVai() {
@@ -43,7 +42,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     finish();
                 }
-            }, 1500);
+            }, 1300);
         } else {
            PrimeiroLoad primeiroLoad = new PrimeiroLoad();
            primeiroLoad.execute();

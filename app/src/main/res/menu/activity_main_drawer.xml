@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <group android:checkableBehavior="single">
         <item
@@ -11,10 +11,11 @@
         <item
             android:id="@+id/nav_editarRespostas"
             android:icon="@drawable/ic_editar"
-            android:title="@string/editar_respostas" />
+            android:title="@string/editar_respostas"
+            app:actionLayout="@layout/item_nav_novo"/>
         <item
             android:id="@+id/nav_configuracoes"
-            android:icon="@drawable/ic_dashboard"
+            android:icon="@drawable/ic_config"
             android:title="@string/configs" />
 
         <item
@@ -22,6 +23,12 @@
             android:checked="false"
             android:icon="@drawable/ic_tipo_voz"
             android:title="@string/trocar_voz" />
+
+        <item
+            android:id="@+id/nav_comandos"
+            android:icon="@drawable/ic_dashboard"
+            android:title="@string/comandos"
+            app:actionLayout="@layout/item_nav_novo"/>
 
         <item
             android:id="@+id/nav_nuvem"

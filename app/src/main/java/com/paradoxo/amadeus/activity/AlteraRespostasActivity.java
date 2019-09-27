@@ -28,6 +28,8 @@ import com.paradoxo.amadeus.util.Animacoes;
 
 import java.util.List;
 
+import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
+
 public class AlteraRespostasActivity extends AppCompatActivity {
 
     private MensagemDAO mensagemDAO;
@@ -48,9 +50,10 @@ public class AlteraRespostasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_respostas_alterar);
 
-        recuperarPerguntaActivityAnterior();
-
+        configurarToolBarBranca(this);
         mensagemDAO = new MensagemDAO(this);
+
+        recuperarPerguntaActivityAnterior();
 
         configurarRecylers();
         iniciarlizarInterface();
@@ -235,8 +238,8 @@ public class AlteraRespostasActivity extends AppCompatActivity {
 
     public void atualizarResposta() {
 
-        String novaPergunta = String.valueOf(editTextPergunta.getText()).trim();
-        String novaResposta = String.valueOf(editTextResposta.getText()).trim();
+        String novaPergunta = String.valueOf(editTextPergunta.getText()).trim().toLowerCase();
+        String novaResposta = String.valueOf(editTextResposta.getText()).trim().toLowerCase();
 
         if (!(novaPergunta.length() < 1 || novaResposta.length() < 1)) {
             meuToast("Gravando resposta");
@@ -244,7 +247,7 @@ public class AlteraRespostasActivity extends AppCompatActivity {
             MensagemDAO msgDAO = new MensagemDAO(this);
             mensagens = msgDAO.listarRespostasCompleto();
             Mensagem objMsgPergunta = new Mensagem();
-            objMsgPergunta.setConteudo(perguntaSelecionada);
+            objMsgPergunta.setConteudo(novaPergunta);
 
             if (inserindo) {
                 objMsgPergunta.setAutor(new Autor(1));
