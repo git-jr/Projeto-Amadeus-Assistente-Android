@@ -1,32 +1,36 @@
 package com.paradoxo.amadeus.activity;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.paradoxo.amadeus.R;
+import com.paradoxo.amadeus.activity.redesign.SimpleCallback;
 import com.paradoxo.amadeus.adapter.AdapterEditaMensagem;
 import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.modelo.Mensagem;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
 
 public class ListarRespostasActivity extends AppCompatActivity {
 
@@ -35,6 +39,7 @@ public class ListarRespostasActivity extends AppCompatActivity {
     private AdapterEditaMensagem adapterEditaMensagem;
     private ProgressDialog progressDialogCarregandoBanco;
     private List<Mensagem> mensagens = new ArrayList<>();
+    RecyclerView recyclerView;
 
     @NonNull
     @Override
@@ -47,17 +52,70 @@ public class ListarRespostasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_respostas_listar);
 
-        progressDialogCarregandoBanco = ProgressDialog.show(this, getString(R.string.carregando_banco), getString(R.string.aguarde), true, false);
-        textViewNenhumaMsgAinda = findViewById(R.id.nenhumaMensagemAindaTextView);
+        CarregaMensagens carregaMensagens = new CarregaMensagens();
+        carregaMensagens.execute();
 
-        CarregarMensagens carregarMensagens = new CarregarMensagens();
-        carregarMensagens.execute();
+        configurarToolBarBranca(this);
+        configurarToolbar();
+        configurarRecycler();
 
+        configurarEditTextBusca();
+
+        findViewById(R.id.enviarButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent alterarRespostasActivity = new Intent(ListarRespostasActivity.this, AlteraRespostasActivity.class);
+                alterarRespostasActivity.putExtra("pergunta_selecionada", ((EditText) findViewById(R.id.mensagemUsuarioTextView)).getText().toString());
+                alterarRespostasActivity.putExtra("inserindo",true);
+
+                startActivity(alterarRespostasActivity);
+            }
+        });
     }
 
-    private void configurarRecycler(TextView textViewNenhumaMsgAinda) {
+    private void configurarEditTextBusca() {
+
+        ((EditText) findViewById(R.id.mensagemUsuarioTextView)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String textoDaBusca = s.toString();
+
+                if (!textoDaBusca.trim().isEmpty()) {
+                    CarregaMensagensParcial carregaMensagensParcial = new CarregaMensagensParcial();
+                    carregaMensagensParcial.setTextoBusca(textoDaBusca);
+                    carregaMensagensParcial.execute();
+                } else {
+                    CarregaMensagens carregaMensagens = new CarregaMensagens();
+                    carregaMensagens.execute();
+                }
+            }
+        });
+    }
+
+    private void configurarToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Algo 2");
+        toolbar.setTitleTextColor(getResources().getColor(R.color.gray_700));
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Algo");
+    }
+
+    private void configurarRecycler() {
+        textViewNenhumaMsgAinda = findViewById(R.id.nenhumaMensagemAindaTextView);
         textViewNenhumaMsgAinda.setVisibility(View.INVISIBLE);
-        RecyclerView recyclerView = findViewById(R.id.recycler);
+        recyclerView = findViewById(R.id.recycler);
+
         adapterEditaMensagem = new AdapterEditaMensagem(mensagens);
         recyclerView.setAdapter(adapterEditaMensagem);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -73,74 +131,9 @@ public class ListarRespostasActivity extends AppCompatActivity {
             }
         });
 
-        adapterEditaMensagem.setOnItemClickListenerExcluir(new AdapterEditaMensagem.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, final int pos) {
-                excluirMensagem(pos);
-            }
-        });
-    }
-
-    private void excluirMensagem(final int pos) {
-        final Dialog builder = new Dialog(ListarRespostasActivity.this);
-        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        builder.setContentView(R.layout.item_msg_excluir);
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            layoutParams.copyFrom(Objects.requireNonNull(builder.getWindow()).getAttributes());
-        }
-
-
-        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Objects.requireNonNull(builder.getWindow()).setAttributes(layoutParams);
-        }
-
-
-        TextView textViewItemPergunta = builder.findViewById(R.id.conteudoPerguntaTextView);
-        TextView textViewItemResposta = builder.findViewById(R.id.conteudoRespostaTextView);
-        textViewItemPergunta.setText(mensagens.get(pos).getConteudo());
-        textViewItemResposta.setText(mensagens.get(pos).getConteudo_resposta());
-
-
-        (builder.findViewById(R.id.confirmarButton)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                try {
-                    MensagemDAO mensagemDAO = new MensagemDAO(getApplicationContext());
-                    mensagemDAO.excluirResposta(mensagens.get(pos));
-
-                    mensagens = mensagemDAO.listarRespostasCompleto();
-                    adapterEditaMensagem.remover(pos);
-
-                    meuToast(String.valueOf(getApplicationContext().getText(R.string.msg_deletada_sucesso)));
-
-                    if (mensagens.size() == 0) {
-                        meuToast(String.valueOf(getApplicationContext().getText(R.string.nenhuma_resposta_gravada)));
-
-                    }
-
-                } catch (Exception e) {
-                    meuToast(String.valueOf(getApplicationContext().getText(R.string.erro_apagar_msg)));
-                }
-
-                builder.dismiss();
-            }
-        });
-
-        (builder.findViewById(R.id.cancelarButton)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                builder.cancel();
-            }
-        });
-
-        builder.show();
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SimpleCallback(adapterEditaMensagem, ListarRespostasActivity.this));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     @Override
@@ -185,11 +178,17 @@ public class ListarRespostasActivity extends AppCompatActivity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    public class CarregarMensagens extends AsyncTask<Void, Void, Void> {
+    public class CarregaMensagens extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialogCarregandoBanco = ProgressDialog.show(ListarRespostasActivity.this, getString(R.string.carregando_banco), getString(R.string.aguarde), true, false);
+        }
+
         @Override
         protected Void doInBackground(Void... voids) {
             buscarMensagensBanco();
-
             return null;
         }
 
@@ -198,16 +197,75 @@ public class ListarRespostasActivity extends AppCompatActivity {
             super.onPostExecute(aVoid);
             progressDialogCarregandoBanco.dismiss();
             if (mensagens.size() > 0) {
-                configurarRecycler(textViewNenhumaMsgAinda);
-
+                mostrarLayoutRecycler();
             } else {
-                textViewNenhumaMsgAinda.setVisibility(View.VISIBLE);
+                mostrarLayoutNadaEncontrado();
             }
         }
+    }
+
+    private void mostrarLayoutRecycler() {
+        adapterEditaMensagem.trocaTudo(mensagens);
+        adapterEditaMensagem.notifyDataSetChanged();
+
+        recyclerView.setVisibility(View.VISIBLE);
+        textViewNenhumaMsgAinda.setVisibility(View.GONE);
+
+
+    }
+
+    private void mostrarLayoutNadaEncontrado() {
+        recyclerView.setVisibility(View.GONE);
+        textViewNenhumaMsgAinda.setVisibility(View.VISIBLE);
     }
 
     private void buscarMensagensBanco() {
         MensagemDAO msgDAO = new MensagemDAO(getBaseContext());
         mensagens = msgDAO.listarRespostasCompleto();
     }
+
+    private void buscarMensagensBancoParcial(String textoBusca) {
+        MensagemDAO msgDAO = new MensagemDAO(getBaseContext());
+        mensagens = msgDAO.listarParcial(textoBusca, true);
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    public class CarregaMensagensParcial extends AsyncTask<Void, Void, Void> {
+        String textoBusca;
+
+        public void setTextoBusca(String textoBusca) {
+            this.textoBusca = textoBusca;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            if (progressDialogCarregandoBanco.isShowing()) {
+                progressDialogCarregandoBanco.dismiss();
+            }
+            progressDialogCarregandoBanco = ProgressDialog.show(ListarRespostasActivity.this, getString(R.string.buscando), getString(R.string.aguarde), true, false);
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            buscarMensagensBancoParcial(textoBusca);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialogCarregandoBanco.dismiss();
+            if (mensagens.size() > 0) {
+                mostrarLayoutRecycler();
+
+            } else {
+                mostrarLayoutNadaEncontrado();
+            }
+        }
+    }
+
 }

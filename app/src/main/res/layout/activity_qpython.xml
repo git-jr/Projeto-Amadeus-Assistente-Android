@@ -53,7 +53,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/conteudoRespostaTextView" />
 
             <Button
-                android:id="@+id/linkStartButton"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"

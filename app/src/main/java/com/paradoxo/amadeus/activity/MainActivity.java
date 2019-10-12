@@ -3,7 +3,6 @@ package com.paradoxo.amadeus.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -29,8 +27,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,21 +41,19 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.paradoxo.amadeus.ListaComandosActivity;
 import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.adapter.AdapterMensagensHome;
 import com.paradoxo.amadeus.dao.AutorDAO;
-import com.paradoxo.amadeus.dao.BDGateway;
 import com.paradoxo.amadeus.dao.MensagemDAO;
 import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.nuvem.BancosOnlineActivity;
 import com.paradoxo.amadeus.service.EscutadaoraService;
-import com.paradoxo.amadeus.util.Arquivo;
 import com.paradoxo.amadeus.util.Chatbot;
 import com.paradoxo.amadeus.util.Classificador;
 import com.paradoxo.amadeus.util.SpeechToText;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -65,6 +61,7 @@ import java.util.Objects;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.paradoxo.amadeus.enums.AcaoEnum.ACAO_ACESSAR_ARMAZENAMENTO;
+import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -86,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RecyclerView recyclerViewMensagens;
     private static Autor autorIA, autorUsuario;
     private AdapterMensagensHome adapterMensagensHome;
-    private ProgressDialog dialogCarregandoBancoInicial;
     private boolean vozIaAtiva, vozIaAtivaMesmoSemResposta;
 
 
@@ -95,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        configurarToolBarBranca(this);
         inicializarConfiguracoes();
     }
 
@@ -110,34 +107,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         stopService(intent);
     }
 
-
     private void inicializarConfiguracoes() {
 
-        if (!getPrefBool("bancoInserido")) {
-            realizarPrimeiroLoad();
-        } else {
+        dialog_changelog();
+        List<Autor> autores = carregarInformacoesIniciais();
+        carregarNomeUsuarioIA(autores);
 
-            dialog_changelog();
-            List<Autor> autores = carregarInformacoesIniciais();
-            carregarNomeUsuarioIA(autores);
-
-            chatbot = new Chatbot(this, autores);
-            if (!getPrefBool("bdMudou")) {
-                // Evita que uma saudação seja feita com o nome de usuário errado durante a transição de um banco baixado
-                chatbot.despertar();
-            }
-
-            inicializarComponentes();
-
+        chatbot = new Chatbot(this, autores);
+        if (!getPrefBool("bdMudou")) {
+            // Evita que uma saudação seja feita com o nome de usuário errado durante a transição de um banco baixado
+            chatbot.despertar();
         }
+
+        inicializarComponentes();
     }
 
     private void inicializarComponentes() {
         configurarRecycler();
         solicitarPermissaoMicrofone();
 
-        NavigationView navigationView = findViewById(R.id.navigationView);
-        navigationView.setNavigationItemSelectedListener(this);
+        configurarNavigation();
 
         configurarCaixaDeDigitacaoMensagem();
         configurarBotaoEnvioMensagem();
@@ -145,6 +134,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         verificarModoVozAtivado();
         AtivarComandosPorVoz();
         configurarFalaIA();
+
+
+    }
+
+    private void configurarNavigation() {
+        NavigationView navigationView = findViewById(R.id.navigationView);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        Menu menu = navigationView.getMenu();
+        TextView nav_editarRespostas =  menu.findItem(R.id.nav_editarRespostas).getActionView().findViewById(R.id.conteudoTextView);
+        TextView nav_comandosText =  menu.findItem(R.id.nav_comandos).getActionView().findViewById(R.id.conteudoTextView);
+
+        nav_comandosText.setText(getString(R.string.novo));
+        nav_editarRespostas.setText(getString(R.string.reformulado));
     }
 
 
@@ -154,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         recyclerViewMensagens = findViewById(R.id.recycler);
 
+        adapterMensagensHome = new AdapterMensagensHome(mensagems);
         adapterMensagensHome = new AdapterMensagensHome(mensagems);
         recyclerViewMensagens.setAdapter(adapterMensagensHome);
         adapterMensagensHome.setOnLongClickListener(new AdapterMensagensHome.OnLongClickListener() {
@@ -196,15 +200,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return nomeApp;
     }
 
-    private void realizarPrimeiroLoad() {
-        dialogCarregandoBancoInicial = ProgressDialog.show(this, "Carregando banco inicial", "Esse processo só precisa ser feito uma vez\nAguarde um momento...", true, false);
-        dialogCarregandoBancoInicial.show();
-
-        PrimeiroLoad primeiroLoad = new PrimeiroLoad();
-        primeiroLoad.execute();
-        // Vai carregar o banco de dados pré pronto e depois chama a activity de login
-    }
-
     private void configurarCaixaDeDigitacaoMensagem() {
         editTextMsgUsu = findViewById(R.id.mensagemUsuarioTextView);
         editTextMsgUsu.addTextChangedListener(new TextWatcher() {
@@ -214,13 +209,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Button btn = findViewById(R.id.enviarButton);
+                ImageView btn = findViewById(R.id.enviarButton);
                 if (editTextMsgUsu.getText().length() > 0 && !escutando) {
-                    btn.setBackground(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_enviar));
+                    btn.setImageResource(R.drawable.ic_enviar);
                     envioViaVoz = true;
 
                 } else {
-                    btn.setBackground(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_microfone));
+                    btn.setImageResource(R.drawable.ic_microfone);
                     envioViaVoz = false;
                 }
             }
@@ -232,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressLint("ClickableViewAccessibility")
     private void configurarBotaoEnvioMensagem() {
-        final Button btnSend = findViewById(R.id.enviarButton);
+        final ImageView btnSend = findViewById(R.id.enviarButton);
         btnSend.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -323,7 +318,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         vozIaAtivaMesmoSemResposta = sharedPreferences.getBoolean("switch_voz_ia_sem_resp", true);
         vozIaAtiva = sharedPreferences.getBoolean("switch_voz_ia", true);
     }
-
 
     public void dialog_changelog() {
         String versao = "";
@@ -434,10 +428,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-
         switch (id) {
             case R.id.nav_perfil: {
-                iniciarEscutadoraService();
                 carregarNomeUsuarioIA(carregarInformacoesIniciais());
                 // Atualizando os nomes para o caso de uma importação ter sido feita via Qpython
 
@@ -455,9 +447,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             case R.id.nav_configuracoes: {
-                pararEscutadoraService();
                 Intent settingsActivity = new Intent(MainActivity.this, ConfiguracoesActivity.class);
                 startActivity(settingsActivity);
+                break;
+
+            }
+
+            case R.id.nav_comandos: {
+                startActivity(new Intent(this, ListaComandosActivity.class));
                 break;
             }
 
@@ -732,56 +729,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (Exception e) {
             Log.e("Teclado", "Não pode ser carregado");
         }
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    public class PrimeiroLoad extends AsyncTask<Void, Void, Boolean> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Log.e("tag", "Iniciando cópia do banco");
-            BDGateway.getInstance(getBaseContext());
-            // Isso inicializa o banco para que ele possa ser sobrescrito a seguir
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            try {
-                Arquivo.importarBancoPrimeiroUso("Amadeus.db", getApplicationContext());
-                Log.e("tag", "Sucesso na cópia do banco");
-            } catch (IOException e) {
-                Log.e("tag", "Erro ao copiar o banco");
-                e.printStackTrace();
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean bancoCopiado) {
-            super.onPostExecute(bancoCopiado);
-
-            if (bancoCopiado) {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        cadastrarNomes();
-                    }
-                }, 1000);
-            } else {
-                meuToast("Falha ao copiar o banco de dados");
-            }
-        }
-    }
-
-    private void cadastrarNomes() {
-        Log.e("tag", "Cópia do banco finalizada");
-        dialogCarregandoBancoInicial.dismiss();
-
-        Intent loadActivity = new Intent(getApplicationContext(), LoadActivity.class);
-        startActivity(loadActivity);
-        finish();
     }
 
     @SuppressLint("StaticFieldLeak")

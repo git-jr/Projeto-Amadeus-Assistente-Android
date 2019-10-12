@@ -1,5 +1,6 @@
 package com.paradoxo.amadeus.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,17 +18,19 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
 
     private List<Mensagem> mensagens;
     private OnItemClickListener onItemClickListenerEditar, onItemClickListenerExcluir;
+    private OnLongClickListener onLongClickListener;
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         final TextView textViewConteudoPergunta, textViewConteudoResposta;
-        ImageButton imageViewEditar, imageViewExcluir;
+        final View layoutItemComum;
 
         ViewHolder(View view) {
             super(view);
             textViewConteudoPergunta = view.findViewById(R.id.conteudoPerguntaTextView);
             textViewConteudoResposta = view.findViewById(R.id.conteudoRespostaTextView);
-            imageViewEditar = view.findViewById(R.id.editarTextView);
-            imageViewExcluir = view.findViewById(R.id.excluirTextView);
+            layoutItemComum = view.findViewById(R.id.layoutItemComum);
+
         }
     }
 
@@ -35,9 +38,13 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
         this.mensagens = mensagens;
     }
 
+    public void trocaTudo(List<Mensagem> mensagens) {
+        this.mensagens = mensagens;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_msg_editar, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_tipo_4, parent, false);
         return new ViewHolder(view);
     }
 
@@ -51,17 +58,18 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
             view.textViewConteudoPergunta.setText(mensagem.getConteudo());
             view.textViewConteudoResposta.setText(mensagem.getConteudo_resposta());
 
-            view.imageViewEditar.setOnClickListener(new View.OnClickListener() {
+            view.layoutItemComum.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View view) {
                     onItemClickListenerEditar.onItemClick(view, position);
                 }
             });
 
-            view.imageViewExcluir.setOnClickListener(new View.OnClickListener() {
+            view.layoutItemComum.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public void onClick(View view) {
-                    onItemClickListenerExcluir.onItemClick(view, position);
+                public boolean onLongClick(View view) {
+                    onLongClickListener.onLongClickListener(view, position, mensagem);
+                    return false;
                 }
             });
         }
@@ -85,6 +93,14 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
         void onItemClick(View view, int pos);
     }
 
+    public interface OnLongClickListener {
+        void onLongClickListener(View view, int position, Mensagem mensagem);
+    }
+
+    public void setOnLongClickListener(OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
+    }
+
     public void remover(int position) {
         mensagens.remove(position);
         notifyItemRemoved(position);
@@ -95,4 +111,12 @@ public class AdapterEditaMensagem extends RecyclerView.Adapter {
         notifyItemChanged(posicao);
     }
 
+    public void delete(int position) {
+        mensagens.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public List<Mensagem> getMensagens() {
+        return mensagens;
+    }
 }

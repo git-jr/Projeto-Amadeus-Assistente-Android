@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ff0125</color>
-    <color name="colorPrimaryDark">#bc001b</color>
-    <color name="colorAccent">#2d2d2d</color>
+    <color name="colorPrimary">#F50057</color>
+    <color name="colorPrimaryDark">#D50000</color>
+    <color name="colorAccent">#EEEEEE</color>
 
     <color name="cinza1">#dedede</color>
     <color name="cinza2">#e6e6e6</color>
@@ -13,8 +13,15 @@
     <color name="cinza7">#37474F</color>
     <color name="cinza8">#263238</color>
     <color name="cinza9">#263238</color>
+    <color name="cinza10">#2d2d2d</color>
+
+    <color name="borda_card">#1F000000</color>
 
     <color name="vermelho">#ff0000</color>
     <color name="azul_link">#4183E7</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="subtitulo">#89000000</color>
 
 </resources>

@@ -14,63 +14,64 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@+id/view"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
             app:stackFromEnd="true"
-            tools:listitem="@layout/item_msg_ia" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/padding_bottom_card"
+            android:layout_marginEnd="@dimen/padding_bottom_card"
+            android:layout_marginBottom="53dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:listitem="@layout/item_lista_tipo_2" />
 
-        <View
-            android:id="@+id/view"
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:background="#dfdfdf"
-            app:layout_constraintBottom_toTopOf="@+id/layoutChatbox"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
 
         <LinearLayout
-            android:id="@+id/layoutChatbox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="#ffffff"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:minHeight="48dp"
-            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#ffffff"
+            android:orientation="vertical"
+            app:layout_anchorGravity="bottom">
 
-            <EditText
-                android:id="@+id/mensagemUsuarioTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:hint="@string/digite_algo"
-                android:maxLines="6"
-                tools:ignore="Autofill,TextFields" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/borda_card" />
 
-            <Button
-                android:id="@+id/enviarButton"
-                android:layout_width="32dp"
-                android:layout_height="34dp"
-                android:layout_gravity="center"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/ic_microfone"
-                android:clickable="true"
-                android:textSize="14sp"
-                tools:ignore="KeyboardInaccessibleWidget" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="12dp"
+                tools:ignore="RtlSymmetry">
+
+                <EditText
+                    android:id="@+id/mensagemUsuarioTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="9"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/diga_algo"
+                    android:maxLines="6"
+                    android:selectAllOnFocus="false"
+                    android:textColorHint="@color/gray_300"
+                    tools:ignore="Autofill,TextFields" />
+
+                <ImageView
+                    android:clickable="true"
+                    android:background="?selectableItemBackground"
+                    android:id="@+id/enviarButton"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/botao_enviar"
+                    android:padding="12dp"
+                    android:tint="@color/colorPrimary"
+                    app:srcCompat="@drawable/ic_microfone"
+                    android:focusable="true" />
+            </LinearLayout>
 
         </LinearLayout>
 

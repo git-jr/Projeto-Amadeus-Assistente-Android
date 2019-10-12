@@ -5,13 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="@dimen/margem_activity"
+    android:background="@android:color/white"
     tools:context=".activity.AlteraRespostasActivity">
 
-    <ScrollView
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:ignore="UselessParent">
+        android:background="@android:color/white"
+        android:fitsSystemWindows="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize">
+
+                <TextView
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editar_resposta"
+                    android:textColor="@color/cinza6" />
+
+            </androidx.appcompat.widget.Toolbar>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:padding="@dimen/margem_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,27 +53,21 @@
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/editar_respostas"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:paddingStart="0dp"
-                android:paddingLeft="0dp"
-                android:text="@string/pergunta"
                 android:textStyle="bold"
-                tools:ignore="RtlSymmetry" />
+                android:textColor="@color/cinza6"
+                android:layout_marginTop="@dimen/text_margin"
+                android:layout_marginBottom="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pergunta"
+                android:textSize="16sp" />
+
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="2dp"
-                app:cardElevation="2dp">
+                android:layout_margin="2dp"
+                app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -52,6 +80,8 @@
                         android:orientation="horizontal">
 
                         <EditText
+                            android:paddingStart="16dp"
+                            android:paddingLeft="16dp"
                             android:id="@+id/perguntaEditText"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -61,8 +91,6 @@
                             android:inputType="textNoSuggestions"
                             android:maxLines="1"
                             android:minHeight="48dp"
-                            android:paddingStart="16dp"
-                            android:paddingLeft="16dp"
                             tools:ignore="Autofill,LabelFor,RtlSymmetry">
 
                         </EditText>
@@ -97,23 +125,20 @@
             </androidx.cardview.widget.CardView>
 
             <TextView
+                android:textStyle="bold"
+                android:textColor="@color/cinza6"
+                android:layout_marginTop="@dimen/item_lista"
+                android:layout_marginBottom="4dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:paddingStart="0dp"
-                android:paddingLeft="0dp"
                 android:text="@string/resposta"
-                android:textStyle="bold"
-                tools:ignore="RtlSymmetry" />
+                android:textSize="16sp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:theme="@style/ThemeOverlay.AppCompat.Light"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="2dp"
-                app:cardElevation="2dp">
+                android:layout_margin="2dp"
+                app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -167,7 +192,10 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
+                android:layout_marginTop="@dimen/text_margin"
+                android:gravity="bottom|end"
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -176,32 +204,20 @@
                     style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
+                    android:padding="@dimen/text_margin"
                     android:text="@string/cancelar"
-                    android:textColor="@color/colorPrimaryDark"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/confirmarButton"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.89" />
+                    android:textColor="@color/colorPrimaryDark" />
 
                 <Button
                     android:id="@+id/confirmarButton"
                     style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
+                    android:padding="@dimen/text_margin"
                     android:text="@string/ok"
-                    android:textColor="@color/colorPrimaryDark"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
+                    android:textColor="@color/colorPrimaryDark" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

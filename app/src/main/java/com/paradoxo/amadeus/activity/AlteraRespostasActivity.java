@@ -22,10 +22,13 @@ import com.paradoxo.amadeus.R;
 import com.paradoxo.amadeus.adapter.AdapterMensagensBusca;
 import com.paradoxo.amadeus.dao.AutorDAO;
 import com.paradoxo.amadeus.dao.MensagemDAO;
+import com.paradoxo.amadeus.modelo.Autor;
 import com.paradoxo.amadeus.modelo.Mensagem;
 import com.paradoxo.amadeus.util.Animacoes;
 
 import java.util.List;
+
+import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
 
 public class AlteraRespostasActivity extends AppCompatActivity {
 
@@ -39,6 +42,7 @@ public class AlteraRespostasActivity extends AppCompatActivity {
     private EditText editTextPergunta, editTextResposta;
     private String respostaSelecionada, perguntaSelecionada;
     private LinearLayout linearLayoutPergunta, linearLayoutResposta;
+    private boolean inserindo;
 
 
     @Override
@@ -46,9 +50,10 @@ public class AlteraRespostasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_respostas_alterar);
 
-        recuperarPerguntaActivityAnterior();
-
+        configurarToolBarBranca(this);
         mensagemDAO = new MensagemDAO(this);
+
+        recuperarPerguntaActivityAnterior();
 
         configurarRecylers();
         iniciarlizarInterface();
@@ -59,6 +64,7 @@ public class AlteraRespostasActivity extends AppCompatActivity {
             Intent intent = this.getIntent();
             perguntaSelecionada = intent.getStringExtra("pergunta_selecionada");
             respostaSelecionada = intent.getStringExtra("resposta_selecionada");
+            inserindo = intent.getBooleanExtra("inserindo",false);
 
             if (respostaSelecionada != null) perguntaJaPossuiResposta = true;
         } catch (Exception e) {
@@ -122,7 +128,6 @@ public class AlteraRespostasActivity extends AppCompatActivity {
             editTextResposta.setText(respostaSelecionada);
             editTextResposta.setSelection(respostaSelecionada.length());
             editTextResposta.addTextChangedListener(detectarMudancaTextoResposta);
-
         }
 
         editTextPergunta.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -232,23 +237,30 @@ public class AlteraRespostasActivity extends AppCompatActivity {
 
 
     public void atualizarResposta() {
-        // Fazer isso em asyncTask no futuro
 
-        String novaPergunta = String.valueOf(editTextPergunta.getText()).trim();
-        String novaResposta = String.valueOf(editTextResposta.getText()).trim();
+        String novaPergunta = String.valueOf(editTextPergunta.getText()).trim().toLowerCase();
+        String novaResposta = String.valueOf(editTextResposta.getText()).trim().toLowerCase();
 
         if (!(novaPergunta.length() < 1 || novaResposta.length() < 1)) {
+            meuToast("Gravando resposta");
 
             MensagemDAO msgDAO = new MensagemDAO(this);
             mensagens = msgDAO.listarRespostasCompleto();
             Mensagem objMsgPergunta = new Mensagem();
-            objMsgPergunta.setConteudo(perguntaSelecionada);
-            objMsgPergunta = (msgDAO.buscaPorConteudo(objMsgPergunta, !perguntaJaPossuiResposta));
+            objMsgPergunta.setConteudo(novaPergunta);
 
-            if (!novaPergunta.equals(perguntaSelecionada)) {
-                objMsgPergunta.setConteudo(novaPergunta);
-                msgDAO.alterar(objMsgPergunta);
+            if (inserindo) {
+                objMsgPergunta.setAutor(new Autor(1));
+                objMsgPergunta.setId((int) msgDAO.inserirMensagem(objMsgPergunta));
+            } else {
+                objMsgPergunta = (msgDAO.buscaPorConteudo(objMsgPergunta, !perguntaJaPossuiResposta));
+
+                if (!novaPergunta.equals(perguntaSelecionada) || inserindo) {
+                    objMsgPergunta.setConteudo(novaPergunta);
+                    msgDAO.alterar(objMsgPergunta);
+                }
             }
+
 
 
             if (!novaResposta.equals(respostaSelecionada)) {

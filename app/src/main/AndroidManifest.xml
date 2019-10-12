@@ -3,14 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.paradoxo.amadeus">
 
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <application
         android:name="androidx.multidex.MultiDexApplication"
         android:allowBackup="false"
@@ -21,13 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-
         <activity
             android:name=".activity.VozSegundoPlanoActivity"
             android:theme="@style/UI.Translucent" />
-
         <activity android:name=".activity.TrocarVozActivity" />
-
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -35,28 +24,60 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
-
         <activity
             android:name=".nuvem.MeusBancosActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".nuvem.BancosOnlineActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.ConfiguracoesActivity"
             android:label="@string/title_activity_settings" />
-
-        <activity android:name=".activity.LoadActivity" />
+        <activity
+            android:name=".activity.LoadActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+            android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".activity.AlteraRespostasActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+            android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
         <activity android:name=".activity.SobreActivity" />
         <activity android:name=".activity.QPythonActivity" />
-        <activity android:name=".activity.AlteraRespostasActivity" />
-        <activity android:name=".activity.ListarRespostasActivity" />
+        <activity
+            android:name=".activity.ListarRespostasActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+            android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
+
         <activity android:name=".activity.LicencaAnimacoesActivity" />
         <activity android:name=".activity.VozSegundoPlanoConfiguracaoActivity" />
+
+        <activity
+            android:name=".activity.redesign.SplashScreenActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <activity
+            android:name=".ListaComandosActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9608651302719341~7979481150" />
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
 
         <service
             android:name=".firebase.MessasingService"
@@ -70,16 +91,20 @@
             android:exported="false"
             android:permission="true">
             <intent-filter>
-                <category android:name="android.intent.category.LAUNCHER" />
-
                 <action android:name="SERVICE_ESCUTADORA" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </service>
         <service android:name=".service.TratarRespostaService" />
-
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-9608651302719341~7979481150" />
     </application>
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>
