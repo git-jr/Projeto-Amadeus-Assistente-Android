@@ -7,8 +7,8 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 22
-        versionName "2.0.0 - Beta 04"
+        versionCode 23
+        versionName "2.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
