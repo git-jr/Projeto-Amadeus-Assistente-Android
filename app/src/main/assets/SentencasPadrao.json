@@ -1,0 +1,99 @@
+[
+  {
+    "acao": "SEM_ACAO",
+    "chave": "quando eu estou",
+    "id": 0,
+    "respostas": [
+      "No presente é claro, ainda não temos uma máquina do tempo",
+      "A pergunta não é quando, e sim onde, não espera"
+    ],
+    "tipo_item": 1
+  },
+  {
+    "acao": "SEM_ACAO",
+    "chave": "jogue uma moeda",
+    "id": 0,
+    "respostas": [
+      "Você tirou cara",
+      "Você tirou coroa"
+    ],
+    "tipo_item": 1
+  },
+  {
+    "acao": "SEM_ACAO",
+    "chave": "status",
+    "id": 0,
+    "respostas": [
+      "bem",
+      "tudo bem",
+      "tudo certo",
+      "meu sistema está funcionando normalmente, então acho que estou bem",
+      "eu sou uma versão beta então as vezes vou bem e as vezes ADJHADLSKAHSD haha"
+    ],
+    "tipo_item": 1
+  },
+  {
+    "acao": "SEM_ACAO",
+    "chave": "teste",
+    "id": 0,
+    "respostas": [
+      "teste",
+      "testando",
+      "1 2 testando",
+      "sou eu quem faz os testes por aqui"
+    ],
+    "tipo_item": 1
+  },
+  {
+    "acao": "SEM_ACAO",
+    "chave": "obrigado",
+    "id": 0,
+    "respostas": [
+      "por nada",
+      "de nada",
+      "estou a disposição",
+      "fico feliz em ajudar",
+      "estou aqui para ajudar"
+    ],
+    "tipo_item": 1
+  },
+
+  {
+    "acao": "SEM_ACAO",
+    "chave": "preveja o tempo",
+    "id": 0,
+    "respostas": [
+      "não posso prever o tempo ainda, ainda haha",
+      "não sei prever o tempo ainda \uD83D\uDE05",
+      "com esse clima louco é impossível ter certeza"
+    ],
+    "tipo_item": 1
+  },
+
+  {
+    "acao": "SEM_ACAO",
+    "chave": "diga seu nome",
+    "id": 0,
+    "respostas": [
+      "Meu nome é %s, sou uma inteligência artificial criada para auxiliar em tarefas diárias",
+      "%s, uma inteligência artificial criada para auxiliar a humanidade",
+      "Definir quem é eu sou é um pouco complicado, mas por hora basta saber que me chamo %s e estou aqui para ajudar",
+      "Meu nome é %s estou aqui para ajudar"
+    ],
+    "tipo_item": 1
+  },
+
+  {
+    "acao": "SEM_ACAO",
+    "chave": "diga meu nome",
+    "id": 0,
+    "respostas": [
+      "Seu nome é %s",
+      "Você é %s",
+      "Você se chama %s",
+      "%s, você pode alterar isso nas configurações"
+    ],
+    "tipo_item": 1
+  }
+
+]

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutItemComum"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/padding_bottom_card"
+    android:minWidth="200dp"
+    app:cardBackgroundColor="#fafafa"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/borda_card"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/text_margin"
+        android:paddingTop="@dimen/text_margin"
+        android:paddingEnd="@dimen/text_margin"
+        android:paddingBottom="@dimen/padding_bottom_card">
+
+        <TextView
+            android:id="@+id/tituloTexView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_medium"
+            android:text="@string/dica"
+            android:textColor="@color/colorSecondary2"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/conteudoTexView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_bottom_card"
+            android:text="@string/Lorem_ipsum_dolor"
+            android:textColor="@color/conteudo_card"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="@dimen/padding_bottom_card"
+            android:layout_gravity="end"
+            android:layout_marginTop="20dp"
+            android:contentDescription="@string/seta_ir_para"
+            android:src="@drawable/ic_seta_mais"
+            android:tint="@color/conteudo_card" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

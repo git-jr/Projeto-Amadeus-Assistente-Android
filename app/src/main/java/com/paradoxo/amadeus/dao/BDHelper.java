@@ -1,27 +1,23 @@
 package com.paradoxo.amadeus.dao;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class BDHelper extends SQLiteOpenHelper {
+    private static final int DATABASE_VERSION = 4;
 
-    private static final int DATABASE_VERSION = 1;
+    private String TABELA_SENTENCA = "CREATE TABLE sentenca( id INTEGER PRIMARY KEY, chave VARCHAR, respostas VARCHAR, acao VARCHAR, tipo_item INTEGER, idBanco VARCHAR);";
+    private String TABELA_HISTORICIO_SENTENCA = "CREATE TABLE historico_sentenca( id INTEGER PRIMARY KEY, chave VARCHAR, respostas VARCHAR, acao VARCHAR, tipo_item INTEGER);";
+    private String TABELA_ENTIDADE = "CREATE TABLE entidade( id INTEGER PRIMARY KEY, nome VARCHAR, significados VARCHAR, sinonimos VARCHAR, atributos INTEGER, idBanco VARCHAR);";
 
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            db.disableWriteAheadLogging();
-        }
     }
 
     public BDHelper(Context context) {
-        super(context, getNomeBancoEmUso(context), null, DATABASE_VERSION);
+        super(context, "Amadeus.db", null, DATABASE_VERSION);
     }
 
     @Override
@@ -31,18 +27,31 @@ public class BDHelper extends SQLiteOpenHelper {
 
         db.execSQL(CRIAR_TABELA_AUTOR);
         db.execSQL(CRIAR_TABELA_MENSAGEM);
+
+        db.execSQL(TABELA_SENTENCA);
+        db.execSQL(TABELA_HISTORICIO_SENTENCA);
+        db.execSQL(TABELA_ENTIDADE);
     }
 
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    }
+        if (oldVersion < 2) {
+            db.execSQL(TABELA_SENTENCA);
+            db.execSQL(TABELA_HISTORICIO_SENTENCA);
+        }
 
-    private static String getNomeBancoEmUso(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("PrefsUsu", MODE_PRIVATE);
-        return sharedPreferences.getString("bdAtual", "Amadeus") + ".db";
-        // "Amadeus.db" é o banco padrão
-    }
+        if(oldVersion < 3){
+            db.execSQL(TABELA_ENTIDADE);
+        }
 
+        if(oldVersion < 4){
+            String ADICONAR_COLUNA_IDBANCO_SENTENCA = "ALTER TABLE SENTENCA ADD COLUMN idBanco VARCHAR;";
+            String ADICONAR_COLUNA_IDBANCO_ENTIDADE = "ALTER TABLE ENTIDADE ADD COLUMN idBanco VARCHAR;";
+
+            db.execSQL(ADICONAR_COLUNA_IDBANCO_SENTENCA);
+            db.execSQL(ADICONAR_COLUNA_IDBANCO_ENTIDADE);
+        }
+    }
 }

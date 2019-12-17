@@ -5,13 +5,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 import com.paradoxo.amadeus.R;
+
+import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
 
 public class SobreActivity extends AppCompatActivity {
 
@@ -20,8 +21,26 @@ public class SobreActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sobre);
 
-        final String linkPlaylistAmadeusYouTube = getString(R.string.link_playlist_amadeus_yt);
+        configurarInterface();
 
+    }
+
+    private void configurarInterface() {
+        configurarToolBarBranca(this);
+        carregarTextoVersao();
+        configurarClickBotoes();
+        configurarClikLicencas();
+    }
+
+    private void configurarClickBotoes() {
+        configurarClickLink(R.id.irParaYouTubeLayout, getString(R.string.link_playlist_amadeus_yt));
+        configurarClickLink(R.id.enviarFeedBackLayout, getString(R.string.linkAmadeusGooglePlayStore));
+        configurarClickLink(R.id.gitHubLayout, getString(R.string.linkAmadeusGitHub));
+        configurarClickLink(R.id.creditosLottieApi1TextView,getString(R.string.link_lottie_api_1));
+        configurarClickLink(R.id.creditosLottieApi2TextView, getString(R.string.link_lottie_api_2));
+    }
+
+    private void carregarTextoVersao() {
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             String versao = getString(R.string.versao) + " " + pInfo.versionName;
@@ -32,33 +51,18 @@ public class SobreActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+    }
 
+    private void configurarClickLink(int viewSelecionada, String link) {
+        (findViewById(viewSelecionada)).setOnClickListener(v -> {
+            Intent intentPlayStore = new Intent(Intent.ACTION_VIEW);
+            intentPlayStore.setData(Uri.parse(link));
+            startActivity(intentPlayStore);
 
-        (findViewById(R.id.irParaYouTubeButton)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent activityAmadeusYouTube = new Intent(Intent.ACTION_VIEW);
-                activityAmadeusYouTube.setData(Uri.parse(linkPlaylistAmadeusYouTube));
-                startActivity(activityAmadeusYouTube);
-
-            }
-        });
-
-        findViewById(R.id.licencaCodigoTextView).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(SobreActivity.this, OssLicensesMenuActivity.class));
-
-            }
-        });
-
-        findViewById(R.id.lincencaAnimacoesTextView).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intentActivtyAnimcaoes = new Intent(SobreActivity.this, LicencaAnimacoesActivity.class);
-                startActivity(intentActivtyAnimcaoes);
-            }
         });
     }
 
+    private void configurarClikLicencas() {
+        findViewById(R.id.licencaCodigoLayout).setOnClickListener(v -> startActivity(new Intent(SobreActivity.this, OssLicensesMenuActivity.class)));
+    }
 }

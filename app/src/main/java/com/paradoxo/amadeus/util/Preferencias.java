@@ -7,40 +7,36 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class Preferencias {
     private static final String PREFS_USU = "PrefsUsu";
-    private Context context;
-
-    public Preferencias(Context context) {
-        this.context = context;
-    }
+    public static final String PREF_JA_FOI_ABERTO = "ja_foi_aberto";
 
     public static void confirmarAberturaApp(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
         SharedPreferences.Editor mEditor = sharedPreferences.edit();
-        mEditor.putBoolean("ja_foi_aberto", true);
+        mEditor.putBoolean(PREF_JA_FOI_ABERTO,true);
         mEditor.apply();
     }
 
     public static boolean appJaFoiAberto(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
-        return sharedPreferences.getBoolean("ja_foi_aberto", false);
+        return sharedPreferences.getBoolean(PREF_JA_FOI_ABERTO, false);
     }
 
-    private void setPrefBool(String nomeShared, boolean valor) {
+    public static void setPrefBool(String nomeShared, boolean valor, Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
         SharedPreferences.Editor mEditor = sharedPreferences.edit();
         mEditor.putBoolean(nomeShared, valor);
         mEditor.apply();
     }
 
-    private boolean getPrefBool(String nomePref) {
+    public static boolean getPrefBool(String nomePref, Context context, boolean valorPadrao) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
-        return sharedPreferences.getBoolean(nomePref, false);
+        return sharedPreferences.getBoolean(nomePref, valorPadrao);
     }
 
-    public static void setPrefString(String textoShared, String nomeShared, Context context) {
+    public static void setPrefString(String conteudoShared, String nomeShared, Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
         SharedPreferences.Editor mEditor = sharedPreferences.edit();
-        mEditor.putString(nomeShared, textoShared);
+        mEditor.putString(nomeShared, conteudoShared);
         mEditor.apply();
     }
 
@@ -48,4 +44,17 @@ public class Preferencias {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
         return sharedPreferences.getString(nomeShared, "");
     }
+
+    public static Long getPrefLong(String nomeShared, Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
+        return sharedPreferences.getLong(nomeShared, 0);
+    }
+
+    public static void setPrefLong(String nomeShared, long valorShared, Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_USU, MODE_PRIVATE);
+        SharedPreferences.Editor mEditor = sharedPreferences.edit();
+        mEditor.putLong(nomeShared, valorShared);
+        mEditor.apply();
+    }
+
 }

@@ -11,7 +11,6 @@ public class Musica {
     }
 
     public Musica() {
-
     }
 
     public String getNome() {

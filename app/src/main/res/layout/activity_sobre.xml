@@ -1,104 +1,263 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:ignore="UselessParent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="@dimen/margem_activity">
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="@dimen/item_lista">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textColor="@color/cinza9"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/versaoTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/cinza3" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margem_activity"
-                android:text="@string/app_dev"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textColor="@color/cinza9"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_dev1"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-                android:textColor="@color/cinza3" />
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:autoLink="web"
-                android:text="@string/texto_sobre"
-                android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/cinza5" />
-
-
-            <Button
-                android:id="@+id/irParaYouTubeButton"
+            <LinearLayout
+                android:id="@+id/configPrimariaLayout"
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/nav_header_vertical_spacing"
-                android:minHeight="72dp"
-                android:text="@string/ir_yt"
-                android:textColor="@color/colorPrimaryDark"
-                app:fontFamily="sans-serif-medium" />
+                android:gravity="center_vertical"
+                android:minHeight="172dp"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/licencaCodigoTextView"
-                style="?attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorSecondaryDark3"
+                        android:textSize="22sp"
+                        android:text="@string/app_name"/>
+
+                    <TextView
+                        android:id="@+id/versaoTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        tools:text="Versão 2.0"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="16sp"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:text="@string/paradoxo_studios_junior_obom"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:background="@color/borda_card" />
+
+            <LinearLayout
+                android:id="@+id/irParaYouTubeLayout"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clickable="true"
-                android:padding="@dimen/nav_header_vertical_spacing"
-                android:text="@string/licencas"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@color/azul_link" />
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/item_menu"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/lincencaAnimacoesTextView"
-                style="?attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_youtube"
+
+                        android:textColor="@color/gray_900"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/veja_a_serie_no_yt"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/enviarFeedBackLayout"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clickable="true"
-                android:padding="@dimen/nav_header_vertical_spacing"
-                android:text="@string/licencas_animacoes"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@color/azul_link" />
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/item_menu"
+                android:orientation="horizontal">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/feedback"
+                        android:textColor="@color/gray_900"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/conte_o_que_achou"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/gitHubLayout"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/item_menu"
+                android:orientation="horizontal">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/codigo_aberto"
+                        android:textColor="@color/gray_900"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/o_codigo_por_tras_de_tudo_isso"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:background="@color/borda_card" />
+
+            <LinearLayout
+                android:id="@+id/licencaCodigoLayout"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/item_menu"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/licencas"
+                        android:textColor="@color/gray_900"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginTop="@dimen/text_margin"
+                android:layout_marginStart="@dimen/text_margin_double"
+                android:layout_marginEnd="@dimen/text_margin_double"
+                android:layout_marginBottom="@dimen/text_margin_double"
+                android:minHeight="@dimen/item_menu"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/padding_bottom_card"
+                    android:text="@string/licencas_animacoes"
+                    android:textColor="@color/gray_900"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/creditosLottieApi1TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:paddingTop="@dimen/spacing_smlarge"
+                    android:paddingEnd="@dimen/spacing_smlarge"
+                    android:paddingRight="@dimen/spacing_smlarge"
+                    android:paddingBottom="@dimen/spacing_smlarge"
+                    android:text="@string/creditos_lottie_api_1"
+                    android:textColor="@color/azul_link"
+                    android:textSize="14sp"
+                    tools:ignore="RtlSymmetry" />
+
+                <TextView
+                    android:id="@+id/creditosLottieApi2TextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:paddingTop="@dimen/spacing_smlarge"
+                    android:paddingEnd="@dimen/spacing_smlarge"
+                    android:paddingRight="@dimen/spacing_smlarge"
+                    android:paddingBottom="@dimen/spacing_smlarge"
+                    android:text="@string/creditos_lottie_api_2"
+                    android:textColor="@color/azul_link"
+                    android:textSize="14sp"
+                    tools:ignore="RtlSymmetry" />
+
+
+            </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
 
-</LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,13 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AutorDAO {
-    
+
     private static BDGateway bdGateway;
 
     private static final String TABELA_AUTOR = "Autor";
-    
+
     public AutorDAO(Context context) {
         bdGateway = BDGateway.getInstance(context);
+    }
+
+    public long inserirAutor(Autor autor) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("nome", autor.getNome());
+
+        return bdGateway.getDatabase().insert(TABELA_AUTOR, null, contentValues);
     }
 
     public void alterar(Autor autor) {
@@ -50,6 +57,11 @@ public class AutorDAO {
         }
         cursor.close();
         return autor;
+    }
+
+    public void deletarTodosAutores() {
+        bdGateway.getDatabase().delete(TABELA_AUTOR, null, null);
+        bdGateway.getDatabase().execSQL("delete from sqlite_sequence where name='autor'");
     }
 
 }

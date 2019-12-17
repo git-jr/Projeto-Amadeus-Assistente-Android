@@ -1,0 +1,188 @@
+[
+  {
+    "acaoEnum": "ABRIR_APRENDIZADO",
+    "gatilhos": [
+      "abrir aprendizado",
+      "abra o aprendizado"
+    ]
+  },
+  {
+    "acaoEnum": "ABRIR_ACOES",
+    "gatilhos": [
+      "comandos",
+      "abrir ações",
+      "abrir comandos",
+      "o que você pode fazer"
+    ]
+  },
+  {
+    "acaoEnum": "APP",
+    "gatilhos": [
+      "abrir",
+      "abra o",
+      "abra a",
+      "abra o app",
+      "abra aplicativo",
+      "abrir aplicativo",
+      "abra o aplicativo",
+      "iniciar aplicativo",
+      "iniciar o aplicativo"
+    ]
+  },
+  {
+    "acaoEnum": "MUSICA",
+    "gatilhos": [
+      "tocar",
+      "toque",
+      "ouvir música",
+      "toque uma música",
+      "tocar uma música",
+      "ouvir uma música"
+    ]
+  },
+  {
+    "acaoEnum": "PARAR_MUSICA",
+    "gatilhos": [
+      "parar música",
+      "pare a música"
+    ]
+  },
+  {
+    "acaoEnum": "PROXIMA_MUSICA",
+    "gatilhos": [
+      "outra",
+      "essa não",
+      "toque outra",
+      "proxima música",
+      "toque outra música"
+    ]
+  },
+  {
+    "acaoEnum": "SABER_HORA",
+    "gatilhos": [
+      "hora atual",
+      "saber hora",
+      "que horas são",
+      "que hora é agora"
+    ]
+  },
+  {
+    "acaoEnum": "SABER_DATA",
+    "gatilhos": [
+      "saber data",
+      "data de hoje",
+      "que dia é hoje",
+      "qual a data de hoje"
+    ]
+  },
+  {
+    "acaoEnum": "CUMPRIMENTAR",
+    "gatilhos": [
+      "ola",
+      "olá",
+      "oi",
+      "hi",
+      "iai",
+      "iae",
+      "opa"
+    ]
+  },
+  {
+    "acaoEnum": "DESPEDIR",
+    "gatilhos": [
+      "flw",
+      "adeus",
+      "tchau",
+      "até mais",
+      "até logo"
+    ]
+  },
+  {
+    "acaoEnum": "SAUDAR",
+    "gatilhos": [
+      "bom dia",
+      "boa tarde",
+      "boa noite",
+      "boa madrugada"
+    ]
+  },
+  {
+    "acaoEnum": "STATUS",
+    "gatilhos": [
+      "como vai",
+      "tudo bem",
+      "como você está",
+      "você está bem"
+    ]
+  },
+  {
+    "acaoEnum": "TESTE",
+    "gatilhos": [
+      "teste",
+      "testes",
+      "testando",
+      "1 2 testando",
+      "teste 1 2"
+    ]
+  },
+  {
+    "acaoEnum": "AGRADECER",
+    "gatilhos": [
+      "obg",
+      "vlw",
+      "valeu",
+      "obrigado",
+      "obrigada",
+      "muito obrigado",
+      "muito obrigada"
+    ]
+  },
+  {
+    "acaoEnum": "PREVER_TEMPO",
+    "gatilhos": [
+      "vai chover",
+      "vai esfriar",
+      "vai esquentar",
+      "vai chover hoje",
+      "vai chover amanhã",
+      "previsão do tempo",
+      "qual a previsão do tempo"
+    ]
+  },
+  {
+    "acaoEnum": "APRESENTAR_IA",
+    "gatilhos": [
+      "oq é você",
+      "oq você é",
+      "você é oq",
+      "quem é você",
+      "você é o que",
+      "o que é você",
+      "o que você é"
+    ]
+  },
+  {
+    "acaoEnum": "DIZER_NOME_IA",
+    "gatilhos": [
+      "diga seu nome",
+      "qual seu nome",
+      "qual é seu nome",
+      "qual o seu nome",
+      "qual é o seu nome",
+      "como você se chama"
+    ]
+  },
+  {
+    "acaoEnum": "DIZER_NOME_USU",
+    "gatilhos": [
+      "quem sou eu",
+      "diga meu nome",
+      "qual meu nome",
+      "qual o meu nome",
+      "qual é meu nome",
+      "como eu me chamo",
+      "qual é o meu nome"
+    ]
+  }
+]
+

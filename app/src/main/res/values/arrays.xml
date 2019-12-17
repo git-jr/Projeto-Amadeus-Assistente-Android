@@ -1,4 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="resposta_nao_localizada">
+        <item>Desculpe, ainda estou em beta e não entendo algumas coisas</item>
+        <item>Não sei o que dizer sobre isso</item>
+        <item>Não sei o que responder</item>
+        <item>Não tenho resposta para isso</item>
+        <item>Não entendi</item>
+    </string-array>
+
+
+    <string-array name="saudacoes_primarias">
+        <item>bom dia</item>
+        <item>boa noite</item>
+        <item>boa tarde</item>
+        <item>boa madrugada</item>
+    </string-array>
+
+    <string-array name="saudacoes_secundarias">
+        <item>bem vindo de volta</item>
+        <item>olá de novo</item>
+        <item>olá novamente</item>
+    </string-array>
+
+    <string-array name="cumprimentos">
+        <item>Olá</item>
+        <item>Oi</item>
+        <item>Olá, tudo bem?</item>
+        <item>Oi, como vai?</item>
+        <item>Oi, tudo bem?</item>
+        <item>Olá, como vai?</item>
+    </string-array>
+
+    <string-array name="despedidas">
+        <item>Tchau</item>
+        <item>Até mais</item>
+        <item>Até logo</item>
+    </string-array>
+
+    <string-array name="apresenta_ia">
+        <item>Meu nome é %s, sou uma inteligência artificial criada para auxiliar em tarefas diárias</item>
+        <item>%s, uma inteligência artificial criada para auxiliar a humanidade</item>
+        <item>Definir quem é eu sou é um pouco complicado, mas por hora basta saber que me chamo %s e estou aqui para ajudar</item>
+        <item>Meu nome é %s estou aqui para ajudar</item>
+    </string-array>
 
 </resources>

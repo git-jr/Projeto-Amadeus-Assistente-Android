@@ -1,0 +1,42 @@
+[
+  {
+    "acao": "SEM_ACAO",
+    "chave": "",
+    "id": 0,
+    "respostas": [],
+    "tipo_item": 5
+  },
+  {
+    "acao": "ABRIR_APRENDIZADO",
+    "chave": "",
+    "id": 0,
+    "respostas": [
+      "Você pode me ensinar mais ou editar o que já sei na tela de aprendizado",
+      "Eu sei a resposta para várias coisas"
+    ],
+    "tipo_item": 3
+  },
+
+  {
+    "acao": "ABRIR_ACOES",
+    "chave": "",
+    "id": 0,
+    "respostas": [
+      "Para ver meus comandos que chamamos de Ações aqui, vá para Ações",
+      "Também sei fazer várias coisas"
+    ],
+    "tipo_item": 3
+  },
+
+  {
+    "acao": "AMADEUS_PLAY_STORE",
+    "chave": "",
+    "id": 0,
+    "respostas": [
+      "Nos avalie na Google Play Store e deixe seu comentário",
+      "Que dar uma ideia para o app?"
+    ],
+    "tipo_item": 3
+  }
+
+]

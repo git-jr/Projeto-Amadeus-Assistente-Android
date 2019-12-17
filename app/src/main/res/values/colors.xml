@@ -4,24 +4,22 @@
     <color name="colorPrimaryDark">#D50000</color>
     <color name="colorAccent">#EEEEEE</color>
 
-    <color name="cinza1">#dedede</color>
-    <color name="cinza2">#e6e6e6</color>
-    <color name="cinza3">#909090</color>
-    <color name="cinza4">#999999</color>
-    <color name="cinza5">#606060</color>
-    <color name="cinza6">#666666</color>
-    <color name="cinza7">#37474F</color>
-    <color name="cinza8">#263238</color>
-    <color name="cinza9">#263238</color>
-    <color name="cinza10">#2d2d2d</color>
+    <color name="colorSecondary2">#344955</color>
+    <color name="colorSecondaryDark2">#232F34</color>
+    <color name="colorSecondaryDark3">#290f3e</color>
+
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_400">#BDBDBD</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_900">#212121</color>
+
+
 
     <color name="borda_card">#1F000000</color>
+    <color name="conteudo_card">#797979</color>
 
-    <color name="vermelho">#ff0000</color>
-    <color name="azul_link">#4183E7</color>
-    <color name="gray_200">#EEEEEE</color>
-    <color name="gray_700">#616161</color>
-    <color name="gray_300">#E0E0E0</color>
     <color name="subtitulo">#89000000</color>
 
+    <color name="azul_link">#4183E7</color>
 </resources>

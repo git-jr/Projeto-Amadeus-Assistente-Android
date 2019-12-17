@@ -1,54 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFF"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context=".activity.SplashScreenActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="72dp"
-        android:layout_marginEnd="100dp"
-        android:layout_weight="5"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/item_lista">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:id="@+id/logoAmadeusImageView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:contentDescription="@string/logo_amadeus"
-            app:srcCompat="@drawable/ic_logo_cinza_right" />
-    </LinearLayout>
+            android:src="@drawable/ic_logo_white"
+            android:tint="@color/colorSecondaryDark3"
+            tools:visibility="gone" />
 
+        <RelativeLayout
+            android:id="@+id/progressoLayout"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:padding="@dimen/padding_bottom_card"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="6"
-        android:orientation="vertical">
+            <ProgressBar
+                android:id="@+id/barraProgresso"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="100"
+                android:progressDrawable="@drawable/barra_progresso_cirulo_roxo" />
+
+            <TextView
+                android:id="@+id/progressoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/colorSecondaryDark3"
+                android:textSize="32sp" />
+
+        </RelativeLayout>
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tituloTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/text_margin"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="@string/projeto_amadeus"
+            android:textAlignment="center"
+            android:textColor="@color/colorSecondaryDark3"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/subTituloTextView"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/open_sans_bold"
-            android:text="@string/app_name"
+            android:text="@string/update_pretty"
             android:textAlignment="center"
-            android:textColor="@color/gray_300"
-            android:textSize="32sp" />
+            android:textColor="@color/colorSecondaryDark3"
+            android:alpha="0.9"
+            android:textSize="20sp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:text="@string/beta_pretty"
-            android:textAlignment="center"
-            android:textColor="@color/gray_200"
-            android:textSize="22sp"
-            android:textStyle="bold" />
     </LinearLayout>
 
 </LinearLayout>

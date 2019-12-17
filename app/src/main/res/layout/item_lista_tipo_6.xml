@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutItemComum"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/item_lista"
+    android:layout_margin="@dimen/padding_bottom_card"
+    tools:ignore="UseCompoundDrawables">
+
+
+    <TextView
+        android:id="@+id/tituloTexView"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="8"
+        android:gravity="center_vertical"
+        android:hint="@string/digite_uma_resposta"
+        android:maxLines="1"
+        android:textColor="@color/conteudo_card"
+        android:textSize="16sp"
+        tools:text="sinônimo"
+        android:theme="@style/Widget.AppCompat.Button.Borderless"/>
+
+    <ImageView
+        android:id="@+id/botaoDeletearButton"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/descricao_img_botao_add_resposta"
+        android:padding="@dimen/padding_bottom_card"
+        android:src="@drawable/ic_delete"
+        android:tag="1"
+        android:tint="@color/colorPrimary" />
+</LinearLayout>

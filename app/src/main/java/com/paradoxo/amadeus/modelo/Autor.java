@@ -1,8 +1,8 @@
 package com.paradoxo.amadeus.modelo;
 
 public class Autor {
-    private int id;
-    private String nome;
+    int id;
+    String nome;
 
     public Autor() {
     }

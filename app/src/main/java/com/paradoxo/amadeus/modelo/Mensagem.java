@@ -8,13 +8,13 @@ import java.util.Date;
 
 public class Mensagem {
     private int id;
-    private String conteudo;
-    private Autor autor;
     private Date data;
+    private Autor autor;
+    private AcaoEnum acao;
     private int idResposta;
+    private String conteudo;
     private String conteudo_resposta;
     private boolean progresso = false;
-    private AcaoEnum acao;
 
     public Mensagem() {
     }
@@ -46,6 +46,10 @@ public class Mensagem {
     protected Mensagem(Parcel in) {
         id = in.readInt();
         conteudo = in.readString();
+    }
+
+    public Mensagem(int id){
+        this.id = id;
     }
 
     public Mensagem(String conteudo, String conteudo_resposta) {

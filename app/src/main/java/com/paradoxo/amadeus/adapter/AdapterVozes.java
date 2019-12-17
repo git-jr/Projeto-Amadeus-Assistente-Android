@@ -1,28 +1,22 @@
 package com.paradoxo.amadeus.adapter;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.modelo.Banco;
 import com.paradoxo.amadeus.modelo.Voz;
 
 import java.util.List;
 
-public class AdapterVozes extends RecyclerView.Adapter {
+public class AdapterVozes extends RecyclerView.Adapter<AdapterVozes.ViewHolder> {
 
-    private Context context;
-    private List<Voz> vozes;
-    private final int VIEW_ITEM_TIPO_VOZ = 0;
-    private OnItemClickListener onItemClickListener;
-    private OnItemVerMaisClickListener onItemVerMaisClickListener;
+    List<Voz> vozes;
+    OnItemClickListener onItemClickListener;
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         final View viewCaixaConteudo;
@@ -33,69 +27,37 @@ public class AdapterVozes extends RecyclerView.Adapter {
             textViewCodigo = view.findViewById(R.id.codigoTextView);
             textViewIdioma = view.findViewById(R.id.idiomaTextView);
             textViewNome = view.findViewById(R.id.nomeVozTextView);
-            viewCaixaConteudo = view.findViewById(R.id.caixaConteudoVoz);
+            viewCaixaConteudo = view.findViewById(R.id.layoutItemComum);
         }
-    }
-
-    public void atualizar(int indiceBancoBaixado) {
-        this.notifyItemChanged(indiceBancoBaixado);
-    }
-
-    public void add(Voz voz) {
-        vozes.add(voz);
-        notifyItemInserted(vozes.size());
-    }
-
-    public void deletar(Banco banco, int position) {
-        vozes.remove(banco);
-        notifyItemRemoved(position);
-    }
-
-    public void setOnItemVerMaisClickListener(OnItemVerMaisClickListener onItemVerMaisClickListener) {
-        this.onItemVerMaisClickListener = onItemVerMaisClickListener;
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
     }
 
-    public AdapterVozes(List<Voz> vozes, Context context) {
+    public AdapterVozes(List<Voz> vozes) {
         this.vozes = vozes;
-        this.context = context;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_tipo_voz, parent, false);
+        return new ViewHolder(v);
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ViewHolder viewHolder = null;
-        View v;
-        if (viewType == VIEW_ITEM_TIPO_VOZ) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_tipo_voz, parent, false);
-            return new ViewHolder(v);
-        }
-        return viewHolder;
-    }
-
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         final Voz voz = vozes.get(position);
 
-        if (holder instanceof ViewHolder) {
-            final ViewHolder view = (ViewHolder) holder;
+        if (voz != null) {
 
-            try {
-                view.textViewNome.setText(voz.getNome());
-                view.textViewIdioma.setText(voz.getIdioma());
-                view.textViewCodigo.setText(voz.getCodigo());
+            holder.textViewNome.setText(voz.getNome());
+            holder.textViewIdioma.setText(voz.getIdioma());
+            holder.textViewCodigo.setText(voz.getCodigo());
 
-                view.viewCaixaConteudo.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        onItemClickListener.onItemClickListener(view, position, voz);
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            holder.viewCaixaConteudo.setOnClickListener(view -> onItemClickListener.onItemClickListener(view, position, voz));
+
         }
     }
 
@@ -106,14 +68,15 @@ public class AdapterVozes extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        return VIEW_ITEM_TIPO_VOZ;
-    }
-
-    public interface OnItemVerMaisClickListener {
-        void onItemMaisClickListener(View view, int position, Voz voz);
+        return position;
     }
 
     public interface OnItemClickListener {
         void onItemClickListener(View view, int position, Voz voz);
+    }
+
+    public void add(Voz voz) {
+        vozes.add(voz);
+        notifyItemInserted(vozes.size());
     }
 }

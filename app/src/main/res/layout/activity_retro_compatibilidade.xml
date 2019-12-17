@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.RetroCompatibilidadeActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/item_lista"
+            android:orientation="vertical"
+            android:padding="@dimen/text_margin">
+
+            <LinearLayout
+                android:id="@+id/avisoLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                tools:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/versao_antiga_detectada"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/size_icone_image"
+                        android:layout_marginBottom="@dimen/item_lista"
+                        android:text="@string/banco_redesenhado_explicacao"
+                        android:textColor="@color/subtitulo"
+                        android:textSize="16sp" />
+
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/item_lista"
+                        android:layout_marginTop="@dimen/item_lista"
+                        android:gravity="end|center"
+                        android:orientation="horizontal"
+                        android:layout_margin="@dimen/size_icone_image">
+
+                        <TextView
+                            android:id="@+id/botaoImportar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="@dimen/padding_bottom_card"
+                            android:layout_marginRight="@dimen/padding_bottom_card"
+                            android:gravity="center"
+                            android:paddingStart="@dimen/text_margin"
+                            android:paddingEnd="@dimen/text_margin"
+                            android:textColor="@color/colorPrimary"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:text="@string/imporatr"
+                            style="@style/Widget.AppCompat.Button.Borderless"/>
+
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/botaoNaoImportar"
+                            style="@style/BotaoOkay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:textStyle="bold"
+                            android:theme="@style/BotaoOkay"
+                            app:cornerRadius="5dp"
+                            android:text="@string/nao_imporatr" />
+
+                    </LinearLayout>
+            </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/progressoLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_gravity="center">
+
+            <RelativeLayout
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:padding="@dimen/padding_bottom_card">
+
+                <ProgressBar
+                    android:id="@+id/barraProgresso"
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progressDrawable="@drawable/barra_progresso_cirulo_roxo" />
+
+                <TextView
+                    android:id="@+id/progressoTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/colorSecondaryDark3"
+                    android:textSize="32sp" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/subTituloTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                tools:text="@string/liberando_espaco_do_banco_original"
+                android:textAlignment="center"
+                android:textColor="@color/colorSecondaryDark2"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

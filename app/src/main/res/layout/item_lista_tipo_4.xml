@@ -1,41 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layoutItemComum"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
-    android:maxHeight="@dimen/item_lista"
+    android:minHeight="@dimen/item_lista"
     android:orientation="vertical">
 
-
     <LinearLayout
-        android:layout_gravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="@dimen/text_margin"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/conteudoPerguntaTextView"
+            android:id="@+id/tituloTexView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
-            tools:text="Texto teste"
+            android:lines="1"
+            android:text="@string/suporte"
             android:textColor="@android:color/black"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/conteudoRespostaTextView"
+            android:id="@+id/conteudoTexView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="2"
-            tools:text="Outro texto teste"
+            android:lines="2"
+            android:text="@string/Lorem_ipsum_dolor"
             android:textColor="@color/subtitulo"
             android:textSize="14sp" />
 
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/borda_card" />
 </LinearLayout>

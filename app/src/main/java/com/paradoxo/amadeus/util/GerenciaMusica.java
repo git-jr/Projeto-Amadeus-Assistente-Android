@@ -4,21 +4,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import com.paradoxo.amadeus.modelo.Musica;
+import com.paradoxo.amadeus.modelo.Sentenca;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.greenrobot.eventbus.EventBus;
 
-@SuppressWarnings("WeakerAccess")
 public class GerenciaMusica {
     private Context context;
     private MediaPlayer mediaPlayer;
-    private String musicaAtual;
+
+    public static final String REPRODUZINDO = "Reproduzindo ";
 
     public GerenciaMusica() {
     }
@@ -35,7 +33,7 @@ public class GerenciaMusica {
 
         Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, ordernarAleatorio);
         if (cursor != null) {
-            while (cursor.moveToNext()) {
+            while (!cursor.isClosed() && cursor.moveToNext()) {
                 String caminho = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                 String nomeMusica = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
 
@@ -45,66 +43,27 @@ public class GerenciaMusica {
                         musica.setCaminho(caminho);
                         musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
                         musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                        musicaAtual = musica.getNome();
+                        String musicaAtual = musica.getNome();
                         break;
                     }
                 } else if (aleatorio) {
-                   if(!cursor.isClosed()) cursor.close();
+                    if (!cursor.isClosed()) cursor.close();
                     encontrarMusica(null);
                 }
             }
-            if(!cursor.isClosed()) cursor.close();
+            if (!cursor.isClosed()) cursor.close();
         }
 
         return musica;
-
-    }
-
-    public static List<Musica> listarMusicas(String nomeMusica, Context context) {
-        boolean aleatorio = !nomeMusica.isEmpty();
-        String ordernarAleatorio = aleatorio ? "RANDOM()" : null;
-        List<Musica> musicas = new ArrayList<>();
-        Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, ordernarAleatorio);
-
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                String caminho = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
-
-                if (!caminho.contains("WhatsApp") || !caminho.contains("RecForge") || !caminho.contains("hangouts")) {
-                    Musica musica = new Musica();
-                    musica.setCaminho(caminho);
-                    musica.setNome(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
-                    musica.setCaminho(caminho);
-                    musica.setArtista(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-                    musica.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                    musicas.add(musica);
-                    Log.e("Nome", musica.getNome());
-                    Log.e("Caminho", musica.getCaminho());
-                    if (aleatorio) {
-                        break;
-                    }
-                } else if (aleatorio) {
-                    listarMusicas(nomeMusica, context);
-                }
-            }
-        }
-        cursor.close();
-        return musicas;
     }
 
     public void configurarMediPlayer(final Musica musica) {
         pararMusicaSeEstiverTocando();
         mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                Log.e("A música", "Acabou");
-            }
-        });
+        mediaPlayer.setOnCompletionListener(mediaPlayer -> Log.e("A música", "Acabou"));
 
         try {
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
             try {
                 mediaPlayer.setDataSource(musica.getCaminho());
             } catch (Exception e) {
@@ -113,13 +72,7 @@ public class GerenciaMusica {
             }
 
             mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    tocarMusica(musica);
-                }
-            });
-
+            mediaPlayer.setOnPreparedListener(mp -> tocarMusica(musica));
 
         } catch (Exception e) {
             Log.e("A música", "Não pode ser reproduzida");
@@ -129,10 +82,10 @@ public class GerenciaMusica {
     private void tocarMusica(Musica musica) {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
-
         } else {
             mediaPlayer.start();
-            Log.e("Reproduzindo ", musica.getNome());
+            Log.e(REPRODUZINDO, musica.getNome());
+            notificarOutput(REPRODUZINDO + musica.getNome());
         }
     }
 
@@ -146,11 +99,8 @@ public class GerenciaMusica {
         return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
-    public String getMusicaAtual() {
-        return musicaAtual;
-    }
-
-    public void setMusicaAtual(String musicaAtual) {
-        this.musicaAtual = musicaAtual;
+    private static void notificarOutput(String mensagem) {
+        Sentenca sentenca = new Sentenca(mensagem);
+        EventBus.getDefault().post(sentenca);
     }
 }
