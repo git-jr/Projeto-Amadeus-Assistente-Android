@@ -1,14 +1,29 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Material Components exige tema Material (não apenas AppCompat) para TextInputLayout, MaterialButton, etc. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <!-- Android 15 (API 35): evita edge-to-edge obrigatório e sobreposição com status/navigation bar. -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
-    <style name="Theme.AppCompat.Light.NoActionBar.Transparent">
-        <item name="colorPrimaryDark">@android:color/darker_gray</item>
+    <!-- Nome histórico "Transparent"; janela é opaca (fundo branco) para não exigir background em cada layout. -->
+    <style name="Theme.AppCompat.Light.NoActionBar.Transparent" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@android:color/darker_gray</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
     <style name="TextAppearance.App.Hint.Personalizado" parent="@android:style/TextAppearance">

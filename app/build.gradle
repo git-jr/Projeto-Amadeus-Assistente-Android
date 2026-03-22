@@ -1,17 +1,22 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+    id 'com.google.android.gms.oss-licenses-plugin'
+}
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.1"
+    namespace 'com.paradoxo.amadeus'
+    compileSdk 35
+
     defaultConfig {
         applicationId "com.paradoxo.amadeus"
-        minSdkVersion 16
-        targetSdkVersion 29
-        versionCode 23
-        versionName "2.0.0"
+        minSdk 21
+        targetSdk 35
+        versionCode 25
+        versionName "3.0.0-beta-01"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -21,38 +26,40 @@ android {
             debuggable true
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation 'com.google.android.material:material:1.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'org.jsoup:jsoup:1.11.2'
+    implementation 'com.google.android.material:material:1.12.0'
 
-    implementation 'com.google.guava:guava:28.0-jre'
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'org.jsoup:jsoup:1.18.1'
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
-    implementation 'joda-time:joda-time:2.9.4'
-    implementation 'com.airbnb.android:lottie:2.8.0'
+    implementation 'com.google.guava:guava:33.3.1-android'
 
-    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
+    implementation 'joda-time:joda-time:2.13.0'
+    implementation 'com.airbnb.android:lottie:6.6.0'
 
-    implementation 'com.google.firebase:firebase-database:19.2.0'
-    implementation 'com.google.firebase:firebase-messaging:20.1.0'
-    implementation 'com.google.firebase:firebase-storage:19.1.0'
-    implementation 'com.google.firebase:firebase-analytics:17.2.1'
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
+
+    implementation platform('com.google.firebase:firebase-bom:33.5.1')
+    implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.google.firebase:firebase-analytics'
 }
-apply plugin: 'com.google.gms.oss.licenses.plugin'
-apply plugin: 'com.google.gms.google-services'
