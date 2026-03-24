@@ -1,200 +1,168 @@
-package com.paradoxo.amadeus.activity;
+package com.paradoxo.amadeus.activity
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Vibrator;
-import android.util.Log;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.os.AsyncTask
+import android.os.Bundle
+import android.os.Vibrator
+import android.util.Log
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
+import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.adapter.AdapterSimplesEntidade
+import com.paradoxo.amadeus.dao.EntidadeDAO
+import com.paradoxo.amadeus.fragments.DialogSimples
+import com.paradoxo.amadeus.modelo.Entidade
+import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
-import com.google.gson.Gson;
-import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.adapter.AdapterSimplesEntidade;
-import com.paradoxo.amadeus.dao.EntidadeDAO;
-import com.paradoxo.amadeus.fragments.DialogSimples;
-import com.paradoxo.amadeus.modelo.Entidade;
+    companion object {
+        var textoBusca: String? = null
+        var limiteCarregarItensRecycler: Long = 0
+        var adapterSimples: AdapterSimplesEntidade? = null
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+        const val LIMITE_ITENS_PADRAO = 100L
 
-import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
+        private fun atualizarRecycler(entidades: List<Entidade>) {
+            try {
+                adapterSimples?.addAll(entidades.subList(adapterSimples!!.itemCount, limiteCarregarItensRecycler.toInt()))
+            } catch (e: Exception) {
+                adapterSimples?.addAll(entidades.subList(adapterSimples!!.itemCount, entidades.size))
+            }
+        }
 
-public class ListaEntidadeActivity extends AppCompatActivity implements DialogSimples.FragmentDialogInterface {
+        @Suppress("DEPRECATION")
+        private fun carregaSentencaBanco(context: Activity) {
+            object : AsyncTask<Void?, Void?, List<Entidade>>() {
+                override fun onPreExecute() {
+                    super.onPreExecute()
+                    limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
+                }
 
-    static String textoBusca;
-    static long limiteCarregarItensRecycler;
-    static AdapterSimplesEntidade adapterSimples;
+                override fun doInBackground(vararg voids: Void?): List<Entidade> {
+                    val entidadeDAO = EntidadeDAO(context)
+                    return if (textoBusca.isNullOrEmpty()) {
+                        entidadeDAO.listar(limiteCarregarItensRecycler)
+                    } else {
+                        limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
+                        entidadeDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler)
+                    }
+                }
 
-    static final long LIMITE_ITENS_PADRAO = 100;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_sentencas);
-
-        configurarIterface();
+                override fun onPostExecute(entidades: List<Entidade>) {
+                    super.onPostExecute(entidades)
+                    if (textoBusca.isNullOrEmpty()) {
+                        atualizarRecycler(entidades)
+                    } else {
+                        adapterSimples?.trocarLista(entidades)
+                    }
+                }
+            }.execute()
+        }
     }
 
-    private void configurarBotaoAdicionar() {
-        findViewById(R.id.adicionarButton).setOnClickListener(view -> {
-            startActivity(new Intent(getApplicationContext(), EditarItemEntidadeNovoActivity.class));
-            finish();
-        });
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_lista_sentencas)
+        configurarIterface()
     }
 
-    private void configurarBotaoBusca() {
-        ((EditText) findViewById(R.id.buscaSentencaEditText)).setOnEditorActionListener((textView, actionId, keyEvent) -> {
+    private fun configurarIterface() {
+        configurarToolBarBranca(this)
+        configurarRecycler()
+        configurarBotaoAdicionar()
+        configurarBotaoBusca()
+    }
+
+    private fun configurarBotaoAdicionar() {
+        findViewById<android.view.View>(R.id.adicionarButton).setOnClickListener {
+            startActivity(Intent(applicationContext, EditarItemEntidadeNovoActivity::class.java))
+            finish()
+        }
+    }
+
+    private fun configurarBotaoBusca() {
+        (findViewById<EditText>(R.id.buscaSentencaEditText)).setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                textoBusca = textView.getText().toString().trim();
-                carregaSentencaBanco(this);
-                return true;
+                textoBusca = textView.text.toString().trim()
+                carregaSentencaBanco(this)
+                true
+            } else {
+                false
             }
-            return false;
-        });
-    }
-
-    private static void atualizarRecycler(List<Entidade> entidades) {
-        try {
-            adapterSimples.addAll(entidades.subList(adapterSimples.getItemCount(), ((int) limiteCarregarItensRecycler)));
-        } catch (Exception e) {
-            adapterSimples.addAll(entidades.subList(adapterSimples.getItemCount(), entidades.size()));
-        }
-
-    }
-
-    private void configurarIterface() {
-        configurarToolBarBranca(this);
-        configurarRecycler();
-        configurarBotaoAdicionar();
-        configurarBotaoBusca();
-    }
-
-    private void configurarRecycler() {
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-
-        List<Entidade> entidades = new ArrayList<>();
-        adapterSimples = new AdapterSimplesEntidade(entidades);
-        recyclerView.setAdapter(adapterSimples);
-
-        carregaSentencaBanco(this);
-
-        adapterSimples.setOnItemClickListener((view, entidade, pos) -> {
-            Log.e("nome", String.valueOf(entidade.getNome()));
-
-            Gson gson = new Gson();
-            Intent intent = new Intent(getApplicationContext(), EditarItemEntidadeNovoActivity.class);
-            intent.putExtra("entidade", gson.toJson(entidade));
-            startActivity(intent);
-            finish();
-
-        });
-
-        adapterSimples.setOnLongClickListener((view, position, entidade) -> {
-            abrirDialogExcluir(position);
-            vibrar();
-        });
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                int posiUltimoItem = Objects.requireNonNull(layoutManager).findLastCompletelyVisibleItemPosition();
-
-                if (posiUltimoItem == limiteCarregarItensRecycler - 1) {
-                    //meuToast("Carregando mais", getApplicationContext());
-                    //Log.e("POSI", String.valueOf(posiUltimoItem));
-                    carregaSentencaBanco(ListaEntidadeActivity.this);
-                }
-
-            }
-        });
-    }
-
-    private void vibrar() {
-        Vibrator vibrator = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
-        long milliseconds = 100;
-        if (vibrator != null) {
-            vibrator.vibrate(milliseconds);
         }
     }
 
-    public void abrirDialogExcluir(int posi) {
-        DialogSimples dialog = DialogSimples.newDialog(
-                "Confirmar exclusão",
-                "Tem certeza que deseja excluir este item?",
-                posi,
-                new int[]{
-                        android.R.string.ok,
-                        android.R.string.cancel});
-        dialog.openDialog(getSupportFragmentManager());
-    }
+    private fun configurarRecycler() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        adapterSimples = AdapterSimplesEntidade(mutableListOf())
+        recyclerView.adapter = adapterSimples
 
-    private void deletarEntidade(int posi) {
-        EntidadeDAO entidadeDAO = new EntidadeDAO(getApplicationContext());
-        entidadeDAO.excluir(adapterSimples.getItens().get(posi));
-        adapterSimples.remove(posi);
-    }
+        carregaSentencaBanco(this)
 
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-    }
-
-    @Override
-    public void onClick(int posi, int which) {
-        switch (which) {
-            case -1:
-                deletarEntidade(posi);
-                break;
-
-            case -2:
-                break;
+        adapterSimples?.setOnItemClickListener { _, entidade, _ ->
+            Log.e("nome", entidade.nome.toString())
+            val gson = Gson()
+            val intent = Intent(applicationContext, EditarItemEntidadeNovoActivity::class.java)
+            intent.putExtra("entidade", gson.toJson(entidade))
+            startActivity(intent)
+            finish()
         }
+
+        adapterSimples?.setOnLongClickListener { _, position, _ ->
+            abrirDialogExcluir(position)
+            vibrar()
+        }
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val posiUltimoItem = layoutManager.findLastCompletelyVisibleItemPosition()
+                if (posiUltimoItem.toLong() == limiteCarregarItensRecycler - 1) {
+                    carregaSentencaBanco(this@ListaEntidadeActivity)
+                }
+            }
+        })
     }
 
-    private static void carregaSentencaBanco(Activity context) {
+    @Suppress("DEPRECATION")
+    private fun vibrar() {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+        vibrator.vibrate(100)
+    }
 
-        new AsyncTask<Void, Void, List<Entidade>>() {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO;
-            }
+    fun abrirDialogExcluir(posi: Int) {
+        val dialog = DialogSimples.newDialog(
+            "Confirmar exclusão",
+            "Tem certeza que deseja excluir este item?",
+            posi,
+            intArrayOf(android.R.string.ok, android.R.string.cancel)
+        )
+        dialog.openDialog(supportFragmentManager)
+    }
 
-            @Override
-            protected List<Entidade> doInBackground(Void... voids) {
-                EntidadeDAO entidadeDAO = new EntidadeDAO(context);
+    private fun deletarEntidade(posi: Int) {
+        val entidadeDAO = EntidadeDAO(applicationContext)
+        entidadeDAO.excluir(adapterSimples!!.itens[posi])
+        adapterSimples?.remove(posi)
+    }
 
-                if (textoBusca == null || textoBusca.isEmpty()) {
-                    return entidadeDAO.listar(limiteCarregarItensRecycler);
-                } else {
-                    limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO;
-                    return entidadeDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler);
-                }
-            }
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    }
 
-            @Override
-            protected void onPostExecute(List<Entidade> entidades) {
-                super.onPostExecute(entidades);
-
-                if (textoBusca == null || textoBusca.isEmpty()) {
-                    atualizarRecycler(entidades);
-                } else {
-                    adapterSimples.trocarLista(entidades);
-                }
-            }
-        }.execute();
+    override fun onClick(posi: Int, which: Int) {
+        when (which) {
+            -1 -> deletarEntidade(posi)
+            -2 -> {}
+        }
     }
 }

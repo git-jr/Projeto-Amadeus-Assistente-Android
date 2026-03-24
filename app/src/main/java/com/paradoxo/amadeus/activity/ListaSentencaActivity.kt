@@ -1,160 +1,137 @@
-package com.paradoxo.amadeus.activity;
+package com.paradoxo.amadeus.activity
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.app.Activity
+import android.content.Intent
+import android.os.AsyncTask
+import android.os.Bundle
+import android.util.Log
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.adapter.AdapterSimples
+import com.paradoxo.amadeus.adapter.SimpleCallbackSentenca
+import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+class ListaSentencaActivity : AppCompatActivity() {
 
-import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.adapter.AdapterSimples;
-import com.paradoxo.amadeus.adapter.SimpleCallbackSentenca;
-import com.paradoxo.amadeus.dao.SentencaDAO;
-import com.paradoxo.amadeus.modelo.Sentenca;
+    companion object {
+        var textoBusca: String? = null
+        var adapterSimples: AdapterSimples? = null
+        var limiteCarregarItensRecycler: Long = 0
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+        private const val LIMITE_ITENS_PADRAO = 100L
 
-import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
-
-public class ListaSentencaActivity extends AppCompatActivity {
-
-    static String textoBusca;
-    static AdapterSimples adapterSimples;
-    static long limiteCarregarItensRecycler;
-
-    private static final long LIMITE_ITENS_PADRAO = 100;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_sentencas);
-
-        configurarIterface();
-    }
-
-    private void configurarBotaoBusca() {
-        ((EditText) findViewById(R.id.buscaSentencaEditText)).setOnEditorActionListener((textView, actionId, keyEvent) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                textoBusca = textView.getText().toString().trim();
-                carregaSentencaBanco(this);
-                return true;
+        private fun atualizarRecycler(sentencas: List<Sentenca>) {
+            try {
+                adapterSimples?.addAll(sentencas.subList(adapterSimples!!.itemCount, limiteCarregarItensRecycler.toInt()))
+            } catch (e: Exception) {
+                adapterSimples?.addAll(sentencas.subList(adapterSimples!!.itemCount, sentencas.size))
             }
-            return false;
-        });
-    }
+        }
 
-    private void configurarBotaoAdicionar() {
-        findViewById(R.id.adicionarButton).setOnClickListener(view -> {
-            startActivity(new Intent(getApplicationContext(), EditarSentencaActivity.class));
-            finish();
-        });
-    }
+        @Suppress("DEPRECATION")
+        private fun carregaSentencaBanco(context: Activity) {
+            object : AsyncTask<Void?, Void?, List<Sentenca>>() {
+                override fun onPreExecute() {
+                    super.onPreExecute()
+                    limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
+                }
 
-    private static void atualizarRecycler(List<Sentenca> sentencas) {
-        try {
-            adapterSimples.addAll(sentencas.subList(adapterSimples.getItemCount(), ((int) limiteCarregarItensRecycler)));
-        } catch (Exception e) {
-            adapterSimples.addAll(sentencas.subList(adapterSimples.getItemCount(), sentencas.size()));
+                override fun doInBackground(vararg voids: Void?): List<Sentenca> {
+                    val sentencaDAO = SentencaDAO(context, false)
+                    return if (textoBusca.isNullOrEmpty()) {
+                        sentencaDAO.listar(limiteCarregarItensRecycler)
+                    } else {
+                        limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
+                        sentencaDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler)
+                    }
+                }
+
+                override fun onPostExecute(sentencas: List<Sentenca>) {
+                    super.onPostExecute(sentencas)
+                    if (textoBusca.isNullOrEmpty()) {
+                        atualizarRecycler(sentencas)
+                    } else {
+                        adapterSimples?.trocarLista(sentencas)
+                    }
+                }
+            }.execute()
         }
     }
 
-    private void configurarIterface() {
-        configurarToolBarBranca(this);
-        configurarRecycler();
-        configurarBotaoAdicionar();
-        configurarBotaoBusca();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_lista_sentencas)
+        configurarIterface()
     }
 
-    private void configurarRecycler() {
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-
-        List<Sentenca> sentencas = new ArrayList<>();
-        adapterSimples = new AdapterSimples(sentencas);
-        recyclerView.setAdapter(adapterSimples);
-
-        carregaSentencaBanco(this);
-
-        adapterSimples.setOnItemClickListener((view, sentenca, pos) -> {
-            Log.e("nome", String.valueOf(sentenca.getChave()));
-            Log.e("tipo", String.valueOf(sentenca.getTipo_item()));
-
-            Intent intent = new Intent(getApplicationContext(), EditarSentencaActivity.class);
-            intent.putExtra("idItem", sentenca.getId());
-            startActivity(intent);
-            finish();
-        });
-
-        adapterSimples.setOnLongClickListener((view, position, mensagem) -> {
-        });
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                int posiUltimoItem = Objects.requireNonNull(layoutManager).findLastCompletelyVisibleItemPosition();
-
-                if (posiUltimoItem == limiteCarregarItensRecycler - 1) {
-                    carregaSentencaBanco(ListaSentencaActivity.this);
-                }
-
-            }
-        });
-
-        ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SimpleCallbackSentenca(adapterSimples, this));
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-
+    private fun configurarIterface() {
+        configurarToolBarBranca(this)
+        configurarRecycler()
+        configurarBotaoAdicionar()
+        configurarBotaoBusca()
     }
 
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    private fun configurarBotaoBusca() {
+        (findViewById<EditText>(R.id.buscaSentencaEditText)).setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                textoBusca = textView.text.toString().trim()
+                carregaSentencaBanco(this)
+                true
+            } else {
+                false
+            }
+        }
     }
 
-    private static void carregaSentencaBanco(Activity context) {
+    private fun configurarBotaoAdicionar() {
+        findViewById<android.view.View>(R.id.adicionarButton).setOnClickListener {
+            startActivity(Intent(applicationContext, EditarSentencaActivity::class.java))
+            finish()
+        }
+    }
 
-        new AsyncTask<Void, Void, List<Sentenca>>() {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO;
-            }
+    private fun configurarRecycler() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        adapterSimples = AdapterSimples(mutableListOf())
+        recyclerView.adapter = adapterSimples
 
-            @Override
-            protected List<Sentenca> doInBackground(Void... voids) {
-                SentencaDAO sentencaDAO = new SentencaDAO(context, false);
+        carregaSentencaBanco(this)
 
-                if (textoBusca == null || textoBusca.isEmpty()) {
-                    return sentencaDAO.listar(limiteCarregarItensRecycler);
-                } else {
-                    limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO;
-                    return sentencaDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler);
+        adapterSimples?.setOnItemClickListener { _, sentenca, _ ->
+            Log.e("nome", sentenca.chave.toString())
+            Log.e("tipo", sentenca.tipo_item.toString())
+            val intent = Intent(applicationContext, EditarSentencaActivity::class.java)
+            intent.putExtra("idItem", sentenca.id)
+            startActivity(intent)
+            finish()
+        }
+
+        adapterSimples?.setOnLongClickListener { _, _, _ -> }
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val posiUltimoItem = layoutManager.findLastCompletelyVisibleItemPosition()
+                if (posiUltimoItem.toLong() == limiteCarregarItensRecycler - 1) {
+                    carregaSentencaBanco(this@ListaSentencaActivity)
                 }
             }
+        })
 
-            @Override
-            protected void onPostExecute(List<Sentenca> sentencas) {
-                super.onPostExecute(sentencas);
+        val itemTouchHelper = ItemTouchHelper(SimpleCallbackSentenca(adapterSimples, this))
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
 
-                if (textoBusca == null || textoBusca.isEmpty()) {
-                    atualizarRecycler(sentencas);
-                } else {
-                    adapterSimples.trocarLista(sentencas);
-                }
-            }
-        }.execute();
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 }

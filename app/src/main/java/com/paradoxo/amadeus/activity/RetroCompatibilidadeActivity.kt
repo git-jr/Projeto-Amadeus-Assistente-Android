@@ -1,146 +1,122 @@
-package com.paradoxo.amadeus.activity;
+package com.paradoxo.amadeus.activity
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.app.Activity
+import android.content.Intent
+import android.os.AsyncTask
+import android.os.Bundle
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.dao.AutorDAO
+import com.paradoxo.amadeus.dao.MensagemDAO
+import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.enums.AcaoEnum
+import com.paradoxo.amadeus.enums.ItemEnum
+import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.util.Animacoes
+import com.paradoxo.amadeus.util.Toasts.meuToast
+import com.paradoxo.amadeus.util.Toasts.meuToastLong
+import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
-import androidx.appcompat.app.AppCompatActivity;
+class RetroCompatibilidadeActivity : AppCompatActivity() {
 
-import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.dao.AutorDAO;
-import com.paradoxo.amadeus.dao.MensagemDAO;
-import com.paradoxo.amadeus.dao.SentencaDAO;
-import com.paradoxo.amadeus.enums.AcaoEnum;
-import com.paradoxo.amadeus.enums.ItemEnum;
-import com.paradoxo.amadeus.modelo.Mensagem;
-import com.paradoxo.amadeus.modelo.Sentenca;
-import com.paradoxo.amadeus.util.Animacoes;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.paradoxo.amadeus.util.Toasts.meuToast;
-import static com.paradoxo.amadeus.util.Toasts.meuToastLong;
-import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
-
-public class RetroCompatibilidadeActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_retro_compatibilidade);
-
-        configurarToolBarBranca(this);
-
-        configurarBotaoImportar();
-        configurarBotaoNaoImportar();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_retro_compatibilidade)
+        configurarToolBarBranca(this)
+        configurarBotaoImportar()
+        configurarBotaoNaoImportar()
     }
 
-    private void configurarBotaoImportar() {
-        findViewById(R.id.botaoImportar).setOnClickListener(view -> importarBancoAntigo(this));
+    private fun configurarBotaoImportar() {
+        findViewById<android.view.View>(R.id.botaoImportar).setOnClickListener { importarBancoAntigo(this) }
     }
 
-    private void configurarBotaoNaoImportar() {
-        findViewById(R.id.botaoNaoImportar).setOnClickListener(view -> voltarParaSplahScreen(this));
+    private fun configurarBotaoNaoImportar() {
+        findViewById<android.view.View>(R.id.botaoNaoImportar).setOnClickListener { voltarParaSplahScreen(this) }
     }
 
-    private static void voltarParaSplahScreen(Activity context) {
+    companion object {
+        private fun voltarParaSplahScreen(context: Activity) {
+            val mensagemDAO = MensagemDAO(context)
+            mensagemDAO.deletarTodasMensagens()
 
-        MensagemDAO mensagemDAO = new MensagemDAO(context);
-        mensagemDAO.deletarTodasMensagens();
+            val autorDAO = AutorDAO(context)
+            autorDAO.deletarTodosAutores()
 
-        AutorDAO autorDAO = new AutorDAO(context);
-        autorDAO.deletarTodosAutores();
+            context.startActivity(Intent(context, SplashScreenActivity::class.java))
+            context.finish()
+        }
 
-        context.startActivity(new Intent(context, SplashScreenActivity.class));
-        context.finish();
-    }
+        private fun trocarTextoPreCarregamentoBanco(context: Activity) {
+            (context.findViewById<TextView>(R.id.subTituloTextView)).setText(R.string.importando_banco)
+            Animacoes.animarComFade(context.findViewById(R.id.avisoLayout), false)
+            Animacoes.animarComFade(context.findViewById(R.id.progressoLayout), true)
+        }
 
-    private static void trocarTextoPreCarregamentoBanco(Activity context) {
-        ((TextView) context.findViewById(R.id.subTituloTextView)).setText(R.string.importando_banco);
-
-        Animacoes.animarComFade(context.findViewById(R.id.avisoLayout), false);
-        Animacoes.animarComFade(context.findViewById(R.id.progressoLayout), true);
-    }
-
-    private static void importarBancoAntigo(Activity context) {
-
-        new AsyncTask<Void, Integer, Boolean>() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                trocarTextoPreCarregamentoBanco(context);
-            }
-
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-                try {
-                    MensagemDAO mensagemDAO = new MensagemDAO(context);
-                    List<Mensagem> mensagens = mensagemDAO.listarRespostasCompleto();
-                    List<Sentenca> sentencas = new ArrayList<>();
-
-                    int progressoTotal = mensagens.size() * 2;
-                    int progressoAtual = 0;
-
-                    int idItemIa = ItemEnum.IA.ordinal();
-
-                    for (Mensagem mensagem : mensagens) {
-                        Sentenca sentenca = new Sentenca();
-                        sentenca.setAcao(AcaoEnum.SEM_ACAO);
-                        sentenca.setTipo_item(idItemIa);
-                        sentenca.setChave(mensagem.getConteudo());
-                        sentenca.addResposta(mensagem.getConteudo_resposta());
-
-                        sentencas.add(sentenca);
-
-                        progressoAtual++;
-                        this.publishProgress((int) ((progressoAtual / (float) progressoTotal) * 100));
-                    }
-
-
-                    SentencaDAO sentencaDAO = new SentencaDAO(context, false);
-                    for (Sentenca sentenca : sentencas) {
-                        sentencaDAO.inserir(sentenca);
-
-                        progressoAtual++;
-                        this.publishProgress((int) ((progressoAtual / (float) progressoTotal) * 100));
-                    }
-
-
-                    return true;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
+        @Suppress("DEPRECATION")
+        private fun importarBancoAntigo(context: Activity) {
+            object : AsyncTask<Void?, Int, Boolean>() {
+                override fun onPreExecute() {
+                    super.onPreExecute()
+                    trocarTextoPreCarregamentoBanco(context)
                 }
 
-            }
+                override fun doInBackground(vararg voids: Void?): Boolean {
+                    return try {
+                        val mensagemDAO = MensagemDAO(context)
+                        val mensagens = mensagemDAO.listarRespostasCompleto()
+                        val sentencas = mutableListOf<Sentenca>()
 
-            @Override
-            protected void onPostExecute(Boolean bancoInserido) {
-                super.onPostExecute(bancoInserido);
-                if (bancoInserido) {
-                    voltarParaSplahScreen(context);
-                } else {
-                    meuToast("Erro ao importar o banco de dados anterior", context);
-                    meuToastLong("Reinicie o app", context);
+                        val progressoTotal = mensagens.size * 2
+                        var progressoAtual = 0
+                        val idItemIa = ItemEnum.IA.ordinal
+
+                        for (mensagem in mensagens) {
+                            val sentenca = Sentenca()
+                            sentenca.acao = AcaoEnum.SEM_ACAO
+                            sentenca.tipo_item = idItemIa
+                            sentenca.chave = mensagem.conteudo
+                            sentenca.addResposta(mensagem.conteudo_resposta)
+                            sentencas.add(sentenca)
+
+                            progressoAtual++
+                            publishProgress(((progressoAtual / progressoTotal.toFloat()) * 100).toInt())
+                        }
+
+                        val sentencaDAO = SentencaDAO(context, false)
+                        for (sentenca in sentencas) {
+                            sentencaDAO.inserir(sentenca)
+                            progressoAtual++
+                            publishProgress(((progressoAtual / progressoTotal.toFloat()) * 100).toInt())
+                        }
+
+                        true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
-            }
 
-            @Override
-            protected void onProgressUpdate(Integer... values) {
-                super.onProgressUpdate(values);
-                Integer porcentagemProgresso = values[0];
-                String progressoAtual = porcentagemProgresso + "%";
+                override fun onPostExecute(bancoInserido: Boolean) {
+                    super.onPostExecute(bancoInserido)
+                    if (bancoInserido) {
+                        voltarParaSplahScreen(context)
+                    } else {
+                        meuToast("Erro ao importar o banco de dados anterior", context)
+                        meuToastLong("Reinicie o app", context)
+                    }
+                }
 
-                ((TextView) context.findViewById(R.id.progressoTextView)).setText(progressoAtual);
-                ((ProgressBar) context.findViewById(R.id.barraProgresso)).setProgress(porcentagemProgresso);
-
-            }
-        }.execute();
+                override fun onProgressUpdate(vararg values: Int?) {
+                    super.onProgressUpdate(*values)
+                    val porcentagemProgresso = values[0] ?: 0
+                    val progressoAtual = "$porcentagemProgresso%"
+                    (context.findViewById<TextView>(R.id.progressoTextView)).text = progressoAtual
+                    (context.findViewById<ProgressBar>(R.id.barraProgresso)).progress = porcentagemProgresso
+                }
+            }.execute()
+        }
     }
-
 }

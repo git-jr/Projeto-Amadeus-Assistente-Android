@@ -1,284 +1,253 @@
-package com.paradoxo.amadeus.activity;
+package com.paradoxo.amadeus.activity
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
+import android.app.Activity
+import android.app.Dialog
+import android.content.Intent
+import android.graphics.Color
+import android.os.AsyncTask
+import android.os.Bundle
+import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.gson.Gson
+import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.adapter.AdapterSinonimos
+import com.paradoxo.amadeus.dao.EntidadeDAO
+import com.paradoxo.amadeus.fragments.DialogSimples
+import com.paradoxo.amadeus.modelo.Entidade
+import com.paradoxo.amadeus.util.Toasts.meuToast
+import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.Util.esconderTeclado
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
+class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.gson.Gson;
-import com.paradoxo.amadeus.R;
-import com.paradoxo.amadeus.adapter.AdapterSinonimos;
-import com.paradoxo.amadeus.dao.EntidadeDAO;
-import com.paradoxo.amadeus.fragments.DialogSimples;
-import com.paradoxo.amadeus.modelo.Entidade;
+    private var modificado = false
 
-import java.util.ArrayList;
-import java.util.List;
+    companion object {
+        var entidadeEmUso: Entidade? = null
+        var adapter: AdapterSinonimos? = null
+        var entradaEditText: TextInputEditText? = null
 
-import static com.paradoxo.amadeus.util.Toasts.meuToast;
-import static com.paradoxo.amadeus.util.Util.configurarToolBarBranca;
-import static com.paradoxo.amadeus.util.Util.esconderTeclado;
+        private fun atualizarRecycler(sinonimos: List<String>) {
+            adapter?.addAll(sinonimos)
+        }
 
-public class EditarItemEntidadeNovoActivity extends AppCompatActivity implements DialogSimples.FragmentDialogInterface {
+        private fun finalizarActivity(context: Activity) {
+            context.startActivity(Intent(context, ListaEntidadeActivity::class.java))
+            context.finish()
+        }
 
-    boolean modificado;
-    static Entidade entidadeEmUso;
-    static AdapterSinonimos adapter;
-    static TextInputEditText entradaEditText;
+        @Suppress("DEPRECATION")
+        private fun carregarEntidade(context: Activity) {
+            object : AsyncTask<Void?, Void?, Entidade?>() {
+                override fun doInBackground(vararg voids: Void?): Entidade? {
+                    val gson = Gson()
+                    entidadeEmUso = gson.fromJson(context.intent.getStringExtra("entidade"), Entidade::class.java)
+                    return entidadeEmUso
+                }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editar_item_novo);
+                override fun onPostExecute(entidade: Entidade?) {
+                    super.onPostExecute(entidade)
+                    if (entidade == null) return
+                    entradaEditText?.setText(entidade.nome)
+                    atualizarRecycler(entidade.sinonimos)
+                }
+            }.execute()
+        }
 
-        configurarInterface();
+        @Suppress("DEPRECATION")
+        fun gravarDados(entradaValida: String, context: Activity) {
+            object : AsyncTask<Void?, Void?, Void?>() {
+                override fun onPreExecute() {
+                    super.onPreExecute()
+                    meuToast(context.getString(R.string.salvando_dados), context)
+                }
+
+                override fun doInBackground(vararg voids: Void?): Void? {
+                    val entidadeDAO = EntidadeDAO(context)
+                    if (entidadeEmUso == null) {
+                        val entidadeGravar = Entidade()
+                        entidadeGravar.nome = entradaValida
+                        entidadeGravar.sinonimos = adapter!!.itens
+                        entidadeDAO.inserir(entidadeGravar)
+                    } else {
+                        entidadeEmUso!!.nome = entradaValida
+                        entidadeEmUso!!.sinonimos = adapter!!.itens
+                        entidadeDAO.alterarSentenca(entidadeEmUso)
+                    }
+                    return null
+                }
+
+                override fun onPostExecute(v: Void?) {
+                    super.onPostExecute(v)
+                    meuToast(context.getString(R.string.salvo), context)
+                    finalizarActivity(context)
+                }
+            }.execute()
+        }
     }
 
-    private void configurarInterface() {
-        configurarToolBarBranca(this);
-        configurarTextInput();
-        configuarBotaoLinkStart();
-        configuarBotaoAddResposta();
-        configurarRecycler();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_editar_item_novo)
+        configurarInterface()
     }
 
-    private static void atualizarRecycler(List<String> sinonimos) {
-        adapter.addAll(sinonimos);
+    private fun configurarInterface() {
+        configurarToolBarBranca(this)
+        configurarTextInput()
+        configuarBotaoLinkStart()
+        configuarBotaoAddResposta()
+        configurarRecycler()
     }
 
-    private void configurarRecycler() {
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        List<String> sinonimos = new ArrayList<>();
-        adapter = new AdapterSinonimos(sinonimos);
-        recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));
+    private fun configurarRecycler() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        adapter = AdapterSinonimos(mutableListOf())
+        recyclerView.adapter = adapter
+        recyclerView.addItemDecoration(DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL))
 
-        adapter.setOnItemClickListener((view, sinonimo, pos, tipoDeletar) -> {
+        adapter?.setOnItemClickListener { _, _, pos, tipoDeletar ->
             if (tipoDeletar) {
-                abrirDialogExcluir(pos);
+                abrirDialogExcluir(pos)
             } else {
-                abrirDialogEditar(pos, true);
+                abrirDialogEditar(pos, true)
             }
-        });
-
-
+        }
     }
 
-    private void inserirSinonimo(String novoSinonimo) {
-        adapter.add(novoSinonimo);
-        modificado = true;
+    private fun inserirSinonimo(novoSinonimo: String) {
+        adapter?.add(novoSinonimo)
+        modificado = true
     }
 
-    private void alterarSinonimo(int pos, String novoSinonimo) {
-        adapter.altera(pos, novoSinonimo);
-        modificado = true;
+    private fun alterarSinonimo(pos: Int, novoSinonimo: String) {
+        adapter?.altera(pos, novoSinonimo)
+        modificado = true
     }
 
-    private void deletarSinonimo(int pos) {
-        adapter.remove(pos);
-        modificado = true;
+    private fun deletarSinonimo(pos: Int) {
+        adapter?.remove(pos)
+        modificado = true
     }
 
-    public void abrirDialogEditar(Integer posi, boolean editando) {
-        Dialog alertDialogBuilder = new Dialog(this);
-        LayoutInflater inflater = this.getLayoutInflater();
-        alertDialogBuilder.setContentView(inflater.inflate(R.layout.dialog_editar_sinonimo, findViewById(R.id.editarItemEntidadeLayout), false));
+    fun abrirDialogEditar(posi: Int?, editando: Boolean) {
+        val alertDialogBuilder = Dialog(this)
+        alertDialogBuilder.setContentView(
+            layoutInflater.inflate(R.layout.dialog_editar_sinonimo, findViewById(R.id.editarItemEntidadeLayout), false)
+        )
 
-        TextInputEditText sinonimoEditText = alertDialogBuilder.findViewById(R.id.sinonimoEditText);
-
-        if (editando) {
-            sinonimoEditText.setText(adapter.getItens().get(posi));
-            sinonimoEditText.setSelection(adapter.getItens().get(posi).length());
+        val sinonimoEditText = alertDialogBuilder.findViewById<TextInputEditText>(R.id.sinonimoEditText)
+        if (editando && posi != null) {
+            sinonimoEditText.setText(adapter?.itens?.get(posi))
+            sinonimoEditText.setSelection(adapter?.itens?.get(posi)?.length ?: 0)
         }
 
-        TextInputLayout sinonimoTextInput = alertDialogBuilder.findViewById(R.id.sinonimoTextInput);
+        val sinonimoTextInput = alertDialogBuilder.findViewById<TextInputLayout>(R.id.sinonimoTextInput)
 
-        TextView botaoNegar = alertDialogBuilder.findViewById(R.id.botaoCancelar);
-        botaoNegar.setOnClickListener(view -> {
-            esconderTeclado(view, EditarItemEntidadeNovoActivity.this);
-            alertDialogBuilder.dismiss();
-        });
+        val botaoNegar = alertDialogBuilder.findViewById<TextView>(R.id.botaoCancelar)
+        botaoNegar.setOnClickListener { view ->
+            esconderTeclado(view, this@EditarItemEntidadeNovoActivity)
+            alertDialogBuilder.dismiss()
+        }
 
-        MaterialButton botaoSalvar = alertDialogBuilder.findViewById(R.id.botaoSalvar);
-        botaoSalvar.setOnClickListener(view -> {
-
-            if (String.valueOf(sinonimoEditText.getText()).isEmpty()) {
-                sinonimoTextInput.setError(getString(R.string.entrada_invalida));
+        val botaoSalvar = alertDialogBuilder.findViewById<MaterialButton>(R.id.botaoSalvar)
+        botaoSalvar.setOnClickListener { view ->
+            if (sinonimoEditText.text.toString().isEmpty()) {
+                sinonimoTextInput.error = getString(R.string.entrada_invalida)
             } else {
-                if (editando) {
-                    alterarSinonimo(posi, String.valueOf(sinonimoEditText.getText()));
+                if (editando && posi != null) {
+                    alterarSinonimo(posi, sinonimoEditText.text.toString())
                 } else {
-                    inserirSinonimo(String.valueOf(sinonimoEditText.getText()));
+                    inserirSinonimo(sinonimoEditText.text.toString())
                 }
-
-                esconderTeclado(view, EditarItemEntidadeNovoActivity.this);
-                sinonimoTextInput.setErrorEnabled(false);
-                alertDialogBuilder.dismiss();
+                esconderTeclado(view, this@EditarItemEntidadeNovoActivity)
+                sinonimoTextInput.isErrorEnabled = false
+                alertDialogBuilder.dismiss()
             }
-        });
+        }
 
-        alertDialogBuilder.setCancelable(false);
-        alertDialogBuilder.show();
+        alertDialogBuilder.setCancelable(false)
+        alertDialogBuilder.show()
     }
 
-    public void abrirDialogExcluir(int posi) {
-        DialogSimples dialog = DialogSimples.newDialog(
-                getString(R.string.confirmar_exclusao),
-                getString(R.string.tem_certeza_que_deseja_exluir_esse_item),
-                posi,
-                new int[]{
-                        android.R.string.ok,
-                        android.R.string.cancel});
-        dialog.openDialog(getSupportFragmentManager());
+    fun abrirDialogExcluir(posi: Int) {
+        val dialog = DialogSimples.newDialog(
+            getString(R.string.confirmar_exclusao),
+            getString(R.string.tem_certeza_que_deseja_exluir_esse_item),
+            posi,
+            intArrayOf(android.R.string.ok, android.R.string.cancel)
+        )
+        dialog.openDialog(supportFragmentManager)
     }
 
-    @Override
-    public void onClick(int posi, int which) {
-        switch (which) {
-            case -1:
-                deletarSinonimo(posi);
-                break;
-
-            case -2:
-                break;
+    override fun onClick(posi: Int, which: Int) {
+        when (which) {
+            -1 -> deletarSinonimo(posi)
+            -2 -> {}
         }
     }
 
-    private void configurarTextInput() {
-        ((TextView) findViewById(R.id.tituloTexView)).setText(getString(R.string.entidade));
-        ((TextView) findViewById(R.id.titulo2TexView)).setText(getString(R.string.sinonimos));
+    private fun configurarTextInput() {
+        (findViewById<TextView>(R.id.tituloTexView)).setText(R.string.entidade)
+        (findViewById<TextView>(R.id.titulo2TexView)).setText(R.string.sinonimos)
 
-        entradaEditText = findViewById(R.id.entradaEditText);
+        entradaEditText = findViewById(R.id.entradaEditText)
+        entradaEditText?.setOnFocusChangeListener { _, _ -> modificado = true }
 
-        entradaEditText.setOnFocusChangeListener((view, b) -> modificado = true);
-
-        carregarEntidade(this);
+        carregarEntidade(this)
     }
 
-    private void configuarBotaoLinkStart() {
-        findViewById(R.id.okButton).setOnClickListener(v -> validarInputs());
+    private fun configuarBotaoLinkStart() {
+        findViewById<View>(R.id.okButton).setOnClickListener { validarInputs() }
     }
 
-    private void configuarBotaoAddResposta() {
-        findViewById(R.id.adicionarSinonimoButton).setOnClickListener(view -> adicionarMaisUmSinonimo());
+    private fun configuarBotaoAddResposta() {
+        findViewById<View>(R.id.adicionarSinonimoButton).setOnClickListener { adicionarMaisUmSinonimo() }
     }
 
-    private void adicionarMaisUmSinonimo() {
-        abrirDialogEditar(null, false);
+    private fun adicionarMaisUmSinonimo() {
+        abrirDialogEditar(null, false)
     }
 
-    public void validarInputs() {
-        TextInputLayout entradaTextInput = findViewById(R.id.entradaTextInput);
-
-        if (String.valueOf(entradaEditText.getText()).isEmpty()) {
-            entradaTextInput.setError(getString(R.string.entrada_invalida));
+    fun validarInputs() {
+        val entradaTextInput = findViewById<TextInputLayout>(R.id.entradaTextInput)
+        if (entradaEditText?.text.toString().isEmpty()) {
+            entradaTextInput.error = getString(R.string.entrada_invalida)
         } else {
-            entradaTextInput.setErrorEnabled(false);
-            gravarDados(String.valueOf(entradaEditText.getText()).toLowerCase().trim(), this);
+            entradaTextInput.isErrorEnabled = false
+            gravarDados(entradaEditText?.text.toString().lowercase().trim() ?: "", this)
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
         if (modificado) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.editarItemEntidadeLayout), getString(R.string.alteracao_ainda_nao_salva), Snackbar.LENGTH_LONG);
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.setAction(getString(R.string.sim_sair), new SnackBarListener()).show();
-            modificado = false;
+            val snackbar = Snackbar.make(
+                findViewById(R.id.editarItemEntidadeLayout),
+                getString(R.string.alteracao_ainda_nao_salva),
+                Snackbar.LENGTH_LONG
+            )
+            snackbar.setActionTextColor(Color.YELLOW)
+            snackbar.setAction(getString(R.string.sim_sair)) {
+                startActivity(Intent(applicationContext, ListaEntidadeActivity::class.java))
+                finish()
+            }
+            snackbar.show()
+            modificado = false
         } else {
-            finalizarActivity(this);
+            finalizarActivity(this)
         }
     }
 
-    private static void finalizarActivity(Activity context) {
-        context.startActivity(new Intent(context, ListaEntidadeActivity.class));
-        context.finish();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-    }
-
-    public class SnackBarListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            startActivity(new Intent(getApplicationContext(), ListaEntidadeActivity.class));
-            finish();
-        }
-    }
-
-    private static void carregarEntidade(Activity context) {
-        new AsyncTask<Void, Void, Entidade>() {
-            @Override
-            protected Entidade doInBackground(Void... voids) {
-
-                Gson gson = new Gson();
-                entidadeEmUso = gson.fromJson(context.getIntent().getStringExtra("entidade"), Entidade.class);
-                return entidadeEmUso;
-
-            }
-
-            @Override
-            protected void onPostExecute(Entidade entidade) {
-                super.onPostExecute(entidade);
-                if (entidade == null) return;
-               entradaEditText.setText(entidade.getNome());
-
-                atualizarRecycler(entidade.getSinonimos());
-            }
-        }.execute();
-    }
-
-    public static void gravarDados(String entradaValida, Activity context) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                meuToast(context.getString(R.string.salvando_dados), context);
-
-            }
-
-            @Override
-            protected Void doInBackground(Void... voids) {
-                // Gson gson = new GsonBuilder().create();
-
-                Entidade entidadeGravar = new Entidade();
-                EntidadeDAO entidadeDAO = new EntidadeDAO(context);
-
-                if (entidadeEmUso == null) {
-                    entidadeGravar.setNome(entradaValida);
-                    entidadeGravar.setSinonimos(adapter.getItens());
-                    entidadeDAO.inserir(entidadeGravar);
-                } else {
-                    entidadeEmUso.setNome(entradaValida);
-                    entidadeEmUso.setSinonimos(adapter.getItens());
-                    entidadeDAO.alterarSentenca(entidadeEmUso);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void v) {
-                super.onPostExecute(v);
-                meuToast(context.getString(R.string.salvo), context);
-                finalizarActivity(context);
-            }
-        }.execute();
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 }
