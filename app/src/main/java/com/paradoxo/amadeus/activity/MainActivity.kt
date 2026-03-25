@@ -38,7 +38,6 @@ import com.paradoxo.amadeus.modelo.EventoMensagem
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.service.GravaHistoricoService
 import com.paradoxo.amadeus.util.Animacoes.animarComFade
-import com.paradoxo.amadeus.util.Permissao.solicitarPermissaoMicrofone
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
@@ -51,6 +50,8 @@ import com.paradoxo.amadeus.util.voz.VozParaTexto
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.ArrayList
+import android.content.pm.PackageManager
+import com.paradoxo.amadeus.util.Permissao
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -75,6 +76,10 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         setContentView(R.layout.activity_main)
         configurarServicosSegundoPlano()
         configurarIterface()
+        // Solicita permissão de armazenamento se ainda não concedida
+        if (!Permissao.armazenamentoAcessivel(this)) {
+            Permissao.solicitarAcessoArmazenamento(this)
+        }
     }
 
     private fun configurarServicosSegundoPlano() {
@@ -209,7 +214,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun trocarLayoutBottom(tipoTexto: Boolean) {
-        solicitarPermissaoMicrofone(this)
+        Permissao.solicitarPermissaoMicrofone(this)
         val layoutEscrevendo = findViewById<LinearLayout>(R.id.layoutEscrevendo)
         val layoutOuvindo = findViewById<LinearLayout>(R.id.layoutOuvindo)
         if (tipoTexto) {
@@ -373,6 +378,26 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            1 -> { // microfone
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    meuToast("Permissão de microfone concedida", applicationContext)
+                } else {
+                    meuToast("Permissão de microfone negada", applicationContext)
+                }
+            }
+            2 -> { // armazenamento
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    meuToast("Permissão de armazenamento concedida", applicationContext)
+                } else {
+                    meuToast("Permissão de armazenamento negada", applicationContext)
+                }
+            }
         }
     }
 
