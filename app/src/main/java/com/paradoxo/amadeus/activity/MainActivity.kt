@@ -403,6 +403,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
 
     override fun onDestroy() {
         super.onDestroy()
+        processadora.destruir()
     }
 
     companion object {
