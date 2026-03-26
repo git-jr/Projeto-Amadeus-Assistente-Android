@@ -1,0 +1,31 @@
+package com.paradoxo.amadeus.enums
+
+enum class AcaoEnum {
+    SEM_ACAO,
+    MUSICA,
+    PARAR_MUSICA,
+    PROXIMA_MUSICA,
+    APP,
+    SABER_HORA,
+    SABER_DATA,
+
+    CUMPRIMENTAR,
+    DESPEDIR,
+    SAUDAR,
+    STATUS,
+    TESTE,
+    AGRADECER,
+    PREVER_TEMPO,
+
+    APRESENTAR_IA,
+    DIZER_NOME_IA,
+    DIZER_NOME_USU,
+
+    ACAO_CADASTRAR_RESPOSTA,
+    ACAO_ERRO_APP_NAO_EXISTE,
+    ACAO_ACESSAR_MEMORIA,
+
+    ABRIR_APRENDIZADO,
+    ABRIR_ACOES,
+    AMADEUS_PLAY_STORE
+}

@@ -1,270 +1,145 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-
-    <string name="lista_mundacas_versao">
-    ● Adeus bugs? Essa versão traz uma série de correção de bugs, alguns mais graves outros menores mas que já estavam aí faz um tempo.
-        Espero que sua experiência seja a melhor possível dentro do app e se tiver alguma sugestão sinta-se
-        à vontade para falar conosco através dos meios dentro do app.
-        \n\n● Correção da falha que causava o fechamento do app após a inserção dos nomes da IA e do usuário;
-        \n\n● Corrigido bug ao tentar ativar a vibração em alguns aparelhos;
-        \n\n● Corrigido falha ao tentar esconder o teclado após o envio de uma mensagem;
-        \n\n● Acompanhando a série no YouTube você fica por dentro das novas funções ainda em teste 😎
-    </string>
-
     <string name="app_name">Amadeus</string>
-    <string name="app_dev">Paradoxo Studios</string>
-    <string name="app_dev1">Junior Obom</string>
 
-    <string name="nav_header_title">Paradoxo Studios</string>
-    <string name="nav_header_subtitle">Projeto Amadeus</string>
-    <string name="nav_header_desc">Navegation Drawer</string>
+    <string name="logo_amadeus">Logo Amadeus</string>
+    <string name="projeto_amadeus">Projeto Amadeus</string>
 
-    <string name="bem_vindo">Bem vindo à Amadeus</string>
-    <string name="moldar_as_coisas">Antes de mais nada vamos moldar as coisas a sua maneira</string>
+    <string name="Lorem_ipsum_dolor">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do bibendum enim. In massa tempor nec feugiat.</string>
+    <string name="dica">Dica</string>
+    <string name="seta_ir_para">Seta ir para</string>
+    <string name="diga_algo">Diga algo</string>
+    <string name="update_pretty">Update Pretty</string>
+    <string name="botao_enviar">Botão enviar</string>
+    <string name="aprendizado">Aprendizado</string>
+    <string name="edite_perguntas_respostas_acoes">Gerencie respostas, sinônimos, entidades…</string>
+    <string name="voz">Voz</string>
+    <string name="altere_a_voz_quando_e_o_que_falar">Altere a voz, quando e o que falar</string>
+    <string name="suporte">Suporte</string>
+    <string name="dicas_duvidas_bugs_sugestoes">Dicas, dúvidas, bugs, sugestões…</string>
+    <string name="sobre">Sobre</string>
+    <string name="versao_e_licencas">Versão, licenças e 42</string>
+    <string name="adicionar_sentenca">Adicionar sentença</string>
+    <string name="pesquisar_por">Pesquisar por…</string>
+    <string name="digite_seu_nome">Digite seu nome</string>
+    <string name="digite_um_nome_para_ia">Digite um nome para IA</string>
+    <string name="configuracao_inicial">Configuração inicial</string>
+    <string name="modo_fala">Voz da IA</string>
+    <string name="configs_podem_ser_alteradas_depois">As configurações podem ser\nalteradas mais tarde</string>
 
-    <string name="btn_link_start">Link Start</string>
-    <string name="btn_load">Load</string>
-
-    <string name="prompt_nomeUsu">Digite seu nome</string>
-    <string name="prompt_nomeIA">Escolha um nome para a IA</string>
-    <string name="digite_algo">Digite algo</string>
-    <string name="resposta_nao_localizada">Não sei o que dizer sobre isso, ainda estou em fase de aprendizado 😅</string>
-    <string name="resposta_gravada">Resposta gravada com sucesso!</string>
-
-
-    <string name="pergunta">Pergunta:</string>
-    <string name="resposta">Resposta:</string>
-
-    <string name="perfil">Perfil</string>
-    <string name="editar_respostas">Editar respostas</string>
-    <string name="configs">Configurações</string>
-    <string name="compartilhe">Compartilha aí jovem</string>
-    <string name="relatar_problema">Relatar problema</string>
-    <string name="title_activity_settings">Configurações</string>
-
-    <string name="pref_titulo_ativar_voz_ia">Ativar voz da IA</string>
-    <string name="pref_descri_ativar_voz_ia">Quando ativado faz com que todas falas da IA sejam ditadas em voz alta</string>
-
-    <string name="pref_descri_ativar_voz_ia_sem_resposta">Quando ativado permite que a fala da IA funcione mesmo que uma resposta ainda não tenha sido apredida ou uma ação encontrada</string>
-
-    <string-array name="intencoes_abrir_app">
-        <item>abrir</item>
-        <item>abrir aplicativo</item>
-        <item>abrir app</item>
-        <item>iniciar o aplicativo</item>
-    </string-array>
-    
-    <string-array name="intencoes_tocar_musica_aleatoria">
-        <item>toque uma música</item>
-        <item>tocar uma música</item>
-        <item>ouvir música</item>
-        <item>ouvir uma música</item>
-    </string-array>
-
-    <string-array name="intencoes_tocar_musica_especifica">
-        <item>tocar</item>
-        <item>toque</item>
-    </string-array>
-
-    <string-array name="intencoes_parar_musica">
-        <item>parar música</item>
-        <item>pare a música</item>
-    </string-array>
-
-    <string-array name="intencoes_parar_segundo_plano">
-        <item>parar segundo plano</item>
-        <item>parar background</item>
-        <item>cala a boca</item>
-    </string-array>
+    <string name="link_start">Link Start</string>
+    <string name="musica_encerrada">Música encerrada</string>
+    <string name="nehuma_musica_em_reproducao" tools:ignore="Typos">Não estou reproduzindo nenhuma música no momento</string>
+    <string name="versao">Versão</string>
+    <string name="erro_iniciar_app">Erro, não foi possivél iniciar o app, tente novamente</string>
 
 
-    <string-array name="saudacoes_primarias">
-        <item>bom dia</item>
-        <item>boa noite</item>
-        <item>boa tarde</item>
-        <item>boa madrugada</item>
-    </string-array>
+    <string name="tag_enviar">enviar</string>
+    <string name="tag_mic">mic</string>
+    <string name="ouvindo">Ouvindo…</string>
 
-    <string-array name="saudacoes_secundarias">
-        <item>bem vindo de volta</item>
-        <item>olá de novo</item>
-        <item>olá novamente</item>
-    </string-array>
+    <string name="entidade">Entidade</string>
 
-
-    <string-array name="respostas_positivas">
-        <item>sim</item>
-        <item>ss</item>
-        <item>claro</item>
-        <item>com certeza</item>
-        <item>pode crer</item>
-        <item>pode ser</item>
-    </string-array>
-
-
-    <string-array name="respostas_negativas">
-        <item>não</item>
-        <item>n</item>
-        <item>nop</item>
-        <item>com certeza não</item>
-        <item>claro que não</item>
-    </string-array>
-
+    <string name="licencas">Licenças de código</string>
+    <string name="entrada">Entrada</string>
+    <string name="respostas">Respostas</string>
+    <string name="exemplo_ola">Exemplo: Olá</string>
+    <string name="digite_uma_resposta">Digite uma resposta</string>
+    <string name="salvar">Salvar</string>
+    <string name="descricao_img_botao_add_resposta">botão adicioanr mais respostas</string>
+    <string name="salvando_dados">Salvando dados</string>
+    <string name="entrada_invalida">Entrada inválida</string>
+    <string name="resposta_invalida">Resposta inválida</string>
+    <string name="deve_haver_ao_menos_uma_reposta">Deve haver pelo menos uma resposta</string>
+    <string name="limite_de_respostas_atingido">Esse é o limite de respostas que você pode adicionar por enquanto</string>
+    <string name="aviso_se_mais_de_uma_resposta_for_inserida">Se mais de uma resposta for cadastrada ela será escolhida de forma aleatória quando necessário</string>
+    <string name="cornfimar_exclusao_item">Tem certeza que deseja excluir esse item?</string>
     <string name="ok">OK</string>
     <string name="cancelar">Cancelar</string>
-    <string name="confirmar_excluir">Confirmar exclusão</string>
-    <string name="erro_apagar_msg">Erro ao deletar mensagem</string>
-    <string name="msg_deletada_sucesso">Mensagem deletada com sucesso</string>
-    <string name="nenhuma_resposta_gravada">Você não tem nenhuma resposta gravada atualmente</string>
-    <string name="preencha_tudo">Por favor preencha todos dados antes de continuar</string>
-    <string name="resposta_atualizada">Resposta atualizada com sucesso!</string>
-    <string name="texto_voz">Texto e voz</string>
+    <string name="erro_excluir_sentenca">Erro ao tentar excluir sentença</string>
+    <string name="sem_sentencas_no_momento" tools:ignore="Typos">Não há sentenças gravadas no momento</string>
+    <string name="excluido_com_sucesso">Excluído com sucesso</string>
+
+    <string name="acesso_e_uso_dados_titulo">Acesso e uso de dados</string>
+    <string name="acesso_e_uso_dados_descri" tools:ignore="Typos">Quer ajudar nossa IA ficar mais inteligente e realista?
+        \n\nPermita que possamos coletar suas interações dentro do app, isso será feito de forma anônima
+        (nada será associado a você) serão armazenadas por tempo indeterminado e usadas apenas para aperfeiçoar
+        as interações da IA, você pode parar o envio dos dados a qualquer momento.
+    \n\nVocê autoriza?
+
+    </string>
+    <string name="autorizar">Autorizar</string>
+    <string name="negar">Negar</string>
+    <string name="nome_invalido">Nome inválido</string>
+    <string name="permitir_uso_de_dados">Permitir uso de dados</string>
+    <string name="link_politica_privaicade">https://paradoxostudios.blogspot.com/2018/11/amadeus-politica-de-privacidade.html</string>
+    <string name="politica_privaicade">Política de privacidade</string>
+    <string name="sinonimos">Sinônimos</string>
+    <string name="editar_sinonimo">Editar sinônimo</string>
+    <string name="novo_sinonimo">Novo sinônimo</string>
+    <string name="aviso_sobre_lentidao_sinonimos">Note que quanto mais sinônimos, mais lento pode ser o processamento das respostas que utilizam essa entidade</string>
+    <string name="sim_sair">Sim, sair</string>
+    <string name="alteracao_ainda_nao_salva">Alterações ainda não salvas, sair sem salvar?</string>
+    <string name="exemplo_casa">Exemplo: casa</string>
+    <string name="usar_sinonimos_nas_buscas">Usar sinônimos nas buscas</string>
+    <string name="descricao_busca_sinonimos">Usa palavras diferentes mas com o mesmo sentido ao tentar encontrar uma resposta, isso aumenta o tempo de busca</string>
+    <string name="carregando_banco">Carregando banco</string>
+    <string name="sentencas">Sentenças</string>
+    <string name="entidades">Entidades</string>
+    <string name="acoes">Ações</string>
+    <string name="nao_e_possivel_editar_acoes">Não é possível editar ações por enquanto</string>
+    <string name="descricao_voz_sem_resposta">Impede que respostas como "não entendi" sejam ditas em voz alta (pode deixar a fala mais lenta)</string>
+    <string name="falar_respostas_nao_encontradas">Falar respostas não encontradas</string>
+    <string name="trocar_tipo_da_voz">Trocar tipo da voz</string>
+    <string name="respostas_em_voz_alta">Respostas dadas pela IA serão ditas em voz alta</string>
+    <string name="digite_algo_para_teste">Digite algo para teste</string>
+    <string name="confirmar">Confirmar</string>
+    <string name="voltar_para_voz_padrao">Voltar para voz padrão</string>
+    <string name="carregar_todas">Carregar todas</string>
+    <string name="voz_padrao_selecionada">Voz alterada para padrão do sistema</string>
+    <string name="aviso_vozes_repetidas">Algumas vozes podem ser muito parecidas com as outras dependendo da configuração atual do seu aparelho. Ainda assim ativar essa opção pode exibir vozes que talvez não estivessem disponioveis antes.</string>
+    <string name="agora">Agora</string>
+    <string name="reiniciar_depois">Depois</string>
+    <string name="estilo_voz_de_voz_alterado">Estilo de voz alterado</string>
     <string name="reiniciar">Reiniciar agora?</string>
     <string name="alteracao_realizada">Para aplicar as mudanças é necessario reiniciar o app, desja fazer isso agora?</string>
-    <string name="reiniciar_depois">Depois</string>
-    <string name="agora">Agora</string>
-    <string name="exportar_importar">Importar e Exportar</string>
-    <string name="qpython">QPython</string>
-    <string name="geral">Geral</string>
-    <string name="import_qpython">Importar do protótipo Qpython</string>
-    <string name="import_qpython_info">Se você possui um versão original da IA feita em Python pode importar suas informações para usar neste app. Para isso selecione o caminho do arquivo infos.txt e clique em no botao Load abaixo</string>
-    <string name="import_de">Importar de</string>
-    <string name="caminho_import">/storage/0/qpython/IA Doxo/infos.txt</string>
-    <string name="arquivo_nao_compat">Arquivo selecionado não é compatível, tente novamente</string>
-    <string name="arquivo_nao_loc">Arquivo não localizado, clique aqui para procurar</string>
-    <string name="arquivo_nao_sele">Nenhum arquivo selecionado</string>
-    <string name="realmente_fazer_isso">Deseja realmente fazer isso?</string>
-    <string name="tem_certeza">Ao fazer isso os dados já gravados nessa versão do app serão perdidos, deseja continuar?</string>
-    <string name="importando_arq">Importando arquivos</string>
-    <string name="import_sucesso">Importação realizada com sucesso</string>
-    <string name="import_falha">Ocorreu algum erro durante a importação</string>
-    <string name="de">de</string>
-    <string name="sicronizando">Sincronizando</string>
-    <string name="acesso_requerido">Acesso a memória interna é requerido para acessar essa tela</string>
-    <string name="sugerir_ideia">Sugerir ideia</string>
-    <string name="report_bug">Reportar um problema</string>
-    <string name="report_bug_digite">Descreva o erro que você viu:</string>
-    <string name="report_ideia">Sugerir uma ideia</string>
-    <string name="report_ideia_digite">Paradoxo eu tenho uma ideia para o projeto que é assim:</string>
-    <string name="sobre">Sobre</string>
-    <string name="texto_sobre">No nosso canal do YouTube você pode conferir diversos vídeos sobre o projeto, sugerir melhorias junto com a galera e  ficar por dentro das novidades em desenvolvimento de cada atualização.</string>
-    <string name="ir_yt">IR PARA O YOUTUBE</string>
-    <string name="place_msg_pergunta_desc">Uma pergunta aqui pergunta aqui que poder ser bem grande por isso toda essa digitação desnecessária</string>
-    <string name="historico">histórico</string>
-    <string name="versao">Versão</string>
-    <string name="oq_mudou">O que mudou nessa versão</string>
-    <string name="clique_para_ensinar">\nClique e segure na mensagem anterior para ensinar uma resposta</string>
-    <string name="texto_para_compartilhamento"><![CDATA[Conheça a inteligência artificial Amadeus:\nhttps://play.google.com/store/apps/details?id=com.paradoxo.amadeus&hl=pt_BR]]></string>
-    <string name="compartilhar_com">Compartilhar com</string>
-    <string name="pref_titulo_ativar_voz_ia_sem_resposta">Permitir fala para respostas não encontradas</string>
-    <string name="acompanhe_no_yt">Acompanhe no YouTube</string>
-    <string name="link_playlist_amadeus_yt">https://www.youtube.com/playlist?list=PLgkr0bcGnH6YtPQO1774MBPhJB4tVBk8L</string>
-    <string name="descri_img">Descrição default imagem</string>
-    <string name="nuvem">Nuvem</string>
-    <string name="meus_bancos">Meus bancos</string>
-    <string name="disponibilizar_online">Disponibilizar online</string>
-    <string name="mais_infos">Mais informações</string>
-    <string name="escolha_nome_banco">Nome do banco</string>
-    <string name="enviar">ENVIAR</string>
-    <string name="nome_banco_nao_nulo">O nome do banco não pode ser nulo</string>
-    <string name="banco_vair_ficar_online">Seu banco ficará disponível online para outros usuários</string>
-    <string name="login_requirido">É necessário logar para continuar</string>
-    <string name="fazendo_upload">Iniciando upload</string>
-    <string name="falha_upload">Falha no upload</string>
-    <string name="sucesso_upload">Upload realizado com sucesso</string>
-
-    <string name="fazendo_download">Iniciando download</string>
-    <string name="falha_download">Falha no download, tente novamente</string>
-    <string name="sucesso_download">Download concluído com sucesso</string>
-    <string name="baixar">Baixar</string>
-    <string name="deseja_baixar_esse_banco">Deseja baixar esse banco para que ele possa seja usada em suas cconversas?</string>
-    <string name="acesso_memoria_para_download">É necessário acesso ao armazenamento para realizar downloads</string>
-    <string name="excluir">Excluir</string>
-    <string name="deslogar">Deslogar</string>
-    <string name="logar">Logar</string>
-    <string name="escolha_nome_usu">Escolha um nome de usuário</string>
-    <string name="nome_usu_infos">Esse nome será exibido publicamente nos bancos que você postar</string>
-    <string name="digite_verifique">Digite um nome e verifique a disponibilidade</string>
-    <string name="confirmar">Confirmar</string>
-    <string name="esse_nome_esta_disponivel">Esse nome está disponível</string>
-    <string name="esse_nome_nao_disponivel">Esse nome não está disponível</string>
-    <string name="verificar">verificar</string>
-    <string name="substituir_padrao">Definir como banco padrão</string>
-    <string name="adicionar_ao_padrao">Tornar parte do banco atual</string>
-    <string name="substituir">Substituir</string>
-    <string name="adicionar">Adicionar</string>
-    <string name="concluido">Concluído</string>
-    <string name="selecao_nao_texto">A seleção não foi de um texto</string>
-    <string name="erro_importacao">Erro ao realizar importação</string>
-    <string name="aguarde" tools:ignore="Typos">Aguarde um momento…</string>
-    <string name="carregando_banco">Carregando banco</string>
-    <string name="Atualizar">Atualizar</string>
-    <string name="gravando_dados">Gravando dados…</string>
-    <string name="selecione_infos_txt">Selecione o arquivo \"infos.txt\"</string>
-    <string name="falha_envio_email">Falha ao enviar o e-mail</string>
-    <string name="email_suporte">paradoxostudiossuporte@gmail.com</string>
-    <string name="banco_instalado">O banco modificado foi instalado</string>
-    <string name="reiniciando_app">Reiniciado app</string>
-    <string name="falha_ao_copiar_banco">Erro na cópia do banco</string>
-    <string name="acessar">Acessar</string>
-    <string name="gerenciar_seus_bancos">Você pode gerenciar os bancos baixados na guia \"Meus Bancos\"</string>
-    <string name="banco_interno_em_uso" tools:ignore="Typos">Banco de dados interno Está em uso neste momento</string>
-    <string name="adicionar_esse_banco">Adicionar esse banco? Isso irá permitir que as respostas contidas nele sejam usadas em suas conversas com a IA</string>
-    <string name="dialog_substituir_banco_1">Isso irá substituir as respostas que a IA fornece naturalmente pelas respostas contidas nesse banco.</string>
-    <string name="dialog_substituir_banco_2">O Banco atual permanecerá disponível caso deseje desfazer essa ação.</string>
-    <string name="dialog_substituir_banco_3">Talvez o app reinicie automaticamente ao voltar para tela inicial</string>
-    <string name="dialog_excluir_banco__baixado_1">Tem certeza disso? O banco \"</string>
-    <string name="dialog_excluir_banco__baixado_2">\" não ficará mais disponível. Se você já o adicionou como parte de seu banco as respostas dele ainda continuarão lá para seu uso.</string>
-    <string name="excluindo_banco">Excluindo banco…</string>
-    <string name="banco_excluido">Banco excluído com sucesso</string>
-    <string name="banco_nao_excluido">Ocorreu um erro durante a exclusão do banco</string>
-    <string name="banco_disponivel_offline" tools:ignore="Typos">Disponível offline Banco de dados externo Não está em uso no momento</string>
-    <string name="adicionando">Adicionando</string>
-    <string name="aguarde_um_momento" tools:ignore="Typos">Aguarde um momento…</string>
-    <string name="copiando">Copiando</string>
-    <string name="sincronizando">Sincronizando</string>
-    <string name="adicionado_com_sucesso">Adicionado com sucesso</string>
-    <string name="falha_adicao">Falha na adição</string>
-    <string name="erro_substituir_banco">Erro na substituição, tente novamente</string>
-    <string name="substituido_com_sucesso">Substituição efetuada com sucesso</string>
-    <string name="deslogando">Deslogando…</string>
-    <string name="ola_novamente">Olá novamente</string>
-    <string name="erro_login_tente_de_novo">Erro tente novamente</string>
-    <string name="gravado_com_sucesso">Gravado com sucesso</string>
-    <string name="erro_nome_usuario_tente_novamente">Erro ao gravar nome de usuário, tente novamente</string>
-    <string name="acesso_memoria_negado">Acesso a memória negado! Algumas funções podem não funcionar corretamente</string>
-    <string name="easter_egg_logout_kirito">Não achou realmente que esse botão era sério não é Kirito?</string>
-    <string name="erro_criar_sistema_arquivos">Erro ao criar o sistema de arquivos interno</string>
-    <string name="falha_ler_arquivo">Falha ao ler arquivo</string>
-    <string name="abrindo_app">Abrindo app</string>
-    <string name="voce_nao_tem_esse_app">Você não tem um aplicativo com esse nome, toque para buscar</string>
-    <string name="funcao_disponivel_em_breve">Terei essa função disponível em breve ♪</string>
-    <string name="erro_carregar_tente_novamente">Erro ao carregar, tente novamente</string>
-    <string name="opiniao">Opinião</string>
-    <string name="licencas">Licenças de código</string>
-    <string name="licencas_animacoes">Licenças animações Lottie</string>
-    <string name="digite_algo_para_teste">Digite algo para teste</string>
-    <string name="recurso_nao_disponivel">Esse recurso não está disponívvel para seu dispostivo</string>
-    <string name="trocar_voz">Trocar voz</string>
-    <string name="voltar_para_voz_padrao">Voltar para voz padrão</string>
-    <string name="reproduzir_todas">Reproduzir todas</string>
     <string name="mudancas_serao_aplicadas">As mudanças serão aplicadas na próxima vez que o app for aberto</string>
-    <string name="estilo_voz_de_voz_alterado">Estilo de voz alterado</string>
-    <string name="agora_eh_o_estilo_padrao">Agora é o estilo padrão</string>
-    <string name="carregar_todas">Carregar todas</string>
-    <string name="aviso_vozes_repetidas">Algumas vozes podem ser muito parecidas com as outras dependendo da configuração atual do seu aparelho. Ainda assim ativar essa opção pode exibir vozes que talvez não estivessem disponioveis antes.</string>
     <string name="numero_vozes_econtradas">Vozes encontradas</string>
-    <string name="voz_padrao_selecionada">Voz alterada para padrão do sistema</string>
-    <string name="finalizando_segundo_plano">Finalizando atividades em segundo plano</string>
-    <string name="reconhecimento_voz_segundo_plano">Voz em segundo plano</string>
-    <string name="status_atual">Status atual</string>
-    <string name="ativo">Ativado</string>
-    <string name="desativado">Desativado</string>
-    <string name="permissao_nescessaria">Sem essa permissão não é possível utilizar essa função</string>
-    <string name="sumario_voz_segundo_plano">Como o reconhecimento de voz irá funcionar quando o app não estiver aberto</string>
-    <string name="sobre_reconhecimento_voz_segundo_plano">Quando ativado permite que a IA ouça comandos de voz mesmo quando o app não estiver aberto ou a tela ligada.</string>
-    <string name="agora_open_source">O Projeto Amadeus agora é Open Source novamente, você pode conferir seu código fonte no GitHub</string>
-    <string name="clicando_aqui">clicando aqui</string>
-    <string name="linkRepositorioGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
-    <string name="permissao_requerida_melhor_funcionamento">Essa permissão é requerida para melhor funcionamento do app, habilite-a nas configurações do seu aparelho a qualquer momento</string>
+    <string name="estilo_atual">Estilo de voz atual</string>
+    <string name="padrao">Padrão</string>
+    <string name="paradoxo_studios_junior_obom">Paradoxo Studios | Junior Obom</string>
+    <string name="no_youtube">No YouTube!</string>
+    <string name="veja_a_serie_no_yt">Assista a série que deu origem a esse app</string>
+    <string name="feedback">Feedback</string>
+    <string name="conte_o_que_achou">Conte o que achou do app e o que melhorar</string>
+    <string name="o_codigo_por_tras_de_tudo_isso">O código por trás de tudo isso</string>
+    <string name="codigo_aberto">Código aberto</string>
+
+    <string name="licencas_animacoes">Animações Lottie API</string>
+    <string name="creditos_lottie_api_1">Scaling loader | by Bryan Vogel</string>
+    <string name="creditos_lottie_api_2">Siri Style Loading | by Daris Ali Mufti</string>
+
+    <string name="link_playlist_amadeus_yt">https://www.youtube.com/playlist?list=PLgkr0bcGnH6YtPQO1774MBPhJB4tVBk8L</string>
+    <string name="linkAmadeusGooglePlayStore">https://play.google.com/store/apps/details?id=com.paradoxo.amadeus</string>
+    <string name="linkAmadeusGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
+    <string name="link_lottie_api_1">https://lottiefiles.com/1808-scaling-loader#</string>
+    <string name="link_lottie_api_2">https://lottiefiles.com/6778-siri-style-loading</string>
+    <string name="banco_redesenhado_explicacao">Nós redesenhamos o banco de dados da Amadeus para ser mais rápido e mais funcional do que nas versões anteriores.
+        \nVocê possui dados de uma versão antiga que podem ser importados para uso na nova.
+        \n\nMas NÃO RECOMENDAMOS fazer isso pois pode causar lentidão em algumas partes do app devido a estrutura das respostas no banco de dados original</string>
+    <string name="versao_antiga_detectada">Versão antiga detectada</string>
+    <string name="imporatr">IMPORATR</string>
+    <string name="nao_imporatr">NÃO IMPORATR</string>
+    <string name="liberando_espaco_do_banco_original">Liberando espaço do banco original</string>
+    <string name="importando_banco">Importando banco…</string>
+    <string name="abrindo">abrindo…</string>
+    <string name="confirmar_exclusao">Confirmar exclusão</string>
+    <string name="tem_certeza_que_deseja_exluir_esse_item">Tem certeza que deseja excluir este item?</string>
+    <string name="salvo">Salvo</string>
+    <string name="lingua_nao_suportada">Lingua não suportada</string>
+    <string name="forneca_acesso_ao_armazenamento">Forneça acesso ao armazenamento do aparelho e tente novamente</string>
+    <string name="acesso_a_memoria">Acesso a memória</string>
+    <string name="erro_abrir_app">Erro ao tentar abrir o app </string>
+    <string name="app_nao_encontrado">App não encontrado</string>
+    <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, não está instalado no momento, toque no card para fazer uma busca</string>
 
 </resources>

@@ -1,62 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.TrocarVozActivity">
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@+id/layoutTestarVoz"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_tipo_voz" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/layoutPrinicipal"
+        android:visibility="gone">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_lista"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            app:layout_anchorGravity="bottom"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingLeft="12dp"
+                tools:ignore="RtlSymmetry">
+
+                <EditText
+                    android:id="@+id/textoFalarEditText"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="9"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/digite_algo_para_teste"
+                    android:imeOptions="actionGo"
+                    android:inputType="text"
+                    android:lines="1"
+                    android:selectAllOnFocus="false"
+                    android:textColorHint="@color/gray_300"
+                    tools:ignore="Autofill,TextFields" />
+
+                <ImageView
+                    android:id="@+id/falarButton"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:contentDescription="@string/botao_enviar"
+                    android:focusable="true"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_tipo_voz"
+                    android:tint="@color/colorPrimary" />
+            </LinearLayout>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/padding_bottom_card"
+            android:layout_marginEnd="@dimen/padding_bottom_card"
+            android:layout_marginBottom="57dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_marginTop="?attr/actionBarSize"
+            tools:listitem="@layout/item_tipo_voz" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
-        android:id="@+id/layoutTestarVoz"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="#ffffff"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:minHeight="48dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:id="@+id/layoutLoad">
 
-        <EditText
-            android:id="@+id/textoFalarEditText"
-            android:layout_width="0dp"
+        <ProgressBar
+            android:id="@+id/barraProgresso"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_weight="8"
-            android:background="@android:color/transparent"
-            android:hint="@string/digite_algo_para_teste"
-            android:maxLines="6"
-            tools:ignore="Autofill,TextFields" />
-
-        <ImageButton
-            android:id="@+id/falarButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_weight="2"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:contentDescription="@string/descri_img"
-            android:textSize="14sp"
-            app:srcCompat="@drawable/ic_tipo_voz"
-            tools:ignore="KeyboardInaccessibleWidget" />
+            android:indeterminate="false"
+            android:max="100" />
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+        android:visibility="visible">
+
+        <androidx.appcompat.widget.Toolbar
+            app:subtitle="@string/estilo_atual"
+            app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Caption"
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/salvar"
-        android:icon="@drawable/ic_confirmar"
+        android:icon="@drawable/ic_check"
         android:title="@string/confirmar"
         app:showAsAction="ifRoom" />
 
@@ -18,5 +18,4 @@
         android:id="@+id/carregarRepetidas"
         android:title="@string/carregar_todas"
         app:showAsAction="never" />
-
 </menu>

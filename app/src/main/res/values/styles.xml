@@ -1,55 +1,55 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Material Components exige tema Material (não apenas AppCompat) para TextInputLayout, MaterialButton, etc. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <!-- Android 15 (API 35): evita edge-to-edge obrigatório e sobreposição com status/navigation bar. -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <!-- Nome histórico "Transparent"; janela é opaca (fundo branco) para não exigir background em cada layout. -->
+    <style name="Theme.AppCompat.Light.NoActionBar.Transparent" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@android:color/darker_gray</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
-
-    <style name="UI.Translucent" parent="android:Theme.Translucent.NoTitleBar" />
-
-    <style name="UI.Translucent.Old" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowNoDisplay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:windowDisablePreview">true</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
+    <style name="TextAppearance.App.Hint.Personalizado" parent="@android:style/TextAppearance">
+        <item name="colorControlActivated">@color/colorSecondaryDark2</item>
+        <item name="colorControlHighlight">@color/colorSecondaryDark2</item>
+        <item name="colorControlNormal">@color/colorSecondaryDark2</item>
+        <item name="android:textColor">@color/colorSecondaryDark2</item>
+        <item name="android:textSize">10sp</item>
     </style>
 
-
-    <style name="EstiloBtnNegativo2" parent="@style/Widget.AppCompat.Button.Borderless.Colored">
+    <style name="TextAppearance.App.Error.Personalizado" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="EstiloBtnAfirmativo" parent="@style/Widget.AppCompat.Button.Borderless.Colored">
-        <item name="android:textColor">@android:color/white</item>
+    <style name="BotaoOkay" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorAccent</item>
         <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Button</item>
     </style>
 
-    <style name="SwitchPersoanalizado">
-        <item name="android:colorControlActivated" tools:targetApi="lollipop">@color/cinza4</item>
-    </style>
 
-    <style name="RippleStyleWhite">
-        <item name="mrl_rippleOverlay">true</item>
-        <item name="mrl_rippleColor">#80FFFFFF</item>
-        <item name="mrl_rippleHover">true</item>
-        <item name="mrl_rippleAlpha">0.2</item>
-    </style>
-
-    <style name="RippleStyleBlack" parent="RippleStyleWhite">
-        <item name="mrl_rippleColor">#8096989A</item>
+    <style name="barraProgressoPersonalizada" parent="@style/Theme.AppCompat">
+        <item name="colorPrimary">@color/colorSecondaryDark3</item>
+        <item name="android:color">@color/colorSecondaryDark3</item>
     </style>
 
 </resources>
