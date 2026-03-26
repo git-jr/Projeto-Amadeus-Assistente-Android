@@ -20,7 +20,6 @@ import com.paradoxo.amadeus.util.GerenciaMusica
 import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import org.greenrobot.eventbus.EventBus
-import java.util.Collections
 import java.util.Random
 
 class Acionadora(private val activity: Activity) {
@@ -36,13 +35,13 @@ class Acionadora(private val activity: Activity) {
         var acaoAserTratada = Acao(AcaoEnum.SEM_ACAO)
 
         val acaoDAO = AcaoDAO(activity)
-        val acoesDisponiveis = acaoDAO.acoes ?: return
+        val acoesDisponiveis = acaoDAO.getAcoes() ?: return
 
         for (acao in acoesDisponiveis) {
-            for (gatilho in acao.gatilhos) {
+            for (gatilho in acao.gatilhos ?: emptyList()) {
                 if (entrada.contains(gatilho)) {
                     acaoAserTratada = acao
-                    acao.gatilhos = Collections.singletonList(gatilho)
+                    acao.gatilhos = listOf(gatilho)
                     break
                 }
             }
@@ -64,7 +63,7 @@ class Acionadora(private val activity: Activity) {
             AcaoEnum.PROXIMA_MUSICA -> acionarProximaMusica(entradaMutavel)
 
             AcaoEnum.APP -> {
-                entradaMutavel = entradaMutavel.replace(acaoAserTratada.gatilhos[0], "").trim()
+                entradaMutavel = entradaMutavel.replace(acaoAserTratada.gatilhos?.get(0) ?: "", "").trim()
                 GerenciaApp.encontrarApp(entradaMutavel, activity)
                 Log.e("Tag", "abrir App")
             }
@@ -182,11 +181,12 @@ class Acionadora(private val activity: Activity) {
             return
         }
 
-        val musicaAleatoria = acaoAserTratada.gatilhos[0] == entradaMutavel
+        val gatilho0 = acaoAserTratada.gatilhos?.get(0) ?: ""
+        val musicaAleatoria = gatilho0 == entradaMutavel
         val musica = if (musicaAleatoria) {
             gerenciaMusica.encontrarMusica(null)
         } else {
-            entradaMutavel = entradaMutavel.replace(acaoAserTratada.gatilhos[0], "").trim()
+            entradaMutavel = entradaMutavel.replace(gatilho0, "").trim()
             gerenciaMusica.encontrarMusica(entradaMutavel)
         }
 

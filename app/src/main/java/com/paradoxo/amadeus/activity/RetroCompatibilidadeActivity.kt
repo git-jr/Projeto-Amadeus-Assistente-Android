@@ -78,7 +78,7 @@ class RetroCompatibilidadeActivity : AppCompatActivity() {
                             sentenca.acao = AcaoEnum.SEM_ACAO
                             sentenca.tipo_item = idItemIa
                             sentenca.chave = mensagem.conteudo
-                            sentenca.addResposta(mensagem.conteudo_resposta)
+                            sentenca.addResposta(mensagem.conteudo_resposta ?: "")
                             sentencas.add(sentenca)
 
                             progressoAtual++

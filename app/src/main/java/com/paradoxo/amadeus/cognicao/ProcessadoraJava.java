@@ -16,7 +16,7 @@
 //
 //    public static final String PREF_NOME_IA = "nomeIa";
 //
-//    public Processadora(Activity activity) {
+//    public ProcessadoraJava(Activity activity) {
 //        this.activity = activity;
 //        acionadora = new Acionadora(activity);
 //        EventBus.getDefault().register(this);

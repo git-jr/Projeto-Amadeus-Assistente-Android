@@ -57,7 +57,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     private fun inseriMensagemTesteRetrocompatibilidade() {
-        val autor = Autor("NomeAutor1")
+        val autor = Autor(nome = "NomeAutor1")
         val autorDAO = AutorDAO(this)
         autor.id = autorDAO.inserirAutor(autor).toInt()
 

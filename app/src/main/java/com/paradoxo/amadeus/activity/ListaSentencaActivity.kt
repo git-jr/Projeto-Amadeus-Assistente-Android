@@ -49,7 +49,7 @@ class ListaSentencaActivity : AppCompatActivity() {
                         sentencaDAO.listar(limiteCarregarItensRecycler)
                     } else {
                         limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
-                        sentencaDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler)
+                        sentencaDAO.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler)
                     }
                 }
 
@@ -126,7 +126,7 @@ class ListaSentencaActivity : AppCompatActivity() {
             }
         })
 
-        val itemTouchHelper = ItemTouchHelper(SimpleCallbackSentenca(adapterSimples, this))
+        val itemTouchHelper = ItemTouchHelper(SimpleCallbackSentenca(adapterSimples!!, this))
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 

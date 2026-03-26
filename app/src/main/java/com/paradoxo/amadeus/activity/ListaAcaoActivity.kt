@@ -25,7 +25,7 @@ class ListaAcaoActivity : AppCompatActivity() {
 
         private fun gerarListaAcoes(busca: String?, context: Activity): List<Sentenca> {
             val acaoDAO = AcaoDAO(context)
-            val acoes = acaoDAO.acoes
+            val acoes = acaoDAO.getAcoes() ?: emptyList()
             val itens = mutableListOf<Sentenca>()
 
             for (acao in acoes) {

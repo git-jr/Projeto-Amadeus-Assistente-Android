@@ -41,7 +41,7 @@ class EditarSentencaActivity : AppCompatActivity() {
                 override fun doInBackground(vararg voids: Void?): Void? {
                     val sentenca = Sentenca()
                     sentenca.chave = entradaValida
-                    sentenca.respostas = respostasValidas
+                    sentenca.respostas = respostasValidas.toMutableList()
 
                     val sentencaDAO = SentencaDAO(context, false)
                     if (idItem == null) {
@@ -72,9 +72,9 @@ class EditarSentencaActivity : AppCompatActivity() {
                 }
 
                 override fun doInBackground(vararg voids: Void?): Sentenca? {
-                    if (idItem == null) return null
+                    val id = idItem ?: return null
                     val sentencaDAO = SentencaDAO(context, false)
-                    return sentencaDAO.buscaPorId(idItem)
+                    return sentencaDAO.buscaPorId(id)
                 }
 
                 override fun onPostExecute(sentenca: Sentenca?) {

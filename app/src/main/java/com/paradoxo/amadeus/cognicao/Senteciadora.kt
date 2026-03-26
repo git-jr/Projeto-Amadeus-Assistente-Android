@@ -70,11 +70,11 @@ class Senteciadora(private val context: Activity) {
         if (sinonimosDisponiveis.size >= 2) {
             val analisar = sinonimosDisponiveis.take(2)
 
-            val sinonimos1 = analisar[0].sinonimos.toMutableList()
-                .also { if (analisar[0].nome != null) it.add(analisar[0].nome) }
+            val sinonimos1 = (analisar[0].sinonimos ?: emptyList()).toMutableList()
+                .also { if (analisar[0].nome != null) it.add(analisar[0].nome!!) }
 
-            val sinonimos2 = analisar[1].sinonimos.toMutableList()
-                .also { if (analisar[1].nome != null) it.add(analisar[1].nome) }
+            val sinonimos2 = (analisar[1].sinonimos ?: emptyList()).toMutableList()
+                .also { if (analisar[1].nome != null) it.add(analisar[1].nome!!) }
 
             val geradas = sinonimos1.flatMap { s1 -> sinonimos2.map { s2 -> "$s1 $s2" } }
 
@@ -88,7 +88,7 @@ class Senteciadora(private val context: Activity) {
             val sentencaDAO = SentencaDAO(context, false)
             val listaSentenca = sentencaDAO.listar()
 
-            for (entrada in sinonimosDisponiveis[0].sinonimos) {
+            for (entrada in sinonimosDisponiveis[0].sinonimos ?: emptyList()) {
                 Log.e("Testado ", entrada)
                 val encontrada = listaSentenca.firstOrNull { it.chave == entrada }
                 if (encontrada != null) {

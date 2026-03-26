@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         if (codErro != 0) {
             trocarLayoutBottom(true)
             if (codErro != SpeechRecognizer.ERROR_SPEECH_TIMEOUT && codErro != SpeechRecognizer.ERROR_NO_MATCH) {
-                meuToast(eventoMensagem.nomeErro, applicationContext)
+                meuToast(eventoMensagem.nomeErro ?: "", applicationContext)
             }
         }
     }
@@ -273,8 +273,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         recyclerView.adapter = adapter
         adapter.setOnItemClickListener { _, item, _ ->
             val itemTipoIa = item.tipo_item != ItemEnum.IA.ordinal
-            if (itemTipoIa && item.acao != AcaoEnum.SEM_ACAO && item.acao != null) {
-                acionadora.tratarAcao(Acao(item.acao), item.respostas[0])
+            val itemAcao = item.acao
+            if (itemTipoIa && itemAcao != null && itemAcao != AcaoEnum.SEM_ACAO) {
+                acionadora.tratarAcao(Acao(itemAcao), item.respostas[0])
             } else {
                 val itemTipoUsuario = item.tipo_item == ItemEnum.USUARIO.ordinal
                 if (!itemTipoIa || itemTipoUsuario) {
@@ -293,7 +294,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     @Suppress("unused")
     private fun gerarListaTeste(context: Activity): List<Sentenca> {
         val acaoDAO = AcaoDAO(context)
-        val acoes = acaoDAO.acoes
+        val acoes = acaoDAO.getAcoes() ?: emptyList()
         val itens = ArrayList<Sentenca>()
         for (acao in acoes) {
             val sentenca = Sentenca("Gatilhos: " + acao.gatilhos.toString(), AcaoEnum.SEM_ACAO)

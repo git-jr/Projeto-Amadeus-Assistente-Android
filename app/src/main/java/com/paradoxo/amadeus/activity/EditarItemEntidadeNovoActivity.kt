@@ -56,7 +56,7 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
                     super.onPostExecute(entidade)
                     if (entidade == null) return
                     entradaEditText?.setText(entidade.nome)
-                    atualizarRecycler(entidade.sinonimos)
+                    atualizarRecycler(entidade.sinonimos ?: emptyList())
                 }
             }.execute()
         }
@@ -79,7 +79,7 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
                     } else {
                         entidadeEmUso!!.nome = entradaValida
                         entidadeEmUso!!.sinonimos = adapter!!.itens
-                        entidadeDAO.alterarSentenca(entidadeEmUso)
+                        entidadeDAO.alterarSentenca(entidadeEmUso!!)
                     }
                     return null
                 }

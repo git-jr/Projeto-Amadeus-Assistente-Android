@@ -51,7 +51,7 @@ class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogI
                         entidadeDAO.listar(limiteCarregarItensRecycler)
                     } else {
                         limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
-                        entidadeDAO.buscaPorChaveLista(textoBusca, limiteCarregarItensRecycler)
+                        entidadeDAO.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler)
                     }
                 }
 
