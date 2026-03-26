@@ -20,6 +20,7 @@ import com.paradoxo.amadeus.util.GerenciaMusica
 import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import org.greenrobot.eventbus.EventBus
+import com.paradoxo.amadeus.extensions.normalize
 import java.util.Random
 
 class Acionadora(private val activity: Activity) {
@@ -33,19 +34,20 @@ class Acionadora(private val activity: Activity) {
 
     fun isAcao(entrada: String) {
         var acaoAserTratada = Acao(AcaoEnum.SEM_ACAO)
+        val entradaNorm = entrada.normalize()
 
         val acaoDAO = AcaoDAO(activity)
         val acoesDisponiveis = acaoDAO.getAcoes() ?: return
 
         for (acao in acoesDisponiveis) {
-            for (gatilho in acao.gatilhos ?: emptyList()) {
-                if (entrada.contains(gatilho)) {
-                    acaoAserTratada = acao
-                    acao.gatilhos = listOf(gatilho)
-                    break
-                }
+            val gatilhoMatch = acao.gatilhos?.firstOrNull { it.normalize() == entradaNorm }
+                ?: acao.gatilhos?.firstOrNull { entradaNorm.contains(it.normalize()) }
+
+            if (gatilhoMatch != null) {
+                acaoAserTratada = acao
+                acao.gatilhos = listOf(gatilhoMatch)
+                break
             }
-            if (acaoAserTratada.acaoEnum != AcaoEnum.SEM_ACAO) break
         }
 
         tratarAcao(acaoAserTratada, entrada)
@@ -163,7 +165,7 @@ class Acionadora(private val activity: Activity) {
             val musica = gerenciaMusica.encontrarMusica(null)
             gerenciaMusica.configurarMediPlayer(musica)
         } else {
-            if (entrada.contains("música") || entrada.contains("musica")) {
+            if (entrada.normalize().contains("musica")) {
                 notificarOutput(activity.getString(R.string.nehuma_musica_em_reproducao))
             } else {
                 acionarSentenciadora(entrada)
@@ -182,8 +184,7 @@ class Acionadora(private val activity: Activity) {
         }
 
         val gatilho0 = acaoAserTratada.gatilhos?.get(0) ?: ""
-        val musicaAleatoria = gatilho0 == entradaMutavel
-        val musica = if (musicaAleatoria) {
+        val musica = if (gatilho0.normalize() == entradaMutavel.normalize()) {
             gerenciaMusica.encontrarMusica(null)
         } else {
             entradaMutavel = entradaMutavel.replace(gatilho0, "").trim()
@@ -197,4 +198,5 @@ class Acionadora(private val activity: Activity) {
         val sentenca = Sentenca(mensagem)
         EventBus.getDefault().post(sentenca)
     }
+
 }
