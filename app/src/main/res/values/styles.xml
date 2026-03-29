@@ -52,4 +52,15 @@
         <item name="android:color">@color/colorSecondaryDark3</item>
     </style>
 
+    <!-- Tema Material 3 para ConfigPrimariaActivity -->
+    <style name="Theme.Amadeus.ConfigPrimaria" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
 </resources>

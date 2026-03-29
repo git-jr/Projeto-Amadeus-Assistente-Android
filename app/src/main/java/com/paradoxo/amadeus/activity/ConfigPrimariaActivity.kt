@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import android.widget.ToggleButton
+import com.google.android.material.materialswitch.MaterialSwitch
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -22,7 +22,7 @@ import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 class ConfigPrimariaActivity : AppCompatActivity() {
 
     private var primeiroUso = true
-    private lateinit var acessoDadosToggleButton: ToggleButton
+    private lateinit var acessoDadosToggleButton: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
 
@@ -47,7 +47,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     }
 
     private fun configurarToggleButton() {
-        val modoFalaToggleButton = findViewById<ToggleButton>(R.id.modoFalaToggleButton)
+        val modoFalaToggleButton = findViewById<MaterialSwitch>(R.id.modoFalaToggleButton)
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)

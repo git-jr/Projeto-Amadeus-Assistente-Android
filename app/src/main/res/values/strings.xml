@@ -22,6 +22,7 @@
     <string name="pesquisar_por">Pesquisar por…</string>
     <string name="digite_seu_nome">Digite seu nome</string>
     <string name="digite_um_nome_para_ia">Digite um nome para IA</string>
+    <string name="configure_seu_perfil">Configure seu perfil</string>
     <string name="configuracao_inicial">Configuração inicial</string>
     <string name="modo_fala">Voz da IA</string>
     <string name="configs_podem_ser_alteradas_depois">As configurações podem ser\nalteradas mais tarde</string>
