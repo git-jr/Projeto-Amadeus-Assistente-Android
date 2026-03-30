@@ -3,21 +3,18 @@ package com.paradoxo.amadeus.activity
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.lifecycle.lifecycleScope
 import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.dao.AutorDAO
-import com.paradoxo.amadeus.dao.EntidadeDAO
-import com.paradoxo.amadeus.dao.MensagemDAO
-import com.paradoxo.amadeus.dao.SentencaDAO
-import com.paradoxo.amadeus.modelo.Autor
-import com.paradoxo.amadeus.modelo.Mensagem
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.JsonAssetLoader
+import com.paradoxo.amadeus.dao.room.toEntity
+import com.paradoxo.amadeus.dao.room.toHistoricoEntity
 import com.paradoxo.amadeus.util.Animacoes
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Preferencias.appJaFoiAberto
@@ -25,50 +22,35 @@ import com.paradoxo.amadeus.util.Preferencias.confirmarAberturaApp
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SplashScreenActivity : AppCompatActivity() {
-
-    private lateinit var context: Activity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
-
-        context = this
-        checarVersaoAntiga()
-    }
-
-    private fun iniciarApp() {
         configurarToolBarBranca(this)
-        verificarBanco(appJaFoiAberto(this), this)
+        iniciar()
     }
 
-    private fun checarVersaoAntiga() {
-        val mensagemDAO = MensagemDAO(this)
-        val bancoAntigoExiste = mensagemDAO.verificarExistencia(Mensagem(0))
+    private fun iniciar() {
+        lifecycleScope.launch {
+            // ── Etapa 1: dados legados (tabela mensagem) ────────────────────
+            val bancoAntigoExiste = withContext(Dispatchers.IO) {
+                AmadeusDatabase.getInstance(this@SplashScreenActivity)
+                    .mensagemDAO().contarMensagens() > 0
+            }
 
-        if (bancoAntigoExiste) {
-            startActivity(Intent(this, RetroCompatibilidadeActivity::class.java))
-            finish()
-        } else {
-            iniciarApp()
-        }
-    }
+            if (bancoAntigoExiste) {
+                startActivity(Intent(this@SplashScreenActivity, RetroCompatibilidadeActivity::class.java))
+                finish()
+                return@launch
+            }
 
-    @Suppress("DEPRECATION")
-    private fun inseriMensagemTesteRetrocompatibilidade() {
-        val autor = Autor(nome = "NomeAutor1")
-        val autorDAO = AutorDAO(this)
-        autor.id = autorDAO.inserirAutor(autor).toInt()
-
-        val mensagemDAO = MensagemDAO(this)
-        var i = 1
-        while (i != 2500) {
-            mensagemDAO.inserirMensagemImportada("boa $i", 1)
-            mensagemDAO.inserirMensagemImportada("notche $i", 1)
-            mensagemDAO.inserirRespostaImportada(i, i + 1)
-            i++
-            Log.e("Gravando...", i.toString())
+            // ── Etapa 2: carga inicial de assets ───────────────────────────
+            verificarBanco(appJaFoiAberto(this@SplashScreenActivity), this@SplashScreenActivity)
         }
     }
 
@@ -84,9 +66,18 @@ class SplashScreenActivity : AppCompatActivity() {
 
     companion object {
         private fun trocarTextoPreCarregamentoBanco(context: Activity) {
-            (context.findViewById<TextView>(R.id.subTituloTextView)).text = context.getString(R.string.carregando_banco)
+            context.findViewById<TextView>(R.id.subTituloTextView)?.text =
+                context.getString(R.string.carregando_banco)
             Animacoes.animarComFade(context.findViewById(R.id.logoAmadeusImageView), false)
             Animacoes.animarComFade(context.findViewById(R.id.progressoLayout), true)
+        }
+
+        private fun atualizarProgresso(porcentagem: Int, context: Activity) {
+            context.findViewById<ProgressBar>(R.id.barraProgresso)?.let {
+                it.isIndeterminate = false
+                it.progress = porcentagem
+            }
+            context.findViewById<TextView>(R.id.progressoTextView)?.text = "$porcentagem%"
         }
 
         private fun decidirParaOndevai(context: Activity) {
@@ -98,8 +89,7 @@ class SplashScreenActivity : AppCompatActivity() {
             context.finish()
         }
 
-        @Suppress("DEPRECATION")
-        private fun verificarBanco(bancoJaInserido: Boolean, context: Activity) {
+        private fun verificarBanco(bancoJaInserido: Boolean, context: AppCompatActivity) {
             try {
                 val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                 val longVersionCode = PackageInfoCompat.getLongVersionCode(pInfo)
@@ -107,6 +97,7 @@ class SplashScreenActivity : AppCompatActivity() {
                 if (longVersionCode < 18 || !bancoJaInserido) {
                     copiarBanco(context)
                 } else {
+                    @Suppress("DEPRECATION")
                     Handler().postDelayed({ decidirParaOndevai(context) }, 1000)
                 }
             } catch (e: PackageManager.NameNotFoundException) {
@@ -115,71 +106,58 @@ class SplashScreenActivity : AppCompatActivity() {
             }
         }
 
-        @Suppress("DEPRECATION")
-        private fun copiarBanco(context: Activity) {
-            object : AsyncTask<Void?, Int, Boolean>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    trocarTextoPreCarregamentoBanco(context)
-                }
+        private fun copiarBanco(context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                trocarTextoPreCarregamentoBanco(context)
+                var sucesso = false
 
-                override fun doInBackground(vararg voids: Void?): Boolean {
-                    return try {
-                        val sentencaDAO = SentencaDAO(context, false)
-                        val sentencaDAOHistorico = SentencaDAO(context, true)
-                        val entidadeDAO = EntidadeDAO(context)
+                withContext(Dispatchers.IO) {
+                    try {
+                        val db = AmadeusDatabase.getInstance(context)
+                        val sentencasDao = db.sentencaDAO()
 
-                        val sentencasJson = sentencaDAO.sentencasPadraoJson
-                        val sentencasHistoricoJson = sentencaDAOHistorico.sentencasHistoricoPadraoJson
-                        val entidadesJson = entidadeDAO.entidadesPadraoJson
+                        val sentencasJson = JsonAssetLoader.carregarSentencas(context)
+                        val sentencasHistoricoJson = JsonAssetLoader.carregarSentencasHistorico(context)
+                        val entidadesJson = JsonAssetLoader.carregarEntidades(context)
 
                         val progressoTotal = sentencasJson.size + sentencasHistoricoJson.size + entidadesJson.size
                         var progressoAtual = 0
 
                         for (sentenca in sentencasJson) {
-                            sentencaDAO.inserir(sentenca)
+                            sentencasDao.inserir(sentenca.toEntity())
                             progressoAtual++
-                            publishProgress(((progressoAtual / progressoTotal.toFloat()) * 100).toInt())
+                            val pct = ((progressoAtual / progressoTotal.toFloat()) * 100).toInt()
+                            withContext(Dispatchers.Main) { atualizarProgresso(pct, context) }
                         }
 
                         for (sentenca in sentencasHistoricoJson) {
-                            sentencaDAOHistorico.inserir(sentenca)
+                            sentencasDao.inserirHistorico(sentenca.toHistoricoEntity())
                             progressoAtual++
-                            publishProgress(((progressoAtual / progressoTotal.toFloat()) * 100).toInt())
+                            val pct = ((progressoAtual / progressoTotal.toFloat()) * 100).toInt()
+                            withContext(Dispatchers.Main) { atualizarProgresso(pct, context) }
                         }
 
                         for (entidade in entidadesJson) {
-                            entidadeDAO.inserir(entidade)
+                            db.entidadeDAO().inserir(entidade.toEntity())
                             progressoAtual++
-                            publishProgress(((progressoAtual / progressoTotal.toFloat()) * 100).toInt())
+                            val pct = ((progressoAtual / progressoTotal.toFloat()) * 100).toInt()
+                            withContext(Dispatchers.Main) { atualizarProgresso(pct, context) }
                         }
 
-                        true
+                        sucesso = true
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        false
                     }
                 }
 
-                override fun onPostExecute(bancoInserido: Boolean) {
-                    super.onPostExecute(bancoInserido)
-                    if (bancoInserido) {
-                        confirmarAberturaApp(context)
-                        verificarBanco(true, context)
-                    } else {
-                        meuToast("Erro ao carregar o banco de dados", context)
-                        meuToastLong("Reinicie o app", context)
-                    }
+                if (sucesso) {
+                    confirmarAberturaApp(context)
+                    verificarBanco(true, context)
+                } else {
+                    meuToast("Erro ao carregar o banco de dados", context)
+                    meuToastLong("Reinicie o app", context)
                 }
-
-                override fun onProgressUpdate(vararg values: Int?) {
-                    super.onProgressUpdate(*values)
-                    val porcentagemProgresso = values[0] ?: 0
-                    val progressoAtual = "$porcentagemProgresso%"
-                    (context.findViewById<TextView>(R.id.progressoTextView)).text = progressoAtual
-                    (context.findViewById<ProgressBar>(R.id.barraProgresso)).progress = porcentagemProgresso
-                }
-            }.execute()
+            }
         }
     }
 }

@@ -1,22 +1,25 @@
 package com.paradoxo.amadeus.activity
 
-import android.app.Activity
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.adapter.AdapterSimples
 import com.paradoxo.amadeus.adapter.SimpleCallbackSentenca
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ListaSentencaActivity : AppCompatActivity() {
 
@@ -35,33 +38,24 @@ class ListaSentencaActivity : AppCompatActivity() {
             }
         }
 
-        @Suppress("DEPRECATION")
-        private fun carregaSentencaBanco(context: Activity) {
-            object : AsyncTask<Void?, Void?, List<Sentenca>>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
-                }
-
-                override fun doInBackground(vararg voids: Void?): List<Sentenca> {
-                    val sentencaDAO = SentencaDAO(context, false)
-                    return if (textoBusca.isNullOrEmpty()) {
-                        sentencaDAO.listar(limiteCarregarItensRecycler)
+        private fun carregaSentencaBanco(context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
+                val sentencas = withContext(Dispatchers.IO) {
+                    val dao = AmadeusDatabase.getInstance(context).sentencaDAO()
+                    if (textoBusca.isNullOrEmpty()) {
+                        dao.listarComLimite(limiteCarregarItensRecycler).map { it.toModel() }
                     } else {
                         limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
-                        sentencaDAO.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler)
+                        dao.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler).map { it.toModel() }
                     }
                 }
-
-                override fun onPostExecute(sentencas: List<Sentenca>) {
-                    super.onPostExecute(sentencas)
-                    if (textoBusca.isNullOrEmpty()) {
-                        atualizarRecycler(sentencas)
-                    } else {
-                        adapterSimples?.trocarLista(sentencas)
-                    }
+                if (textoBusca.isNullOrEmpty()) {
+                    atualizarRecycler(sentencas)
+                } else {
+                    adapterSimples?.trocarLista(sentencas)
                 }
-            }.execute()
+            }
         }
     }
 

@@ -1,0 +1,222 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "cd2acc5cd0aad3ecc5652dcbb1a78334",
+    "entities": [
+      {
+        "tableName": "autor",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nome` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "mensagem",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `conteudo` TEXT, `fk_autor` INTEGER, `dt` REAL, `fk_resposta` INTEGER, FOREIGN KEY(`fk_autor`) REFERENCES `autor`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`fk_resposta`) REFERENCES `mensagem`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "conteudo",
+            "columnName": "conteudo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fk_autor",
+            "columnName": "fk_autor",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dt",
+            "columnName": "dt",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "fk_resposta",
+            "columnName": "fk_resposta",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "autor",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "fk_autor"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "mensagem",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "fk_resposta"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "sentenca",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER, `idBanco` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chave",
+            "columnName": "chave",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "respostas",
+            "columnName": "respostas",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "acao",
+            "columnName": "acao",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tipo_item",
+            "columnName": "tipo_item",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "idBanco",
+            "columnName": "idBanco",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "historico_sentenca",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chave",
+            "columnName": "chave",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "respostas",
+            "columnName": "respostas",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "acao",
+            "columnName": "acao",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tipo_item",
+            "columnName": "tipo_item",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "entidade",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nome` TEXT, `significados` TEXT, `sinonimos` TEXT, `atributos` TEXT, `idBanco` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "significados",
+            "columnName": "significados",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sinonimos",
+            "columnName": "sinonimos",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "atributos",
+            "columnName": "atributos",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "idBanco",
+            "columnName": "idBanco",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cd2acc5cd0aad3ecc5652dcbb1a78334')"
+    ]
+  }
+}

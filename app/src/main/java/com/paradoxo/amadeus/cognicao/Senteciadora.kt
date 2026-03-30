@@ -3,8 +3,9 @@ package com.paradoxo.amadeus.cognicao
 import android.app.Activity
 import android.util.Log
 import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.dao.EntidadeDAO
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toEntity
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.enums.ItemEnum
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.modelo.Sentenca
@@ -25,48 +26,47 @@ class Senteciadora(private val context: Activity) {
     }
 
     fun isSentenca(entrada: String) {
-        val sentencaDAO = SentencaDAO(context, false)
-        val sentenca = sentencaDAO.buscaPorChave(entrada)
-
-        when {
-            sentenca.chave != null -> notificarOutput(sentenca)
-            Preferencias.getPrefBool(PREF_USAR_SINONIMOS_BUSCA, context, false) ->
-                buscaPorSinonimos(entrada.lowercase())
-            else -> notificarOutputSemResposta()
-        }
-    }
-
-    private fun buscaPorSinonimos(entradaOriginal: String) {
-        val chaves = entradaOriginal.split(" ")
-
         CoroutineScope(Dispatchers.IO).launch {
-            val entidadeDAO = EntidadeDAO(context)
-            val entidadesSinonimo = mutableListOf<Entidade>()
+            val sentenca = AmadeusDatabase.getInstance(context)
+                .sentencaDAO().buscaPorChave(entrada)?.toModel()
 
-            for (chave in chaves) {
-                var entidade = entidadeDAO.buscaPorChave(chave)
-
-                if (entidade.nome == null) {
-                    entidade = Entidade().apply {
-                        nome = chave
-                        try { sinonimos = ScanPage.obterSinonimo(chave) } catch (e: Exception) { e.printStackTrace() }
-                        try { significado = ScanPage.obterSignificado(chave) } catch (e: Exception) { e.printStackTrace() }
-                    }
-                    if (entidade.sinonimos != null) entidadeDAO.inserir(entidade)
-                }
-
-                if (entidade.sinonimos != null) entidadesSinonimo.add(entidade)
-            }
-
-            if (entidadesSinonimo.isEmpty()) {
-                notificarOutputSemResposta()
-            } else {
-                reformularEntradaComSinonimos(entidadesSinonimo)
+            when {
+                sentenca?.chave != null -> notificarOutput(sentenca)
+                Preferencias.getPrefBool(PREF_USAR_SINONIMOS_BUSCA, context, false) ->
+                    buscaPorSinonimos(entrada.lowercase())
+                else -> notificarOutputSemResposta()
             }
         }
     }
 
-    private fun reformularEntradaComSinonimos(sinonimosDisponiveis: List<Entidade>) {
+    private suspend fun buscaPorSinonimos(entradaOriginal: String) {
+        val chaves = entradaOriginal.split(" ")
+        val db = AmadeusDatabase.getInstance(context)
+        val entidadesSinonimo = mutableListOf<Entidade>()
+
+        for (chave in chaves) {
+            var entidade = db.entidadeDAO().buscaPorChave(chave)?.toModel()
+
+            if (entidade == null) {
+                entidade = Entidade().apply {
+                    nome = chave
+                    try { sinonimos = ScanPage.obterSinonimo(chave) } catch (e: Exception) { e.printStackTrace() }
+                    try { significado = ScanPage.obterSignificado(chave) } catch (e: Exception) { e.printStackTrace() }
+                }
+                if (entidade.sinonimos != null) db.entidadeDAO().inserir(entidade.toEntity())
+            }
+
+            if (entidade.sinonimos != null) entidadesSinonimo.add(entidade)
+        }
+
+        if (entidadesSinonimo.isEmpty()) {
+            notificarOutputSemResposta()
+        } else {
+            reformularEntradaComSinonimos(entidadesSinonimo)
+        }
+    }
+
+    private suspend fun reformularEntradaComSinonimos(sinonimosDisponiveis: List<Entidade>) {
         if (sinonimosDisponiveis.size >= 2) {
             val analisar = sinonimosDisponiveis.take(2)
 
@@ -78,15 +78,13 @@ class Senteciadora(private val context: Activity) {
 
             val geradas = sinonimos1.flatMap { s1 -> sinonimos2.map { s2 -> "$s1 $s2" } }
 
-            // Apenas dois níveis de combinação são usados por enquanto; adicionar mais
-            // significa ampliar o "if" inicial e mais iterações no flatMap acima.
             val entidadeNova = Entidade().apply { sinonimos = geradas }
             val restante = listOf(entidadeNova) + sinonimosDisponiveis.drop(2)
 
             reformularEntradaComSinonimos(restante)
         } else {
-            val sentencaDAO = SentencaDAO(context, false)
-            val listaSentenca = sentencaDAO.listar()
+            val listaSentenca = AmadeusDatabase.getInstance(context)
+                .sentencaDAO().listar().map { it.toModel() }
 
             for (entrada in sinonimosDisponiveis[0].sinonimos ?: emptyList()) {
                 Log.e("Testado ", entrada)

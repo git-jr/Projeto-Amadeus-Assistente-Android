@@ -33,14 +33,14 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/entradaTextInput"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/text_margin"
                     android:hint="@string/exemplo_casa"
                     app:boxStrokeColor="@color/borda_card"
                     app:errorTextAppearance="@style/TextAppearance.App.Error.Personalizado"
-                    app:hintTextAppearance="@style/TextAppearance.App.Hint.Personalizado">
+                    app:hintTextColor="@color/conteudo_card">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/entradaEditText"
@@ -81,7 +81,7 @@
                     android:contentDescription="@string/descricao_img_botao_add_resposta"
                     android:padding="@dimen/padding_bottom_card"
                     android:src="@drawable/ic_add"
-                    android:tint="@color/colorPrimary" />
+                    app:tint="@color/colorPrimary" />
 
 
             </LinearLayout>
