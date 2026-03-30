@@ -13,7 +13,7 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 21
         targetSdk 35
-        versionCode 26
+        versionCode 27
         versionName "3.0.0-beta-01"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
