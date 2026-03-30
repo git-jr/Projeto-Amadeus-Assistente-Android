@@ -2,20 +2,25 @@ package com.paradoxo.amadeus.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toEntity
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.enums.ItemEnum
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class EditarSentencaActivity : AppCompatActivity() {
 
@@ -30,64 +35,47 @@ class EditarSentencaActivity : AppCompatActivity() {
             context.finish()
         }
 
-        @Suppress("DEPRECATION")
-        fun gravarDados(entradaValida: String, respostasValidas: List<String>, context: Activity) {
-            object : AsyncTask<Void?, Void?, Void?>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    meuToast(context.getString(R.string.salvando_dados), context)
-                }
+        fun gravarDados(entradaValida: String, respostasValidas: List<String>, context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                meuToast(context.getString(R.string.salvando_dados), context)
 
-                override fun doInBackground(vararg voids: Void?): Void? {
-                    val sentenca = Sentenca()
-                    sentenca.chave = entradaValida
-                    sentenca.respostas = respostasValidas.toMutableList()
-
-                    val sentencaDAO = SentencaDAO(context, false)
+                withContext(Dispatchers.IO) {
+                    val sentenca = Sentenca().apply {
+                        chave = entradaValida
+                        respostas = respostasValidas.toMutableList()
+                    }
+                    val dao = AmadeusDatabase.getInstance(context).sentencaDAO()
                     if (idItem == null) {
-                        sentencaDAO.inserir(sentenca)
+                        dao.inserir(sentenca.toEntity())
                     } else {
                         sentenca.id = idItem
                         sentenca.acao = AcaoEnum.SEM_ACAO
                         sentenca.tipo_item = ItemEnum.USUARIO.ordinal
-                        sentencaDAO.alterarSentenca(sentenca)
+                        dao.alterar(sentenca.toEntity())
                     }
-                    return null
                 }
 
-                override fun onPostExecute(v: Void?) {
-                    super.onPostExecute(v)
-                    meuToast(context.getString(R.string.salvo), context)
-                    finilizarActivity(context)
-                }
-            }.execute()
+                meuToast(context.getString(R.string.salvo), context)
+                finilizarActivity(context)
+            }
         }
 
-        @Suppress("DEPRECATION")
-        private fun carregarSentenca(context: Activity) {
-            object : AsyncTask<Void?, Void?, Sentenca?>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    idItem = context.intent.getStringExtra("idItem")
-                }
+        private fun carregarSentenca(context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                idItem = context.intent.getStringExtra("idItem")
+                val id = idItem?.toIntOrNull() ?: return@launch
 
-                override fun doInBackground(vararg voids: Void?): Sentenca? {
-                    val id = idItem ?: return null
-                    val sentencaDAO = SentencaDAO(context, false)
-                    return sentencaDAO.buscaPorId(id)
-                }
+                val sentenca = withContext(Dispatchers.IO) {
+                    AmadeusDatabase.getInstance(context).sentencaDAO().buscaPorId(id)?.toModel()
+                } ?: return@launch
 
-                override fun onPostExecute(sentenca: Sentenca?) {
-                    super.onPostExecute(sentenca)
-                    if (sentenca == null) return
-                    entradaEditText?.setText(sentenca.chave)
-                    for ((id, resposta) in sentenca.respostas.withIndex()) {
-                        respostas[id].setText(resposta)
-                        respostas[id].visibility = View.VISIBLE
-                        layoutsRepostas[id].visibility = View.VISIBLE
-                    }
+                entradaEditText?.setText(sentenca.chave)
+                for ((idx, resposta) in sentenca.respostas.withIndex()) {
+                    respostas[idx].setText(resposta)
+                    respostas[idx].visibility = View.VISIBLE
+                    layoutsRepostas[idx].visibility = View.VISIBLE
                 }
-            }.execute()
+            }
         }
     }
 
@@ -184,7 +172,7 @@ class EditarSentencaActivity : AppCompatActivity() {
         if (totalVisiveis == 0) {
             meuToast(getString(R.string.deve_haver_ao_menos_uma_reposta), applicationContext)
         } else {
-            gravarDados(entradaEditText?.text.toString().trim() ?: "", respostasValidas, this)
+            gravarDados(entradaEditText?.text.toString().trim(), respostasValidas, this)
         }
     }
 

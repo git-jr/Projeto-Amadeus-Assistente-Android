@@ -3,7 +3,6 @@ package com.paradoxo.amadeus.activity
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Vibrator
@@ -19,6 +18,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.airbnb.lottie.LottieAnimationView
@@ -28,7 +28,9 @@ import com.paradoxo.amadeus.cognicao.Acionadora
 import com.paradoxo.amadeus.cognicao.Processadora
 import com.paradoxo.amadeus.cognicao.faisca.Inicia
 import com.paradoxo.amadeus.dao.AcaoDAO
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toHistoricoEntity
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.enums.ItemEnum
 import com.paradoxo.amadeus.enums.ItemEnum.ITEM_LOAD
@@ -47,6 +49,9 @@ import com.paradoxo.amadeus.util.Validadora.validarTexto
 import com.paradoxo.amadeus.util.voz.EscutadaoraService
 import com.paradoxo.amadeus.util.voz.TextoParaVoz
 import com.paradoxo.amadeus.util.voz.VozParaTexto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.ArrayList
@@ -76,7 +81,6 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         setContentView(R.layout.activity_main)
         configurarServicosSegundoPlano()
         configurarIterface()
-        // Solicita permissão de armazenamento se ainda não concedida
         if (!Permissao.armazenamentoAcessivel(this)) {
             Permissao.solicitarAcessoArmazenamento(this)
         }
@@ -142,16 +146,22 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             adapter.remove(adapter.itemCount - 1)
             recyclerView.smoothScrollToPosition(adapter.itemCount)
         }
-        val sentencaDAOHistorico = SentencaDAO(this, true)
-        idUltimoHistoricoGravado = sentencaDAOHistorico.inserir(sentenca)
-        sentenca.id = idUltimoHistoricoGravado.toString()
-        adapter.add(sentenca)
-        if (sentenca.tipo_item == ItemEnum.USUARIO.ordinal) {
-            adapter.add(Sentenca(ITEM_LOAD.ordinal))
-        } else {
-            textoParaVoz.configurarFalaIA(sentenca.respostas[0])
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val id = AmadeusDatabase.getInstance(this@MainActivity)
+                .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
+            withContext(Dispatchers.Main) {
+                idUltimoHistoricoGravado = id
+                sentenca.id = id.toString()
+                adapter.add(sentenca)
+                if (sentenca.tipo_item == ItemEnum.USUARIO.ordinal) {
+                    adapter.add(Sentenca(ITEM_LOAD.ordinal))
+                } else {
+                    textoParaVoz.configurarFalaIA(sentenca.respostas[0])
+                }
+                Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
+            }
         }
-        Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
     }
 
     @Subscribe
@@ -331,9 +341,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         when (which) {
             -1 -> {
                 meuToast("Ok posi= $posi", applicationContext)
-                val sentencaDAO = SentencaDAO(applicationContext, true)
-                sentencaDAO.excluir(adapter.itens[posi])
-                adapter.remove(posi)
+                val sentenca = adapter.itens[posi]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AmadeusDatabase.getInstance(applicationContext)
+                        .sentencaDAO().excluirHistorico(sentenca.toHistoricoEntity())
+                    withContext(Dispatchers.Main) {
+                        adapter.remove(posi)
+                    }
+                }
             }
             -2 -> {}
         }
@@ -385,14 +400,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            1 -> { // microfone
+            1 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     meuToast("Permissão de microfone concedida", applicationContext)
                 } else {
                     meuToast("Permissão de microfone negada", applicationContext)
                 }
             }
-            2 -> { // armazenamento
+            2 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     meuToast("Permissão de armazenamento concedida", applicationContext)
                 } else {
@@ -419,19 +434,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             inicia.despertar()
         }
 
-        @Suppress("DEPRECATION")
-        private fun carregaSentencaBanco(context: Activity) {
-            object : AsyncTask<Void?, Void?, List<Sentenca>>() {
-                override fun doInBackground(vararg params: Void?): List<Sentenca> {
-                    val sentencaDAO = SentencaDAO(context, true)
-                    return sentencaDAO.listar()
-                }
-
-                override fun onPostExecute(sentencas: List<Sentenca>) {
-                    super.onPostExecute(sentencas)
+        private fun carregaSentencaBanco(context: AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                val sentencas = AmadeusDatabase.getInstance(context)
+                    .sentencaDAO().listarHistorico().map { it.toModel() }
+                withContext(Dispatchers.Main) {
                     atualizarRecycler(sentencas, context)
                 }
-            }.execute()
+            }
         }
     }
 }

@@ -10,8 +10,12 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.util.Toasts
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SimpleCallbackSentenca(
     private val adapterSentenca: AdapterSimples,
@@ -59,7 +63,10 @@ class SimpleCallbackSentenca(
             .setMessage(context.getString(R.string.cornfimar_exclusao_item))
             .setPositiveButton(R.string.ok) { _, _ ->
                 try {
-                    SentencaDAO(context, false).excluir(adapterSentenca.getItens()[pos])
+                    val sentenca = adapterSentenca.getItens()[pos]
+                    CoroutineScope(Dispatchers.IO).launch {
+                        AmadeusDatabase.getInstance(context).sentencaDAO().excluir(sentenca.toEntity())
+                    }
                     adapterSentenca.remove(pos)
                     Toasts.meuToast(context.getString(R.string.excluido_com_sucesso), context)
                     if (adapterSentenca.getItens().isEmpty()) {

@@ -1,24 +1,28 @@
 package com.paradoxo.amadeus.activity
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Vibrator
 import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.adapter.AdapterSimplesEntidade
-import com.paradoxo.amadeus.dao.EntidadeDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toEntity
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -37,33 +41,24 @@ class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogI
             }
         }
 
-        @Suppress("DEPRECATION")
-        private fun carregaSentencaBanco(context: Activity) {
-            object : AsyncTask<Void?, Void?, List<Entidade>>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
-                }
-
-                override fun doInBackground(vararg voids: Void?): List<Entidade> {
-                    val entidadeDAO = EntidadeDAO(context)
-                    return if (textoBusca.isNullOrEmpty()) {
-                        entidadeDAO.listar(limiteCarregarItensRecycler)
+        private fun carregaSentencaBanco(context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                limiteCarregarItensRecycler += LIMITE_ITENS_PADRAO
+                val entidades = withContext(Dispatchers.IO) {
+                    val dao = AmadeusDatabase.getInstance(context).entidadeDAO()
+                    if (textoBusca.isNullOrEmpty()) {
+                        dao.listarComLimite(limiteCarregarItensRecycler).map { it.toModel() }
                     } else {
                         limiteCarregarItensRecycler = LIMITE_ITENS_PADRAO
-                        entidadeDAO.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler)
+                        dao.buscaPorChaveLista(textoBusca ?: "", limiteCarregarItensRecycler).map { it.toModel() }
                     }
                 }
-
-                override fun onPostExecute(entidades: List<Entidade>) {
-                    super.onPostExecute(entidades)
-                    if (textoBusca.isNullOrEmpty()) {
-                        atualizarRecycler(entidades)
-                    } else {
-                        adapterSimples?.trocarLista(entidades)
-                    }
+                if (textoBusca.isNullOrEmpty()) {
+                    atualizarRecycler(entidades)
+                } else {
+                    adapterSimples?.trocarLista(entidades)
                 }
-            }.execute()
+            }
         }
     }
 
@@ -149,9 +144,13 @@ class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogI
     }
 
     private fun deletarEntidade(posi: Int) {
-        val entidadeDAO = EntidadeDAO(applicationContext)
-        entidadeDAO.excluir(adapterSimples!!.itens[posi])
-        adapterSimples?.remove(posi)
+        val entidade = adapterSimples!!.itens[posi]
+        lifecycleScope.launch(Dispatchers.IO) {
+            AmadeusDatabase.getInstance(applicationContext).entidadeDAO().excluir(entidade.toEntity())
+            withContext(Dispatchers.Main) {
+                adapterSimples?.remove(posi)
+            }
+        }
     }
 
     override fun finish() {
