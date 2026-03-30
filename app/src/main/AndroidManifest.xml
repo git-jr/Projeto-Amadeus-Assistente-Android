@@ -68,7 +68,7 @@
         <activity
             android:name=".activity.EditarItemEntidadeNovoActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
+            android:theme="@style/Theme.Amadeus.ConfigPrimaria"
             android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".activity.VozConfigActivity"
