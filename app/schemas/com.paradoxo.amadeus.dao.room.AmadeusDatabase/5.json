@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "cd2acc5cd0aad3ecc5652dcbb1a78334",
+    "identityHash": "0c1e43f32f96bff9ccc943caa27b4912",
     "entities": [
       {
         "tableName": "autor",
@@ -91,7 +91,7 @@
       },
       {
         "tableName": "sentenca",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER, `idBanco` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER, `idBanco` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -126,7 +126,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "id"
           ]
@@ -134,7 +134,7 @@
       },
       {
         "tableName": "historico_sentenca",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `chave` TEXT, `respostas` TEXT, `acao` TEXT, `tipo_item` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -164,7 +164,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "id"
           ]
@@ -172,7 +172,7 @@
       },
       {
         "tableName": "entidade",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nome` TEXT, `significados` TEXT, `sinonimos` TEXT, `atributos` TEXT, `idBanco` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nome` TEXT, `significados` TEXT, `sinonimos` TEXT, `atributos` TEXT, `idBanco` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -207,7 +207,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "id"
           ]
@@ -216,7 +216,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cd2acc5cd0aad3ecc5652dcbb1a78334')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0c1e43f32f96bff9ccc943caa27b4912')"
     ]
   }
 }

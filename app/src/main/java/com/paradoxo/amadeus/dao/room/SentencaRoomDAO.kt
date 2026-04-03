@@ -9,7 +9,7 @@ interface SentencaRoomDAO {
 
     // ── sentenca ──────────────────────────────────────────────────────────────
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun inserir(sentenca: SentencaEntity): Long
 
     @Update
@@ -41,7 +41,7 @@ interface SentencaRoomDAO {
 
     // ── historico_sentenca ────────────────────────────────────────────────────
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun inserirHistorico(sentenca: HistoricoSentencaEntity): Long
 
     @Delete

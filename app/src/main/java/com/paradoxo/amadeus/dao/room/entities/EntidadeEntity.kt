@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 // atributos era INTEGER no schema original mas armazenava JSON — corrigido para TEXT na Migration 4→5
 @Entity(tableName = "entidade")
 data class EntidadeEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nome: String?,
     val significados: String?,
     val sinonimos: String?,
