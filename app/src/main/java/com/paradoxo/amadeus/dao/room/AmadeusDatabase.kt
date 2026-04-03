@@ -109,7 +109,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
             private fun migrarSentenca(db: SupportSQLiteDatabase) {
                 db.execSQL("""
                     CREATE TABLE sentenca_new (
-                        id        INTEGER PRIMARY KEY NOT NULL,
+                        id        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         chave     TEXT,
                         respostas TEXT,
                         acao      TEXT,
@@ -120,7 +120,15 @@ abstract class AmadeusDatabase : RoomDatabase() {
                 db.execSQL("""
                     INSERT INTO sentenca_new (id, chave, respostas, acao, tipo_item, idBanco)
                     SELECT id, chave, respostas, acao, tipo_item, idBanco FROM sentenca
+                    WHERE id IS NOT NULL AND id > 0
                 """.trimIndent())
+                
+                // Preserva o contador AUTOINCREMENT
+                db.execSQL("""
+                    INSERT OR REPLACE INTO sqlite_sequence (name, seq)
+                    VALUES ('sentenca_new', (SELECT COALESCE(MAX(id), 0) FROM sentenca_new))
+                """.trimIndent())
+                
                 db.execSQL("DROP TABLE sentenca")
                 db.execSQL("ALTER TABLE sentenca_new RENAME TO sentenca")
             }
@@ -129,7 +137,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
             private fun migrarHistoricoSentenca(db: SupportSQLiteDatabase) {
                 db.execSQL("""
                     CREATE TABLE historico_sentenca_new (
-                        id        INTEGER PRIMARY KEY NOT NULL,
+                        id        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         chave     TEXT,
                         respostas TEXT,
                         acao      TEXT,
@@ -139,7 +147,15 @@ abstract class AmadeusDatabase : RoomDatabase() {
                 db.execSQL("""
                     INSERT INTO historico_sentenca_new (id, chave, respostas, acao, tipo_item)
                     SELECT id, chave, respostas, acao, tipo_item FROM historico_sentenca
+                    WHERE id IS NOT NULL AND id > 0
                 """.trimIndent())
+                
+                // Preserva o contador AUTOINCREMENT
+                db.execSQL("""
+                    INSERT OR REPLACE INTO sqlite_sequence (name, seq)
+                    VALUES ('historico_sentenca_new', (SELECT COALESCE(MAX(id), 0) FROM historico_sentenca_new))
+                """.trimIndent())
+                
                 db.execSQL("DROP TABLE historico_sentenca")
                 db.execSQL("ALTER TABLE historico_sentenca_new RENAME TO historico_sentenca")
             }
@@ -149,7 +165,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
             private fun migrarEntidade(db: SupportSQLiteDatabase) {
                 db.execSQL("""
                     CREATE TABLE entidade_new (
-                        id          INTEGER PRIMARY KEY NOT NULL,
+                        id          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         nome        TEXT,
                         significados TEXT,
                         sinonimos   TEXT,
@@ -161,7 +177,15 @@ abstract class AmadeusDatabase : RoomDatabase() {
                     INSERT INTO entidade_new (id, nome, significados, sinonimos, atributos, idBanco)
                     SELECT id, nome, significados, sinonimos, CAST(atributos AS TEXT), idBanco
                     FROM entidade
+                    WHERE id IS NOT NULL AND id > 0
                 """.trimIndent())
+                
+                // Preserva o contador AUTOINCREMENT
+                db.execSQL("""
+                    INSERT OR REPLACE INTO sqlite_sequence (name, seq)
+                    VALUES ('entidade_new', (SELECT COALESCE(MAX(id), 0) FROM entidade_new))
+                """.trimIndent())
+                
                 db.execSQL("DROP TABLE entidade")
                 db.execSQL("ALTER TABLE entidade_new RENAME TO entidade")
             }

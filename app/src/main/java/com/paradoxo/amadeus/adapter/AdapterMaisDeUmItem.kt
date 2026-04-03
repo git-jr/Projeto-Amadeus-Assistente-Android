@@ -64,7 +64,7 @@ class AdapterMaisDeUmItem(val itens: MutableList<Sentenca>) : RecyclerView.Adapt
     fun setOnItemClickListener(listener: OnItemClickListener) { onItemClickListener = listener }
     fun setOnLongClickListener(listener: OnLongClickListener) { onLongClickListener = listener }
 
-    fun add(sentenca: Sentenca) { itens.add(sentenca); notifyItemInserted(itemCount) }
+    fun add(sentenca: Sentenca) { itens.add(sentenca); notifyItemInserted(itens.lastIndex) }
     fun remove(position: Int) { itens.removeAt(position); notifyItemRemoved(position) }
     fun add(sentenca: Sentenca, posi: Int) { itens.add(posi, sentenca); notifyItemChanged(posi, sentenca) }
     fun addAll(novos: List<Sentenca>) { itens.addAll(novos); notifyDataSetChanged() }

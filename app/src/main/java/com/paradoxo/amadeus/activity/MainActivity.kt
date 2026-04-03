@@ -147,19 +147,20 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             recyclerView.smoothScrollToPosition(adapter.itemCount)
         }
 
+        adapter.add(sentenca)
+        if (sentenca.tipo_item == ItemEnum.USUARIO.ordinal) {
+            adapter.add(Sentenca(ITEM_LOAD.ordinal))
+        } else {
+            textoParaVoz.configurarFalaIA(sentenca.respostas[0])
+        }
+        Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
+
         lifecycleScope.launch(Dispatchers.IO) {
             val id = AmadeusDatabase.getInstance(this@MainActivity)
                 .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
             withContext(Dispatchers.Main) {
                 idUltimoHistoricoGravado = id
                 sentenca.id = id.toString()
-                adapter.add(sentenca)
-                if (sentenca.tipo_item == ItemEnum.USUARIO.ordinal) {
-                    adapter.add(Sentenca(ITEM_LOAD.ordinal))
-                } else {
-                    textoParaVoz.configurarFalaIA(sentenca.respostas[0])
-                }
-                Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
             }
         }
     }

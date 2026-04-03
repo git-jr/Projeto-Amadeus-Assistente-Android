@@ -6,7 +6,7 @@ import com.paradoxo.amadeus.dao.room.entities.AutorEntity
 @Dao
 interface AutorRoomDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun inserir(autor: AutorEntity): Long
 
     @Update

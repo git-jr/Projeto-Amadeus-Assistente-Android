@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 // respostas e acao são JSON serializado — convertidos via Converters.kt
 @Entity(tableName = "sentenca")
 data class SentencaEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val chave: String?,
     val respostas: String?,
     val acao: String?,

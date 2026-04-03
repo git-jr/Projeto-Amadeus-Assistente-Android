@@ -6,7 +6,7 @@ import com.paradoxo.amadeus.dao.room.entities.EntidadeEntity
 @Dao
 interface EntidadeRoomDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun inserir(entidade: EntidadeEntity): Long
 
     @Update

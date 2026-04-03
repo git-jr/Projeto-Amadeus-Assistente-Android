@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "historico_sentenca")
 data class HistoricoSentencaEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val chave: String?,
     val respostas: String?,
     val acao: String?,

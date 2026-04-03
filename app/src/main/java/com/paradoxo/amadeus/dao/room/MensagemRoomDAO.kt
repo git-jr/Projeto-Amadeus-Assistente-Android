@@ -15,7 +15,7 @@ data class MensagemComResposta(
 @Dao
 interface MensagemRoomDAO {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun inserir(mensagem: MensagemEntity): Long
 
     // Atualiza apenas fk_resposta de uma mensagem já inserida (par pergunta→resposta)

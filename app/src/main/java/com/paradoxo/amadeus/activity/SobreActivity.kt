@@ -36,7 +36,7 @@ class SobreActivity : AppCompatActivity() {
     private fun carregarTextoVersao() {
         try {
             val pInfo = packageManager.getPackageInfo(packageName, 0)
-            val versao = getString(R.string.versao) + " " + pInfo.versionName
+            val versao = getString(R.string.versao) + " " + pInfo.versionName + " | " + pInfo.versionCode
             findViewById<TextView>(R.id.versaoTextView).text = versao
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
