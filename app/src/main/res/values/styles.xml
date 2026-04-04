@@ -52,6 +52,15 @@
         <item name="android:color">@color/colorSecondaryDark3</item>
     </style>
 
+    <!-- Tema transparente para CapturarTelaActivity -->
+    <style name="Theme.Amadeus.Transparente" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+
     <!-- Tema Material 3 para ConfigPrimariaActivity -->
     <style name="Theme.Amadeus.ConfigPrimaria" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>

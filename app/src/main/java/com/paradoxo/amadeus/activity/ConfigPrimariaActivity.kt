@@ -1,36 +1,68 @@
 package com.paradoxo.amadeus.activity
 
+import android.Manifest
 import android.app.Dialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import com.google.android.material.materialswitch.MaterialSwitch
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
+import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
+import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
 class ConfigPrimariaActivity : AppCompatActivity() {
 
     private var primeiroUso = true
     private lateinit var acessoDadosToggleButton: MaterialSwitch
+    private lateinit var botaoFlutuanteToggle: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
+
+    private val overlayPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        val temPermissao = Settings.canDrawOverlays(this)
+        botaoFlutuanteToggle.isChecked = temPermissao
+        if (temPermissao) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.permissao_microfone_necessaria),
+                    Toast.LENGTH_SHORT
+                ).show()
+                Permissao.solicitarPermissaoMicrofone(this)
+            } else {
+                ativarBotaoFlutuante()
+            }
+        }
+    }
 
     companion object {
         const val PREF_NOME_IA = "nomeIA"
         const val PREF_NOME_USU = "nomeUsu"
         const val PREF_VOZ_ATIVA = "voz_ativa"
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
+        const val PREF_BOTAO_FLUTUANTE = "botao_flutuante"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +81,54 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun configurarToggleButton() {
         val modoFalaToggleButton = findViewById<MaterialSwitch>(R.id.modoFalaToggleButton)
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
+        botaoFlutuanteToggle = findViewById(R.id.botaoFlutuanteToggle)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
         acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+        botaoFlutuanteToggle.isChecked =
+            getPrefBool(PREF_BOTAO_FLUTUANTE, this, false) && Settings.canDrawOverlays(this)
 
-        modoFalaToggleButton.setOnCheckedChangeListener { _, valor -> setPrefBool(PREF_VOZ_ATIVA, valor, applicationContext) }
-        acessoDadosToggleButton.setOnCheckedChangeListener { _, valor -> setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, valor, applicationContext) }
+        modoFalaToggleButton.setOnCheckedChangeListener { _, valor ->
+            setPrefBool(
+                PREF_VOZ_ATIVA,
+                valor,
+                applicationContext
+            )
+        }
+        acessoDadosToggleButton.setOnCheckedChangeListener { _, valor ->
+            setPrefBool(
+                PREF_UPLOAD_DADOS_AUTORIZADO,
+                valor,
+                applicationContext
+            )
+        }
+        botaoFlutuanteToggle.setOnCheckedChangeListener { _, ativado ->
+            if (ativado) {
+                if (Settings.canDrawOverlays(this)) {
+                    ativarBotaoFlutuante()
+                } else {
+                    meuToast(getString(R.string.permissao_overlay_necessaria), applicationContext)
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                    overlayPermissionLauncher.launch(intent)
+                    botaoFlutuanteToggle.isChecked = false
+                }
+            } else {
+                desativarBotaoFlutuante()
+            }
+        }
+    }
+
+    private fun ativarBotaoFlutuante() {
+        setPrefBool(PREF_BOTAO_FLUTUANTE, true, applicationContext)
+        startService(Intent(this, FloatingButtonAmadeusService::class.java))
+    }
+
+    private fun desativarBotaoFlutuante() {
+        setPrefBool(PREF_BOTAO_FLUTUANTE, false, applicationContext)
+        stopService(Intent(this, FloatingButtonAmadeusService::class.java))
     }
 
     private fun configurarTextInput() {
@@ -104,7 +178,8 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     }
 
     fun dialogUsoDados() {
-        val uploadDadosAutorizado = Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+        val uploadDadosAutorizado =
+            Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
         if (uploadDadosAutorizado && !primeiroUso) {
             gravarDados()
             return
@@ -113,7 +188,11 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         val alertDialogBuilder = Dialog(this)
         val inflater = layoutInflater
         alertDialogBuilder.setContentView(
-            inflater.inflate(R.layout.dialog_sim_nao, findViewById(R.id.configPrimariaLayout), false)
+            inflater.inflate(
+                R.layout.dialog_sim_nao,
+                findViewById(R.id.configPrimariaLayout),
+                false
+            )
         )
         (alertDialogBuilder.findViewById<TextView>(R.id.tituloTextView)).setText(R.string.acesso_e_uso_dados_titulo)
         (alertDialogBuilder.findViewById<TextView>(R.id.conteudoTexView)).setText(R.string.acesso_e_uso_dados_descri)

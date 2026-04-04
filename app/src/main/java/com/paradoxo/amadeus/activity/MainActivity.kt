@@ -51,6 +51,10 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.util.ArrayList
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Permissao
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
@@ -79,6 +83,17 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         // Solicita permissão de armazenamento se ainda não concedida
         if (!Permissao.armazenamentoAcessivel(this)) {
             Permissao.solicitarAcessoArmazenamento(this)
+        }
+        if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
+            trocarLayoutBottom(false)
+        }
+        iniciarBotaoFlutuante()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
+            trocarLayoutBottom(false)
         }
     }
 
@@ -166,6 +181,28 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             trocarLayoutBottom(true)
             if (codErro != SpeechRecognizer.ERROR_SPEECH_TIMEOUT && codErro != SpeechRecognizer.ERROR_NO_MATCH) {
                 meuToast(eventoMensagem.nomeErro ?: "", applicationContext)
+            }
+        }
+    }
+
+    private fun iniciarBotaoFlutuante() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+        } else {
+            startService(Intent(this, FloatingButtonAmadeusService::class.java))
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_OVERLAY_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                startService(Intent(this, FloatingButtonAmadeusService::class.java))
             }
         }
     }
@@ -412,6 +449,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
 
         const val PREF_ID_ULTIMO_UPLOAD = "idUltimoUpload"
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
+
+        const val EXTRA_INICIAR_VOZ = "iniciar_voz"
+        private const val REQUEST_OVERLAY_PERMISSION = 3
 
         private fun atualizarRecycler(sentencas: List<Sentenca>, context: Activity) {
             adapter.addAll(sentencas)
