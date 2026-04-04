@@ -1,22 +1,23 @@
 package com.paradoxo.amadeus.activity
 
-import android.app.Activity
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.widget.TextView
 import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.dao.AcaoDAO
-import com.paradoxo.amadeus.dao.EntidadeDAO
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AprendizActivity : AppCompatActivity() {
 
@@ -27,27 +28,18 @@ class AprendizActivity : AppCompatActivity() {
 
         const val PREF_USAR_SINONIMOS_BUSCA = "usar_sinonimos_busca"
 
-        @Suppress("DEPRECATION")
-        private fun carregarInfosBancoAtual(context: Activity) {
-            object : AsyncTask<Void?, Void?, List<Long>>() {
-                override fun doInBackground(vararg voids: Void?): List<Long> {
-                    val sentencaDAO = SentencaDAO(context, false)
-                    val entidadeDAO = EntidadeDAO(context)
-                    val acaoDAO = AcaoDAO(context)
-                    return listOf(
-                        sentencaDAO.quantidadeTotal,
-                        entidadeDAO.quantidadeTotal,
-                        acaoDAO.quantidadeTotal
-                    )
+        private fun carregarInfosBancoAtual(context: AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                val db = AmadeusDatabase.getInstance(context)
+                val qtdSentencas = db.sentencaDAO().getQuantidadeTotal()
+                val qtdEntidades = db.entidadeDAO().getQuantidadeTotal()
+                val qtdAcoes = AcaoDAO(context).quantidadeTotal
+                withContext(Dispatchers.Main) {
+                    (context.findViewById<TextView>(R.id.qtdSentencasTextView)).text = qtdSentencas.toString()
+                    (context.findViewById<TextView>(R.id.qtdEntidadesTextView)).text = qtdEntidades.toString()
+                    (context.findViewById<TextView>(R.id.qtdAcoesTextView)).text = qtdAcoes.toString()
                 }
-
-                override fun onPostExecute(valores: List<Long>) {
-                    super.onPostExecute(valores)
-                    (context.findViewById<TextView>(R.id.qtdSentencasTextView)).text = valores[0].toString()
-                    (context.findViewById<TextView>(R.id.qtdEntidadesTextView)).text = valores[1].toString()
-                    (context.findViewById<TextView>(R.id.qtdAcoesTextView)).text = valores[2].toString()
-                }
-            }.execute()
+            }
         }
     }
 
@@ -76,6 +68,7 @@ class AprendizActivity : AppCompatActivity() {
                     else -> null
                 }
                 intent?.let { startActivity(it) }
+                @Suppress("DEPRECATION")
                 Handler().postDelayed({ chipSelecionado.isChecked = false }, 1000)
             }
         }

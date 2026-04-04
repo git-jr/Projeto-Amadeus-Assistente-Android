@@ -4,12 +4,15 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AppCompatActivity
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.AprendizActivity
 import com.paradoxo.amadeus.activity.ListaAcaoActivity
 import com.paradoxo.amadeus.cognicao.faisca.Inicia
 import com.paradoxo.amadeus.dao.AcaoDAO
-import com.paradoxo.amadeus.dao.SentencaDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.enums.ItemEnum
 import com.paradoxo.amadeus.modelo.Acao
@@ -21,6 +24,9 @@ import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import org.greenrobot.eventbus.EventBus
 import com.paradoxo.amadeus.extensions.normalize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Random
 
 class Acionadora(private val activity: Activity) {
@@ -127,10 +133,14 @@ class Acionadora(private val activity: Activity) {
 
     private fun dizerNome(nomeDaIA: Boolean) {
         val chaveBusca = if (nomeDaIA) "diga seu nome" else "diga meu nome"
-        val sentencaDAO = SentencaDAO(activity, false)
         val nome = if (nomeDaIA) getPrefString(PREF_NOME_IA, activity) else getPrefString(PREF_NOME_USU, activity)
-        val complementos = sentencaDAO.buscaPorChave(chaveBusca).respostas
-        formatarRespostaAleatoria(complementos, nome)
+        (activity as AppCompatActivity).lifecycleScope.launch(Dispatchers.IO) {
+            val complementos = AmadeusDatabase.getInstance(activity)
+                .sentencaDAO().buscaPorChave(chaveBusca)?.toModel()?.respostas ?: mutableListOf()
+            withContext(Dispatchers.Main) {
+                formatarRespostaAleatoria(complementos, nome)
+            }
+        }
     }
 
     private fun apresentarIA() {
@@ -198,5 +208,4 @@ class Acionadora(private val activity: Activity) {
         val sentenca = Sentenca(mensagem)
         EventBus.getDefault().post(sentenca)
     }
-
 }

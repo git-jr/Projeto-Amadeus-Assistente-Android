@@ -4,11 +4,11 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -18,12 +18,16 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.adapter.AdapterSinonimos
-import com.paradoxo.amadeus.dao.EntidadeDAO
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -43,53 +47,41 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
             context.finish()
         }
 
-        @Suppress("DEPRECATION")
-        private fun carregarEntidade(context: Activity) {
-            object : AsyncTask<Void?, Void?, Entidade?>() {
-                override fun doInBackground(vararg voids: Void?): Entidade? {
-                    val gson = Gson()
-                    entidadeEmUso = gson.fromJson(context.intent.getStringExtra("entidade"), Entidade::class.java)
-                    return entidadeEmUso
-                }
-
-                override fun onPostExecute(entidade: Entidade?) {
-                    super.onPostExecute(entidade)
-                    if (entidade == null) return
+        private fun carregarEntidade(context: AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                val gson = Gson()
+                val entidade = gson.fromJson(context.intent.getStringExtra("entidade"), Entidade::class.java)
+                entidadeEmUso = entidade
+                withContext(Dispatchers.Main) {
+                    if (entidade == null) return@withContext
                     entradaEditText?.setText(entidade.nome)
                     atualizarRecycler(entidade.sinonimos ?: emptyList())
                 }
-            }.execute()
+            }
         }
 
-        @Suppress("DEPRECATION")
-        fun gravarDados(entradaValida: String, context: Activity) {
-            object : AsyncTask<Void?, Void?, Void?>() {
-                override fun onPreExecute() {
-                    super.onPreExecute()
-                    meuToast(context.getString(R.string.salvando_dados), context)
-                }
+        fun gravarDados(entradaValida: String, context: AppCompatActivity) {
+            context.lifecycleScope.launch {
+                meuToast(context.getString(R.string.salvando_dados), context)
 
-                override fun doInBackground(vararg voids: Void?): Void? {
-                    val entidadeDAO = EntidadeDAO(context)
+                withContext(Dispatchers.IO) {
+                    val dao = AmadeusDatabase.getInstance(context).entidadeDAO()
                     if (entidadeEmUso == null) {
-                        val entidadeGravar = Entidade()
-                        entidadeGravar.nome = entradaValida
-                        entidadeGravar.sinonimos = adapter!!.itens
-                        entidadeDAO.inserir(entidadeGravar)
+                        val entidadeGravar = Entidade().apply {
+                            nome = entradaValida
+                            sinonimos = adapter!!.itens
+                        }
+                        dao.inserir(entidadeGravar.toEntity())
                     } else {
                         entidadeEmUso!!.nome = entradaValida
                         entidadeEmUso!!.sinonimos = adapter!!.itens
-                        entidadeDAO.alterarSentenca(entidadeEmUso!!)
+                        dao.alterar(entidadeEmUso!!.toEntity())
                     }
-                    return null
                 }
 
-                override fun onPostExecute(v: Void?) {
-                    super.onPostExecute(v)
-                    meuToast(context.getString(R.string.salvo), context)
-                    finalizarActivity(context)
-                }
-            }.execute()
+                meuToast(context.getString(R.string.salvo), context)
+                finalizarActivity(context)
+            }
         }
     }
 
@@ -222,7 +214,7 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
             entradaTextInput.error = getString(R.string.entrada_invalida)
         } else {
             entradaTextInput.isErrorEnabled = false
-            gravarDados(entradaEditText?.text.toString().lowercase().trim() ?: "", this)
+            gravarDados(entradaEditText?.text.toString().lowercase().trim(), this)
         }
     }
 
