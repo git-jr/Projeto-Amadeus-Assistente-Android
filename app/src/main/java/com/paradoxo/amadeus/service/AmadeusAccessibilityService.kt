@@ -9,8 +9,10 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.graphics.Rect
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
+import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.util.GerenciaApp
 
 class AmadeusAccessibilityService : AccessibilityService() {
@@ -59,6 +61,33 @@ class AmadeusAccessibilityService : AccessibilityService() {
                 }
             }, initialDelay + index * delayPerAction)
         }
+    }
+
+    // ── Screen elements ───────────────────────────────────────────────────────
+
+    fun getVisibleElements(): List<UiElement> {
+        val result = mutableListOf<UiElement>()
+        windows.mapNotNull { it.root }.forEach { root -> extractNodes(root, result) }
+        return result
+    }
+
+    private fun extractNodes(node: AccessibilityNodeInfo?, into: MutableList<UiElement>) {
+        if (node == null) return
+        val bounds = Rect()
+        node.getBoundsInScreen(bounds)
+        if (!bounds.isEmpty) {
+            into.add(
+                UiElement(
+                    text = node.text?.toString(),
+                    contentDescription = node.contentDescription?.toString(),
+                    className = node.className?.toString(),
+                    isClickable = node.isClickable,
+                    isEditable = node.isEditable,
+                    bounds = bounds
+                )
+            )
+        }
+        for (i in 0 until node.childCount) extractNodes(node.getChild(i), into)
     }
 
     // ── Click ─────────────────────────────────────────────────────────────────
@@ -156,11 +185,28 @@ class AmadeusAccessibilityService : AccessibilityService() {
         }
 
         fun openSettings(context: Context) {
-            context.startActivity(
-                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            val componentName = "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
+
+            // Deep-link direto para o toggle do serviço (funciona na maioria dos ROMs)
+            val deepLink = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                val args = android.os.Bundle().apply {
+                    putString(":settings:fragment_args_key", componentName)
                 }
-            )
+                putExtra(":settings:show_fragment_args", args)
+                putExtra(":settings:fragment_args_key", componentName)
+            }
+
+            try {
+                context.startActivity(deepLink)
+            } catch (_: Exception) {
+                // Fallback para a lista genérica de acessibilidade
+                context.startActivity(
+                    Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                )
+            }
         }
 
         fun clickOnText(targetText: String, onResult: (found: Boolean) -> Unit): Boolean {
@@ -178,5 +224,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
             service.executeActions(actions, onFeedback, onDone)
             return true
         }
+
+        fun getVisibleElements(): List<UiElement> = instance?.getVisibleElements() ?: emptyList()
     }
 }

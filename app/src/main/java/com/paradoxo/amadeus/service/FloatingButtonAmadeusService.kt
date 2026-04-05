@@ -31,7 +31,8 @@ import androidx.core.content.ContextCompat
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
-import com.paradoxo.amadeus.util.Permissao
+import com.paradoxo.amadeus.modelo.UiElement
+import com.paradoxo.amadeus.view.ScreenHighlightView
 import java.util.Locale
 
 class FloatingButtonAmadeusService : Service() {
@@ -42,6 +43,7 @@ class FloatingButtonAmadeusService : Service() {
     private var menuOpen = false
 
     private var voiceOverlayView: View? = null
+    private var screenHighlightView: ScreenHighlightView? = null
     private var speechRecognizer: SpeechRecognizer? = null
 
     private val interpreter = CommandInterpreter()
@@ -226,8 +228,49 @@ class FloatingButtonAmadeusService : Service() {
             AmadeusAccessibilityService.openSettings(this)
             return
         }
+        showScreenHighlight()
         showVoiceOverlay()
         startSpeechRecognition()
+    }
+
+    private fun showScreenHighlight() {
+        if (screenHighlightView != null) return
+
+        val elements = AmadeusAccessibilityService.getVisibleElements()
+        if (elements.isEmpty()) return
+
+
+        val elementsFormated: MutableList<UiElement> = mutableListOf()
+        elements.forEach { el ->
+            if (el.isClickable || el.isEditable) {
+                elementsFormated.add(el)
+            }
+        }
+
+        println("ELEMENTOS FORMATADOS: ${elementsFormated.size}")
+
+        screenHighlightView = ScreenHighlightView(this).apply {
+            this.elements = elements
+        }
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            overlayType(),
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        )
+
+        windowManager.addView(screenHighlightView, params)
+    }
+
+    private fun removeScreenHighlight() {
+        screenHighlightView?.let {
+            try { windowManager.removeView(it) } catch (_: Exception) { }
+        }
+        screenHighlightView = null
     }
 
     private fun showVoiceOverlay() {
@@ -359,6 +402,7 @@ class FloatingButtonAmadeusService : Service() {
         speechRecognizer = null
         voiceOverlayView?.let { windowManager.removeView(it) }
         voiceOverlayView = null
+        removeScreenHighlight()
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -366,6 +410,7 @@ class FloatingButtonAmadeusService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         closeVoiceOverlay()
+        removeScreenHighlight()
         if (::buttonView.isInitialized) windowManager.removeView(buttonView)
     }
 
