@@ -1,15 +1,19 @@
 package com.paradoxo.amadeus.service
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
 import android.content.Context
 import android.content.Intent
+import android.graphics.Path
+import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.graphics.Rect
+import android.view.accessibility.AccessibilityWindowInfo
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.UiElement
@@ -54,6 +58,11 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
                     ActionType.SCROLL -> {
                         onFeedback("Rolando tela")
+                    }
+
+                    ActionType.IME_ACTION -> {
+                        onFeedback("Confirmando...")
+                        performImeAction()
                     }
                 }
                 if (index == actions.lastIndex) {
@@ -135,6 +144,9 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
     private fun typeText(value: String) {
         val node = findFirstEditableNode() ?: return
+        // ACTION_CLICK antes de setar texto garante que o campo tem foco e o teclado está visível
+        // — necessário para que IME_ACTION funcione depois
+        node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         val args = Bundle().apply {
             putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, value)
         }
@@ -158,6 +170,56 @@ class AmadeusAccessibilityService : AccessibilityService() {
             if (found != null) return found
         }
         return null
+    }
+
+    // ── IME action ────────────────────────────────────────────────────────────
+
+    private fun performImeAction() {
+        val focusedNode = windows.mapNotNull { it.root }
+            .firstNotNullOfOrNull { root -> root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT) }
+        val editableNode = focusedNode
+            ?: windows.mapNotNull { it.root }.firstNotNullOfOrNull { findEditableInTree(it) }
+
+        // Estratégia 1: ACTION_IME_ENTER (API 30+)
+        // Aciona diretamente a ação do teclado (busca, enviar, ir, etc.) no campo focado.
+        if (editableNode != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val ok = editableNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id)
+            if (ok) return
+        }
+
+        // Estratégia 2: setar texto atual + "\n"
+        // Fallback para ROMs que não implementam ACTION_IME_ENTER via acessibilidade.
+        // Funciona em campos de busca single-line que tratam newline como submit.
+        if (editableNode != null) {
+            val current = editableNode.text?.toString() ?: ""
+            val args = Bundle().apply {
+                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "$current\n")
+            }
+            val ok = editableNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+            if (ok) return
+        }
+
+        // Estratégia 3: tap por coordenadas estimadas no canto inf-dir da janela do teclado (API 24+)
+        // Último recurso para teclados (ex: Samsung) que não expõem teclas como nós de acessibilidade.
+        // Layout típico: 4 linhas de teclas, botão de ação sempre na última linha, coluna mais à direita.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return
+        val imeWindow = windows.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD } ?: return
+        val imeBounds = Rect()
+        imeWindow.getBoundsInScreen(imeBounds)
+
+        val keyHeight = imeBounds.height() / 4f
+        val keyWidth = imeBounds.width() / 10f
+        val x = imeBounds.right - keyWidth / 2f
+        val y = imeBounds.bottom - keyHeight / 2f
+        tapAtCoordinates(x, y)
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.N)
+    private fun tapAtCoordinates(x: Float, y: Float) {
+        val path = Path().apply { moveTo(x, y); lineTo(x + 1f, y + 1f) }
+        val stroke = GestureDescription.StrokeDescription(path, 0, 500)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        dispatchGesture(gesture, null, null)
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -185,7 +247,8 @@ class AmadeusAccessibilityService : AccessibilityService() {
         }
 
         fun openSettings(context: Context) {
-            val componentName = "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
+            val componentName =
+                "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
 
             // Deep-link direto para o toggle do serviço (funciona na maioria dos ROMs)
             val deepLink = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
@@ -226,5 +289,11 @@ class AmadeusAccessibilityService : AccessibilityService() {
         }
 
         fun getVisibleElements(): List<UiElement> = instance?.getVisibleElements() ?: emptyList()
+
+        fun performImeAction(): Boolean {
+            val service = instance ?: return false
+            service.performImeAction()
+            return true
+        }
     }
 }

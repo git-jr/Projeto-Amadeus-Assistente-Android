@@ -28,11 +28,19 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.paradoxo.amadeus.BuildConfig
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
+import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
+import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.view.ScreenHighlightView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class FloatingButtonAmadeusService : Service() {
@@ -47,6 +55,10 @@ class FloatingButtonAmadeusService : Service() {
     private var speechRecognizer: SpeechRecognizer? = null
 
     private val interpreter = CommandInterpreter()
+    private val geminiInterpreter = GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
+    private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
+    private var lastElements: List<UiElement> = emptyList()
+    private var loopJob: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -59,7 +71,11 @@ class FloatingButtonAmadeusService : Service() {
     private fun createNotification() {
         val channelId = "floating_button_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Botão Flutuante", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                channelId,
+                "Botão Flutuante",
+                NotificationManager.IMPORTANCE_LOW
+            )
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
         val pendingIntent = PendingIntent.getActivity(
@@ -121,6 +137,7 @@ class FloatingButtonAmadeusService : Service() {
                     moved = false
                     true
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
@@ -130,11 +147,13 @@ class FloatingButtonAmadeusService : Service() {
                     windowManager.updateViewLayout(buttonView, layoutParams)
                     true
                 }
+
                 MotionEvent.ACTION_UP -> {
                     startListening()
 //                    if (!moved) toggleMenu() // Ativar menu
                     true
                 }
+
                 else -> false
             }
         }
@@ -194,7 +213,10 @@ class FloatingButtonAmadeusService : Service() {
                 (20 * dp).toInt(), (10 * dp).toInt(),
                 (20 * dp).toInt(), (10 * dp).toInt()
             )
-            background = ContextCompat.getDrawable(this@FloatingButtonAmadeusService, R.drawable.bg_floating_menu)
+            background = ContextCompat.getDrawable(
+                this@FloatingButtonAmadeusService,
+                R.drawable.bg_floating_menu
+            )
         }
 
         val params = WindowManager.LayoutParams(
@@ -210,7 +232,10 @@ class FloatingButtonAmadeusService : Service() {
 
         windowManager.addView(tv, params)
         Handler(Looper.getMainLooper()).postDelayed({
-            try { windowManager.removeView(tv) } catch (_: Exception) { }
+            try {
+                windowManager.removeView(tv)
+            } catch (_: Exception) {
+            }
         }, 3000)
     }
 
@@ -239,15 +264,7 @@ class FloatingButtonAmadeusService : Service() {
         val elements = AmadeusAccessibilityService.getVisibleElements()
         if (elements.isEmpty()) return
 
-
-        val elementsFormated: MutableList<UiElement> = mutableListOf()
-        elements.forEach { el ->
-            if (el.isClickable || el.isEditable) {
-                elementsFormated.add(el)
-            }
-        }
-
-        println("ELEMENTOS FORMATADOS: ${elementsFormated.size}")
+        lastElements = elements
 
         screenHighlightView = ScreenHighlightView(this).apply {
             this.elements = elements
@@ -268,7 +285,10 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun removeScreenHighlight() {
         screenHighlightView?.let {
-            try { windowManager.removeView(it) } catch (_: Exception) { }
+            try {
+                windowManager.removeView(it)
+            } catch (_: Exception) {
+            }
         }
         screenHighlightView = null
     }
@@ -277,7 +297,8 @@ class FloatingButtonAmadeusService : Service() {
         if (voiceOverlayView != null) return
 
         val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
-        voiceOverlayView = LayoutInflater.from(themedContext).inflate(R.layout.layout_voice_overlay, null)
+        voiceOverlayView =
+            LayoutInflater.from(themedContext).inflate(R.layout.layout_voice_overlay, null)
 
         voiceOverlayView?.findViewById<View>(R.id.cancelarOuvirButton)?.setOnClickListener {
             closeVoiceOverlay()
@@ -292,12 +313,17 @@ class FloatingButtonAmadeusService : Service() {
                 inputField.setText("")
                 closeVoiceOverlay()
                 processCommand(text)
+            } else {
+                // só para testes
+                processCommand("Abrir X e pesquisar por one piece")
+                closeVoiceOverlay()
             }
         }
 
         inputField?.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
-                val text = inputField.text?.toString()?.trim() ?: return@setOnEditorActionListener false
+                val text =
+                    inputField.text?.toString()?.trim() ?: return@setOnEditorActionListener false
                 if (text.isNotEmpty()) {
                     inputField.setText("")
                     closeVoiceOverlay()
@@ -357,7 +383,10 @@ class FloatingButtonAmadeusService : Service() {
         })
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH
+            )
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
@@ -378,23 +407,59 @@ class FloatingButtonAmadeusService : Service() {
         }, 1000)
     }
 
-    private fun processCommand(text: String) {
-        val actions = interpreter.interpret(text)
+    private fun processCommand(goal: String) {
+        loopJob?.cancel()
 
-        if (actions.isEmpty()) {
-            showMessage(getString(R.string.acessibilidade_texto_nao_encontrado, text))
-            return
+        val sessionId = System.currentTimeMillis().toString()
+        val history = mutableListOf<String>()
+        val maxSteps = 10
+        var step = 0
+        val screenW = resources.displayMetrics.widthPixels
+        val screenH = resources.displayMetrics.heightPixels
+
+        fun runStep() {
+            if (step >= maxSteps) {
+                showMessage("Limite de $maxSteps passos atingido")
+                return
+            }
+            step++
+            showMessage("Passo $step/$maxSteps — analisando...")
+
+            val elements = AmadeusAccessibilityService.getVisibleElements()
+            val bitmap = screenMapGenerator.generate(elements, screenW, screenH, sessionId, step)
+
+            loopJob = CoroutineScope(Dispatchers.IO).launch {
+                val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap)
+                withContext(Dispatchers.Main) {
+                    when {
+                        result.done -> showMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
+                        result.actions.isEmpty() -> showMessage(
+                            getString(
+                                R.string.acessibilidade_texto_nao_encontrado,
+                                goal
+                            )
+                        )
+
+                        else -> {
+                            history.add("[Passo $step] ${result.actions.joinToString { "${it.type} \"${it.target}\"" }}")
+                            val sent = AmadeusAccessibilityService.executeActions(
+                                result.actions,
+                                onFeedback = { showMessage(it) },
+                                onDone = {
+                                    Handler(Looper.getMainLooper()).postDelayed(
+                                        { runStep() },
+                                        STEP_DELAY_MS
+                                    )
+                                }
+                            )
+                            if (!sent) showMessage(getString(R.string.acessibilidade_nao_ativa))
+                        }
+                    }
+                }
+            }
         }
 
-        val sent = AmadeusAccessibilityService.executeActions(
-            actions,
-            onFeedback = { feedback -> showMessage(feedback) },
-            onDone = {}
-        )
-
-        if (!sent) {
-            showMessage(getString(R.string.acessibilidade_nao_ativa))
-        }
+        runStep()
     }
 
     private fun closeVoiceOverlay() {
@@ -409,6 +474,7 @@ class FloatingButtonAmadeusService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        loopJob?.cancel()
         closeVoiceOverlay()
         removeScreenHighlight()
         if (::buttonView.isInitialized) windowManager.removeView(buttonView)
@@ -425,5 +491,6 @@ class FloatingButtonAmadeusService : Service() {
 
     companion object Companion {
         private const val NOTIFICATION_ID = 101
+        private const val STEP_DELAY_MS = 1500L
     }
 }

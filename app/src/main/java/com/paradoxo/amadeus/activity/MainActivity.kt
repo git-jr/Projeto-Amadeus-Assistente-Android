@@ -59,6 +59,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Permissao
 
@@ -92,6 +93,32 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             trocarLayoutBottom(false)
         }
         iniciarBotaoFlutuante()
+        openSettings(this)
+    }
+
+    fun openSettings(context: Context) {
+        val componentName = "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
+
+        // Deep-link direto para o toggle do serviço (funciona na maioria dos ROMs)
+        val deepLink = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            val args = android.os.Bundle().apply {
+                putString(":settings:fragment_args_key", componentName)
+            }
+            putExtra(":settings:show_fragment_args", args)
+            putExtra(":settings:fragment_args_key", componentName)
+        }
+
+        try {
+            context.startActivity(deepLink)
+        } catch (_: Exception) {
+            // Fallback para a lista genérica de acessibilidade
+            context.startActivity(
+                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            )
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

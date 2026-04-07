@@ -4,7 +4,8 @@ enum class ActionType {
     CLICK,
     TYPE,
     OPEN_APP,
-    SCROLL
+    SCROLL,
+    IME_ACTION
 }
 
 data class ActionIntent(
