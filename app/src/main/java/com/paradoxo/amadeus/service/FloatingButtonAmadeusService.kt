@@ -54,6 +54,10 @@ class FloatingButtonAmadeusService : Service() {
     private var screenHighlightView: ScreenHighlightView? = null
     private var speechRecognizer: SpeechRecognizer? = null
 
+    private val wakeWordManager by lazy {
+        WakeWordManager(this) { startListening() }
+    }
+
     private val interpreter = CommandInterpreter()
     private val geminiInterpreter = GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
@@ -66,6 +70,7 @@ class FloatingButtonAmadeusService : Service() {
         super.onCreate()
         createNotification()
         createFloatingButton()
+        wakeWordManager.initialize()
     }
 
     private fun createNotification() {
@@ -149,7 +154,7 @@ class FloatingButtonAmadeusService : Service() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    startListening()
+//                    startListening() Ativar Mic
 //                    if (!moved) toggleMenu() // Ativar menu
                     true
                 }
@@ -239,18 +244,27 @@ class FloatingButtonAmadeusService : Service() {
         }, 3000)
     }
 
+    // ── Wake word ─────────────────────────────────────────────────────────────
+
+    private fun startWakeWordDetection() = wakeWordManager.startDetection()
+
+    private fun stopWakeWordDetection() = wakeWordManager.stopDetection()
+
     // ── Listen ────────────────────────────────────────────────────────────────
 
     private fun startListening() {
+        stopWakeWordDetection()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
             showMessage(getString(R.string.permissao_microfone_necessaria))
+            startWakeWordDetection()
             return
         }
         if (!AmadeusAccessibilityService.isActive(this)) {
             showMessage(getString(R.string.acessibilidade_nao_ativa))
             AmadeusAccessibilityService.openSettings(this)
+            startWakeWordDetection()
             return
         }
         showScreenHighlight()
@@ -468,6 +482,7 @@ class FloatingButtonAmadeusService : Service() {
         voiceOverlayView?.let { windowManager.removeView(it) }
         voiceOverlayView = null
         removeScreenHighlight()
+        startWakeWordDetection()
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -475,7 +490,11 @@ class FloatingButtonAmadeusService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         loopJob?.cancel()
-        closeVoiceOverlay()
+        wakeWordManager.release()
+        speechRecognizer?.destroy()
+        speechRecognizer = null
+        voiceOverlayView?.let { windowManager.removeView(it) }
+        voiceOverlayView = null
         removeScreenHighlight()
         if (::buttonView.isInitialized) windowManager.removeView(buttonView)
     }

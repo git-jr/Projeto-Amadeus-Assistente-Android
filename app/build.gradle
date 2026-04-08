@@ -100,4 +100,7 @@ dependencies {
 
     // Gemini AI
     implementation 'com.google.ai.client.generativeai:generativeai:0.9.0'
+
+    // Vosk (wake word detection, offline)
+    implementation 'com.alphacephei:vosk-android:0.3.47'
 }
