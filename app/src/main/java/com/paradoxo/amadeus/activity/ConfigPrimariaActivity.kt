@@ -33,6 +33,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private var primeiroUso = true
     private lateinit var acessoDadosToggleButton: MaterialSwitch
     private lateinit var botaoFlutuanteToggle: MaterialSwitch
+    private lateinit var wakeWordToggle: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
 
@@ -63,6 +64,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         const val PREF_VOZ_ATIVA = "voz_ativa"
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
         const val PREF_BOTAO_FLUTUANTE = "botao_flutuante"
+        const val PREF_WAKE_WORD_ATIVO = "wake_word_ativo"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,11 +84,17 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         val modoFalaToggleButton = findViewById<MaterialSwitch>(R.id.modoFalaToggleButton)
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
         botaoFlutuanteToggle = findViewById(R.id.botaoFlutuanteToggle)
+        wakeWordToggle = findViewById(R.id.wakeWordToggle)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
         acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
-        botaoFlutuanteToggle.isChecked =
+        val botaoFlutuanteAtivo =
             getPrefBool(PREF_BOTAO_FLUTUANTE, this, false) && Settings.canDrawOverlays(this)
+        botaoFlutuanteToggle.isChecked = botaoFlutuanteAtivo
+
+        wakeWordToggle.isChecked =
+            getPrefBool(PREF_WAKE_WORD_ATIVO, this, false) && botaoFlutuanteAtivo
+        wakeWordToggle.isEnabled = botaoFlutuanteAtivo
 
         modoFalaToggleButton.setOnCheckedChangeListener { _, valor ->
             setPrefBool(
@@ -106,6 +114,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
             if (ativado) {
                 if (Settings.canDrawOverlays(this)) {
                     ativarBotaoFlutuante()
+                    wakeWordToggle.isEnabled = true
                 } else {
                     meuToast(getString(R.string.permissao_overlay_necessaria), applicationContext)
                     val intent = Intent(
@@ -117,7 +126,24 @@ class ConfigPrimariaActivity : AppCompatActivity() {
                 }
             } else {
                 desativarBotaoFlutuante()
+                wakeWordToggle.isChecked = false
+                wakeWordToggle.isEnabled = false
+                setPrefBool(PREF_WAKE_WORD_ATIVO, false, applicationContext)
             }
+        }
+
+        wakeWordToggle.setOnCheckedChangeListener { _, ativado ->
+            if (!botaoFlutuanteToggle.isChecked) {
+                meuToast(getString(R.string.escuta_requer_botao_flutuante), applicationContext)
+                wakeWordToggle.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            setPrefBool(PREF_WAKE_WORD_ATIVO, ativado, applicationContext)
+            val action = if (ativado) FloatingButtonAmadeusService.ACTION_ENABLE_WAKE_WORD
+                         else FloatingButtonAmadeusService.ACTION_DISABLE_WAKE_WORD
+            startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
+                this.action = action
+            })
         }
     }
 

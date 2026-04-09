@@ -30,7 +30,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.paradoxo.amadeus.BuildConfig
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
+import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
@@ -66,11 +68,21 @@ class FloatingButtonAmadeusService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_ENABLE_WAKE_WORD -> wakeWordManager.startDetection()
+            ACTION_DISABLE_WAKE_WORD -> wakeWordManager.stopDetection()
+        }
+        return START_STICKY
+    }
+
     override fun onCreate() {
         super.onCreate()
         createNotification()
         createFloatingButton()
-        wakeWordManager.initialize()
+        if (getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, this, false)) {
+            wakeWordManager.initialize()
+        }
     }
 
     private fun createNotification() {
@@ -154,7 +166,7 @@ class FloatingButtonAmadeusService : Service() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-//                    startListening() Ativar Mic
+                    startListening()
 //                    if (!moved) toggleMenu() // Ativar menu
                     true
                 }
@@ -511,5 +523,7 @@ class FloatingButtonAmadeusService : Service() {
     companion object Companion {
         private const val NOTIFICATION_ID = 101
         private const val STEP_DELAY_MS = 1500L
+        const val ACTION_ENABLE_WAKE_WORD = "ACTION_ENABLE_WAKE_WORD"
+        const val ACTION_DISABLE_WAKE_WORD = "ACTION_DISABLE_WAKE_WORD"
     }
 }
