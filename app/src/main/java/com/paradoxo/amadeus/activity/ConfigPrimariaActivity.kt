@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
@@ -78,6 +79,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         configurarTextInput()
         configuarBotaoLinkStart()
         configurarToggleButton()
+        configurarBotaoAssistente()
     }
 
     private fun configurarToggleButton() {
@@ -155,6 +157,22 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun desativarBotaoFlutuante() {
         setPrefBool(PREF_BOTAO_FLUTUANTE, false, applicationContext)
         stopService(Intent(this, FloatingButtonAmadeusService::class.java))
+    }
+
+    private fun configurarBotaoAssistente() {
+        findViewById<View>(R.id.assistenteVozLayout).setOnClickListener {
+            abrirConfiguracaoAssistente()
+        }
+    }
+
+    private fun abrirConfiguracaoAssistente() {
+        try {
+            val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        } catch (_: Exception) {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
     }
 
     private fun configurarTextInput() {

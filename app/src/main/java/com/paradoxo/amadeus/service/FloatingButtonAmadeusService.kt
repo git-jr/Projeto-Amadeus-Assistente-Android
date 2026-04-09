@@ -72,6 +72,9 @@ class FloatingButtonAmadeusService : Service() {
         when (intent?.action) {
             ACTION_ENABLE_WAKE_WORD -> wakeWordManager.startDetection()
             ACTION_DISABLE_WAKE_WORD -> wakeWordManager.stopDetection()
+            ACTION_START_LISTENING -> {
+                Handler(Looper.getMainLooper()).postDelayed({ startListening() }, 400)
+            }
         }
         return START_STICKY
     }
@@ -525,5 +528,6 @@ class FloatingButtonAmadeusService : Service() {
         private const val STEP_DELAY_MS = 1500L
         const val ACTION_ENABLE_WAKE_WORD = "ACTION_ENABLE_WAKE_WORD"
         const val ACTION_DISABLE_WAKE_WORD = "ACTION_DISABLE_WAKE_WORD"
+        const val ACTION_START_LISTENING = "ACTION_START_LISTENING"
     }
 }

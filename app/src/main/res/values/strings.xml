@@ -77,6 +77,8 @@
     <string name="escuta_frase_ativacao">Escutar frase de ativação</string>
     <string name="escuta_frase_ativacao_desc">Ativar ao falar \"Amadeus\"</string>
     <string name="escuta_requer_botao_flutuante">Ative o botão flutuante primeiro</string>
+    <string name="definir_assistente_voz">Definir como Assistente de Voz</string>
+    <string name="definir_assistente_voz_desc">Abrir configurações do sistema para selecionar o assistente padrão</string>
     <string name="permissao_overlay_necessaria">Permita a exibição sobre outros apps nas configurações</string>
     <string name="observar_tela">Observar tela</string>
     <string name="acessibilidade_descricao">Permite ao Amadeus escanear e interagir com elementos na tela</string>
