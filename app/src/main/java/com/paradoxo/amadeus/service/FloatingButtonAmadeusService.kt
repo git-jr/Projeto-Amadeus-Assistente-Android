@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
@@ -105,15 +106,27 @@ class FloatingButtonAmadeusService : Service() {
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        startForeground(
-            NOTIFICATION_ID,
-            NotificationCompat.Builder(this, channelId)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(getString(R.string.botao_flutuante_ativo))
-                .setSmallIcon(R.drawable.ic_logo_white)
-                .setContentIntent(pendingIntent)
-                .build()
-        )
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.botao_flutuante_ativo))
+            .setSmallIcon(R.drawable.ic_logo_white)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val hasMicPermission = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+            val fgsType = if (hasMicPermission) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE or
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            } else {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            }
+            startForeground(NOTIFICATION_ID, notification, fgsType)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     // ── Floating button ───────────────────────────────────────────────────────
