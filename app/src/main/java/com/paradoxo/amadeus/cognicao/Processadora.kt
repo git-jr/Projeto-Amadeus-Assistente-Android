@@ -16,14 +16,23 @@ class Processadora(private val activity: Activity) {
     }
 
     fun processarEntrada(entrada: String) {
-        val normalizada = entrada
+        val nomeIa = getPrefString(PREF_NOME_IA, activity).trim()
+        var entradaOriginal = entrada.trim()
+
+        if (nomeIa.isNotEmpty()) {
+            entradaOriginal = entradaOriginal.replace(
+                Regex(Regex.escape(nomeIa), RegexOption.IGNORE_CASE),
+                ""
+            ).trim()
+        }
+
+        val normalizada = entradaOriginal
             .lowercase()
             .replace("?", "")
             .replace("!", "")
-            .replace(getPrefString(PREF_NOME_IA, activity), "")
             .trim()
 
-        acionadora.isAcao(normalizada)
+        acionadora.isAcao(entradaOriginal, normalizada)
     }
 
     @Subscribe
@@ -36,6 +45,6 @@ class Processadora(private val activity: Activity) {
     }
 
     companion object {
-        const val PREF_NOME_IA = "nomeIa"
+        const val PREF_NOME_IA = "nomeIA"
     }
 }

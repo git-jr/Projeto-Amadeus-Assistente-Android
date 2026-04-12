@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.appcompat.app.AppCompatActivity
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.AprendizActivity
+import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.ListaAcaoActivity
 import com.paradoxo.amadeus.cognicao.faisca.Inicia
 import com.paradoxo.amadeus.dao.AcaoDAO
@@ -38,9 +39,9 @@ class Acionadora(private val activity: Activity) {
         const val PREF_NOME_USU = "nomeUsu"
     }
 
-    fun isAcao(entrada: String) {
+    fun isAcao(entradaOriginal: String, entradaAnalisada: String = entradaOriginal) {
         var acaoAserTratada = Acao(AcaoEnum.SEM_ACAO)
-        val entradaNorm = entrada.normalize()
+        val entradaNorm = entradaAnalisada.normalize()
 
         val acaoDAO = AcaoDAO(activity)
         val acoesDisponiveis = acaoDAO.getAcoes() ?: return
@@ -56,7 +57,7 @@ class Acionadora(private val activity: Activity) {
             }
         }
 
-        tratarAcao(acaoAserTratada, entrada)
+        tratarAcao(acaoAserTratada, entradaOriginal)
     }
 
     fun tratarAcao(acaoAserTratada: Acao, entrada: String) {
@@ -71,7 +72,10 @@ class Acionadora(private val activity: Activity) {
             AcaoEnum.PROXIMA_MUSICA -> acionarProximaMusica(entradaMutavel)
 
             AcaoEnum.APP -> {
-                entradaMutavel = entradaMutavel.replace(acaoAserTratada.gatilhos?.get(0) ?: "", "").trim()
+                entradaMutavel = removerGatilhoDaEntrada(
+                    entradaMutavel,
+                    acaoAserTratada.gatilhos?.get(0)
+                )
                 GerenciaApp.encontrarApp(entradaMutavel, activity)
                 Log.e("Tag", "abrir App")
             }
@@ -115,6 +119,11 @@ class Acionadora(private val activity: Activity) {
 
             AcaoEnum.ABRIR_ACOES -> {
                 activity.startActivity(Intent(activity, ListaAcaoActivity::class.java))
+                notificarOutput(activity.getString(R.string.abrindo))
+            }
+
+            AcaoEnum.ABRIR_CONFIG_IA -> {
+                activity.startActivity(Intent(activity, ConfigPrimariaActivity::class.java))
                 notificarOutput(activity.getString(R.string.abrindo))
             }
 
@@ -197,11 +206,19 @@ class Acionadora(private val activity: Activity) {
         val musica = if (gatilho0.normalize() == entradaMutavel.normalize()) {
             gerenciaMusica.encontrarMusica(null)
         } else {
-            entradaMutavel = entradaMutavel.replace(gatilho0, "").trim()
+            entradaMutavel = removerGatilhoDaEntrada(entradaMutavel, gatilho0)
             gerenciaMusica.encontrarMusica(entradaMutavel)
         }
 
         gerenciaMusica.configurarMediPlayer(musica)
+    }
+
+    private fun removerGatilhoDaEntrada(entrada: String, gatilho: String?): String {
+        if (gatilho.isNullOrBlank()) return entrada.trim()
+        return entrada.replaceFirst(
+            Regex(Regex.escape(gatilho), RegexOption.IGNORE_CASE),
+            ""
+        ).trim()
     }
 
     private fun notificarOutput(mensagem: String) {

@@ -8,6 +8,8 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat
+import com.paradoxo.amadeus.R
 
 object Util {
     fun configurarToolBarBranca(activity: Activity) {
@@ -15,7 +17,7 @@ object Util {
             activity.window.apply {
                 addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                 clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                statusBarColor = Color.WHITE
+                statusBarColor = ContextCompat.getColor(activity, R.color.surface_background)
             }
             val view = activity.findViewById<View>(android.R.id.content)
             view.systemUiVisibility = view.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
