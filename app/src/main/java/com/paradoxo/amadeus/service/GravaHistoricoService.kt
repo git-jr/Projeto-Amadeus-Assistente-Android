@@ -4,9 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.google.firebase.database.FirebaseDatabase
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.toModel
+import com.paradoxo.amadeus.firebase.FirebaseSupport
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Preferencias
 import kotlinx.coroutines.CoroutineScope
@@ -42,8 +42,15 @@ class GravaHistoricoService : Service() {
 
     private fun inseriHistoricoFibrebase(historicoParaUpload: List<Sentenca>) {
         val tk = Preferencias.getPrefString(TK, applicationContext)
+        val database = FirebaseSupport.databaseOrNull(applicationContext)
 
-        FirebaseDatabase.getInstance().reference
+        if (database == null) {
+            Log.w("Falha ao upar", "Firebase indisponivel; upload ignorado.")
+            stopSelf()
+            return
+        }
+
+        database.reference
             .child("historico-beta").child(tk).push()
             .setValue(historicoParaUpload)
             .addOnSuccessListener {

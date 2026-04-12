@@ -18,6 +18,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
@@ -35,6 +36,7 @@ import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.enums.ItemEnum
 import com.paradoxo.amadeus.enums.ItemEnum.ITEM_LOAD
 import com.paradoxo.amadeus.fragments.DialogSimples
+import com.paradoxo.amadeus.ia.GroqAssistant
 import com.paradoxo.amadeus.modelo.Acao
 import com.paradoxo.amadeus.modelo.EventoMensagem
 import com.paradoxo.amadeus.modelo.Sentenca
@@ -116,6 +118,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     private fun configurarNomesIaUsu() {
         findViewById<TextView>(R.id.nomeIaTextView).text = Preferencias.getPrefString("nomeIA", this)
         findViewById<TextView>(R.id.nomeUsuarioTextView).text = Preferencias.getPrefString("nomeUsu", this)
+        val modelo = Preferencias.getPrefString(GroqAssistant.PREF_GROQ_MODEL, this)
+            .ifBlank { GroqAssistant.DEFAULT_MODEL }
+        findViewById<TextView>(R.id.modeloIaStatusTextView).text =
+            if (GroqAssistant.isConfigured(this)) {
+                "Groq: $modelo"
+            } else {
+                getString(R.string.configuracao_modelo_resumo)
+            }
     }
 
     private fun configurarBotoaEnviarTeclado() {
@@ -260,6 +270,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = ""
         setSupportActionBar(toolbar)
+        val toolbarColor = ContextCompat.getColor(this, R.color.text_primary)
+        toolbar.navigationIcon?.setTint(toolbarColor)
+        toolbar.overflowIcon?.setTint(toolbarColor)
         toolbar.setNavigationOnClickListener {
             if (menuSlidingPaneLayout.isOpen) {
                 menuSlidingPaneLayout.closePane()
@@ -358,6 +371,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.menu_main, menu)
+        findViewById<Toolbar>(R.id.toolbar).overflowIcon?.setTint(
+            ContextCompat.getColor(this, R.color.text_primary)
+        )
         return true
     }
 

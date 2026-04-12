@@ -27,7 +27,7 @@
     <string name="modo_fala">Voz da IA</string>
     <string name="configs_podem_ser_alteradas_depois">As configurações podem ser\nalteradas mais tarde</string>
 
-    <string name="link_start">Link Start</string>
+    <string name="link_start">Continuar</string>
     <string name="musica_encerrada">Música encerrada</string>
     <string name="nehuma_musica_em_reproducao" tools:ignore="Typos">Não estou reproduzindo nenhuma música no momento</string>
     <string name="versao">Versão</string>
@@ -142,5 +142,21 @@
     <string name="erro_abrir_app">Erro ao tentar abrir o app </string>
     <string name="app_nao_encontrado">App não encontrado</string>
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, não está instalado no momento, toque no card para fazer uma busca</string>
+    <string name="configuracao_modelo">Perfil e IA</string>
+    <string name="configuracao_modelo_resumo">Nome, Groq, modelo e shell local</string>
+    <string name="groq_api_key">Chave da API Groq</string>
+    <string name="groq_modelo">Modelo Groq</string>
+    <string name="groq_modelo_hint">Ex.: llama-3.1-8b-instant</string>
+    <string name="groq_ativa_respostas">Respostas generativas via Groq</string>
+    <string name="groq_chave_local">A chave fica salva apenas neste aparelho.</string>
+    <string name="groq_console">Abrir console da Groq</string>
+    <string name="link_groq_console_keys">https://console.groq.com/keys</string>
+    <string name="ferramenta_shell">Ferramenta shell</string>
+    <string name="ferramenta_shell_resumo">Permite que a IA execute comandos seguros no shell quando voce pedir.</string>
+    <string name="abrir_configuracoes_ia">Abrir configuracoes de IA</string>
+    <string name="chat_pronto">Chat pronto</string>
+    <string name="chat_pronto_resumo">Acoes locais + Groq + voz</string>
+    <string name="minimal_m3">Material 3 minimalista</string>
+    <string name="conversa_com_contexto">O app prioriza comandos locais e usa a Groq quando precisar conversar melhor.</string>
 
 </resources>

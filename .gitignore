@@ -11,3 +11,5 @@
 /app/google-services.json
 /.idea/
 /app/release
+/app/build
+/.kotlin

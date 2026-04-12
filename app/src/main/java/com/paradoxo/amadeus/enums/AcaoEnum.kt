@@ -27,5 +27,6 @@ enum class AcaoEnum {
 
     ABRIR_APRENDIZADO,
     ABRIR_ACOES,
+    ABRIR_CONFIG_IA,
     AMADEUS_PLAY_STORE
 }

@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -12,6 +13,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.ia.GroqAssistant
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
@@ -23,8 +25,11 @@ class ConfigPrimariaActivity : AppCompatActivity() {
 
     private var primeiroUso = true
     private lateinit var acessoDadosToggleButton: MaterialSwitch
+    private lateinit var shellToolToggleButton: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
+    private lateinit var groqApiKeyEditText: TextInputEditText
+    private lateinit var groqModelEditText: TextInputEditText
 
     companion object {
         const val PREF_NOME_IA = "nomeIA"
@@ -49,17 +54,24 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun configurarToggleButton() {
         val modoFalaToggleButton = findViewById<MaterialSwitch>(R.id.modoFalaToggleButton)
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
+        shellToolToggleButton = findViewById(R.id.shellToolToggleButton)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
         acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+        shellToolToggleButton.isChecked = getPrefBool(GroqAssistant.PREF_SHELL_TOOL_ATIVO, this, false)
 
         modoFalaToggleButton.setOnCheckedChangeListener { _, valor -> setPrefBool(PREF_VOZ_ATIVA, valor, applicationContext) }
         acessoDadosToggleButton.setOnCheckedChangeListener { _, valor -> setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, valor, applicationContext) }
+        shellToolToggleButton.setOnCheckedChangeListener { _, valor ->
+            setPrefBool(GroqAssistant.PREF_SHELL_TOOL_ATIVO, valor, applicationContext)
+        }
     }
 
     private fun configurarTextInput() {
         nomeUsuarioEditText = findViewById(R.id.nomeUsuarioEditText)
         nomeIaEditText = findViewById(R.id.nomeIaEditText)
+        groqApiKeyEditText = findViewById(R.id.groqApiKeyEditText)
+        groqModelEditText = findViewById(R.id.groqModelEditText)
 
         val nomeUsu = getPrefString(PREF_NOME_USU, this)
         if (nomeUsu.isNotEmpty()) {
@@ -69,7 +81,12 @@ class ConfigPrimariaActivity : AppCompatActivity() {
             primeiroUso = false
         }
 
-        nomeIaEditText.setOnEditorActionListener { _, actionId, _ ->
+        groqApiKeyEditText.setText(getPrefString(GroqAssistant.PREF_GROQ_API_KEY, this))
+        groqModelEditText.setText(
+            getPrefString(GroqAssistant.PREF_GROQ_MODEL, this).ifBlank { GroqAssistant.DEFAULT_MODEL }
+        )
+
+        groqModelEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 verificarNomes()
                 true
@@ -101,6 +118,11 @@ class ConfigPrimariaActivity : AppCompatActivity() {
 
     private fun configuarBotaoLinkStart() {
         findViewById<android.view.View>(R.id.okButton).setOnClickListener { verificarNomes() }
+        findViewById<View>(R.id.groqConsoleTextView).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(getString(R.string.link_groq_console_keys))
+            startActivity(intent)
+        }
     }
 
     fun dialogUsoDados() {
@@ -149,6 +171,12 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun gravarDados() {
         setPrefString(nomeUsuarioEditText.text.toString().trim(), PREF_NOME_USU, this)
         setPrefString(nomeIaEditText.text.toString().trim(), PREF_NOME_IA, this)
+        setPrefString(groqApiKeyEditText.text.toString().trim(), GroqAssistant.PREF_GROQ_API_KEY, this)
+        setPrefString(
+            groqModelEditText.text.toString().trim().ifBlank { GroqAssistant.DEFAULT_MODEL },
+            GroqAssistant.PREF_GROQ_MODEL,
+            this
+        )
 
         if (primeiroUso) {
             startActivity(Intent(this, MainActivity::class.java))

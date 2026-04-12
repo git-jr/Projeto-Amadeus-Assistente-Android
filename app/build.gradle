@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
-    id 'com.google.gms.google-services'
     id 'com.google.android.gms.oss-licenses-plugin'
 }
 
@@ -86,4 +85,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-analytics'
+}
+
+def googleServicesFile = file('google-services.json')
+if (googleServicesFile.exists()) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.lifecycle('google-services.json nao encontrado; build segue sem aplicar o plugin do Google Services.')
 }

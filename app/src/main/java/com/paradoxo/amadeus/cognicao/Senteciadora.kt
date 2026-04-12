@@ -6,40 +6,86 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.dao.room.toModel
+import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.enums.ItemEnum
+import com.paradoxo.amadeus.ia.GroqAssistant
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.busca.ScanPage
+import java.util.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
-import java.util.Random
 
 class Senteciadora(private val context: Activity) {
 
     companion object {
         const val PREF_USAR_SINONIMOS_BUSCA = "usar_sinonimos_busca"
         private val random = Random()
+        private const val MENSAGEM_FALHA_GROQ =
+            "Nao consegui falar com a Groq agora. Verifique sua chave, conexao ou tente de novo."
     }
+
+    private val groqAssistant = GroqAssistant(context.applicationContext)
 
     fun isSentenca(entrada: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val sentenca = AmadeusDatabase.getInstance(context)
-                .sentencaDAO().buscaPorChave(entrada)?.toModel()
+            val entradaNormalizada = entrada.trim()
+            val sentencaLocal = buscarSentencaLocal(entradaNormalizada)
 
             when {
-                sentenca?.chave != null -> notificarOutput(sentenca)
-                Preferencias.getPrefBool(PREF_USAR_SINONIMOS_BUSCA, context, false) ->
-                    buscaPorSinonimos(entrada.lowercase())
-                else -> notificarOutputSemResposta()
+                sentencaLocal != null -> notificarOutput(sentencaLocal)
+
+                Preferencias.getPrefBool(PREF_USAR_SINONIMOS_BUSCA, context, false) -> {
+                    val sentencaPorSinonimo = buscaPorSinonimos(entradaNormalizada.lowercase())
+                    if (sentencaPorSinonimo != null) {
+                        notificarOutput(sentencaPorSinonimo)
+                    } else {
+                        responderComGroqOuConfiguracao(entradaNormalizada)
+                    }
+                }
+
+                else -> responderComGroqOuConfiguracao(entradaNormalizada)
             }
         }
     }
 
-    private suspend fun buscaPorSinonimos(entradaOriginal: String) {
+    private suspend fun buscarSentencaLocal(entrada: String): Sentenca? {
+        val db = AmadeusDatabase.getInstance(context)
+        val chaves = listOf(
+            entrada.trim(),
+            entrada.lowercase().trim(),
+            entrada.lowercase().replace("?", "").replace("!", "").trim()
+        )
+            .filter { it.isNotBlank() }
+            .distinct()
+
+        for (chave in chaves) {
+            val encontrada = db.sentencaDAO().buscaPorChave(chave)?.toModel()
+            if (encontrada != null) return encontrada
+        }
+
+        return null
+    }
+
+    private suspend fun responderComGroqOuConfiguracao(entrada: String) {
+        if (!GroqAssistant.isConfigured(context)) {
+            notificarConfiguracaoGroqPendente()
+            return
+        }
+
+        val resposta = runCatching { groqAssistant.responder(entrada) }
+            .getOrElse {
+                Log.e("Groq", "Falha ao consultar a Groq", it)
+                MENSAGEM_FALHA_GROQ
+            }
+
+        notificarTexto(resposta)
+    }
+
+    private suspend fun buscaPorSinonimos(entradaOriginal: String): Sentenca? {
         val chaves = entradaOriginal.split(" ")
         val db = AmadeusDatabase.getInstance(context)
         val entidadesSinonimo = mutableListOf<Entidade>()
@@ -50,8 +96,16 @@ class Senteciadora(private val context: Activity) {
             if (entidade == null) {
                 entidade = Entidade().apply {
                     nome = chave
-                    try { sinonimos = ScanPage.obterSinonimo(chave) } catch (e: Exception) { e.printStackTrace() }
-                    try { significado = ScanPage.obterSignificado(chave) } catch (e: Exception) { e.printStackTrace() }
+                    try {
+                        sinonimos = ScanPage.obterSinonimo(chave)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    try {
+                        significado = ScanPage.obterSignificado(chave)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
                 if (entidade.sinonimos != null) db.entidadeDAO().inserir(entidade.toEntity())
             }
@@ -59,14 +113,14 @@ class Senteciadora(private val context: Activity) {
             if (entidade.sinonimos != null) entidadesSinonimo.add(entidade)
         }
 
-        if (entidadesSinonimo.isEmpty()) {
-            notificarOutputSemResposta()
+        return if (entidadesSinonimo.isEmpty()) {
+            null
         } else {
             reformularEntradaComSinonimos(entidadesSinonimo)
         }
     }
 
-    private suspend fun reformularEntradaComSinonimos(sinonimosDisponiveis: List<Entidade>) {
+    private suspend fun reformularEntradaComSinonimos(sinonimosDisponiveis: List<Entidade>): Sentenca? {
         if (sinonimosDisponiveis.size >= 2) {
             val analisar = sinonimosDisponiveis.take(2)
 
@@ -81,21 +135,41 @@ class Senteciadora(private val context: Activity) {
             val entidadeNova = Entidade().apply { sinonimos = geradas }
             val restante = listOf(entidadeNova) + sinonimosDisponiveis.drop(2)
 
-            reformularEntradaComSinonimos(restante)
-        } else {
-            val listaSentenca = AmadeusDatabase.getInstance(context)
-                .sentencaDAO().listar().map { it.toModel() }
+            return reformularEntradaComSinonimos(restante)
+        }
 
-            for (entrada in sinonimosDisponiveis[0].sinonimos ?: emptyList()) {
-                Log.e("Testado ", entrada)
-                val encontrada = listaSentenca.firstOrNull { it.chave == entrada }
-                if (encontrada != null) {
-                    notificarOutput(encontrada)
-                    return
-                }
+        val listaSentenca = AmadeusDatabase.getInstance(context)
+            .sentencaDAO()
+            .listar()
+            .map { it.toModel() }
+
+        for (entrada in sinonimosDisponiveis[0].sinonimos ?: emptyList()) {
+            Log.e("Testado", entrada)
+            val encontrada = listaSentenca.firstOrNull { it.chave == entrada }
+            if (encontrada != null) {
+                return encontrada
             }
+        }
 
-            notificarOutputSemResposta()
+        return null
+    }
+
+    private fun notificarConfiguracaoGroqPendente() {
+        val sentenca = Sentenca(
+            GroqAssistant.MENSAGEM_SEM_CONFIGURACAO,
+            AcaoEnum.ABRIR_CONFIG_IA
+        )
+        sentenca.tipo_item = ItemEnum.ITEM_CARD.ordinal
+        sentenca.addResposta(context.getString(R.string.abrir_configuracoes_ia))
+
+        context.runOnUiThread {
+            EventBus.getDefault().post(sentenca)
+        }
+    }
+
+    private fun notificarTexto(texto: String) {
+        context.runOnUiThread {
+            EventBus.getDefault().post(Sentenca(texto))
         }
     }
 
@@ -109,7 +183,9 @@ class Senteciadora(private val context: Activity) {
             sentenca.addResposta(sentenca.respostas[random.nextInt(numeroRespostas)], 0)
         }
 
-        context.runOnUiThread { EventBus.getDefault().post(sentenca) }
+        context.runOnUiThread {
+            EventBus.getDefault().post(sentenca)
+        }
     }
 
     private fun notificarOutputSemResposta() {

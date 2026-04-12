@@ -4,31 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layoutItemComum"
     android:layout_width="match_parent"
-    app:cardBackgroundColor="@android:color/transparent"
     android:layout_height="wrap_content"
-    android:gravity="end">
+    android:gravity="end"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/padding_bottom_card"
-        android:minWidth="50dp"
-        app:cardBackgroundColor="@android:color/transparent"
-        app:cardCornerRadius="16dp"
+        android:maxWidth="300dp"
+        app:cardBackgroundColor="@color/chat_user_bg"
+        app:cardCornerRadius="22dp"
         app:cardElevation="0dp"
-        app:strokeColor="@color/borda_card"
+        app:strokeColor="@color/outline_subtle"
         app:strokeWidth="1dp">
 
         <TextView
             android:id="@+id/conteudoTexView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/gray_700"
-            tools:text="hi" />
+            android:paddingStart="18dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="12dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="@color/text_primary"
+            tools:text="Abra as configuracoes da Groq" />
 
     </com.google.android.material.card.MaterialCardView>
 

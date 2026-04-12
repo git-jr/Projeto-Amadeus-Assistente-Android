@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#F50057</color>
-    <color name="colorPrimaryDark">#D50000</color>
-    <color name="colorAccent">#EEEEEE</color>
+    <color name="colorPrimary">#1E6F5C</color>
+    <color name="colorPrimaryDark">#154F42</color>
+    <color name="colorAccent">#FCFCF9</color>
 
-    <color name="colorSecondary2">#344955</color>
-    <color name="colorSecondaryDark2">#232F34</color>
-    <color name="colorSecondaryDark3">#290f3e</color>
+    <color name="colorSecondary2">#17201C</color>
+    <color name="colorSecondaryDark2">#5E6A64</color>
+    <color name="colorSecondaryDark3">#154F42</color>
 
-    <color name="gray_200">#EEEEEE</color>
-    <color name="gray_300">#E0E0E0</color>
-    <color name="gray_400">#BDBDBD</color>
-    <color name="gray_700">#616161</color>
-    <color name="gray_900">#212121</color>
+    <color name="gray_200">#D9E1DB</color>
+    <color name="gray_300">#C9D0CB</color>
+    <color name="gray_400">#A0AAA3</color>
+    <color name="gray_700">#5E6A64</color>
+    <color name="gray_900">#17201C</color>
 
+    <color name="borda_card">#D9E1DB</color>
+    <color name="conteudo_card">#5E6A64</color>
+    <color name="subtitulo">#5E6A64</color>
+    <color name="azul_link">#1E6F5C</color>
 
-
-    <color name="borda_card">#1F000000</color>
-    <color name="conteudo_card">#797979</color>
-
-    <color name="subtitulo">#89000000</color>
-
-    <color name="azul_link">#4183E7</color>
+    <color name="surface_background">#F5F7F2</color>
+    <color name="surface_panel">#FFFFFF</color>
+    <color name="surface_card">#FCFCF9</color>
+    <color name="primary_container">#D6EEE7</color>
+    <color name="surface_elevated">#EFF3ED</color>
+    <color name="outline_subtle">#D9E1DB</color>
+    <color name="text_primary">#17201C</color>
+    <color name="text_secondary">#5E6A64</color>
+    <color name="chat_ai_bg">#DFF1EA</color>
+    <color name="chat_user_bg">#FFFFFF</color>
+    <color name="chat_load_bg">#1E6F5C</color>
 </resources>

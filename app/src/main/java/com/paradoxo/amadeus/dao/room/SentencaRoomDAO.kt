@@ -53,6 +53,9 @@ interface SentencaRoomDAO {
     @Query("SELECT * FROM historico_sentenca")
     suspend fun listarHistorico(): List<HistoricoSentencaEntity>
 
+    @Query("SELECT * FROM historico_sentenca ORDER BY id DESC LIMIT :limite")
+    suspend fun listarHistoricoComLimite(limite: Long): List<HistoricoSentencaEntity>
+
     @Query("SELECT COUNT(*) FROM historico_sentenca")
     suspend fun getQuantidadeTotalHistorico(): Long
 }
