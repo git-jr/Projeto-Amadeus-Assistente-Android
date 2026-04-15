@@ -84,7 +84,7 @@ class FloatingButtonAmadeusService : Service() {
         super.onCreate()
         createNotification()
         createFloatingButton()
-        if (getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, this, false)) {
+        if (getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, this, true)) {
             wakeWordManager.initialize()
         }
     }
