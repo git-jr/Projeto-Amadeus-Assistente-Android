@@ -183,7 +183,8 @@ class GeminiCommandInterpreter(private val apiKey: String) {
                 ActionIntent(actionType, a["target"] ?: "", a["value"] ?: "")
             }
             AgentStepResult(done, reason, actions)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("GeminiInterpreter", "Erro ao parsear resultado do passo: ${e.message}")
             AgentStepResult(done = true, reason = "Erro ao interpretar resposta")
         }
     }

@@ -37,6 +37,8 @@ import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
+import com.paradoxo.amadeus.modelo.ActionIntent
+import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.view.ScreenHighlightView
 import kotlinx.coroutines.CoroutineScope
@@ -486,9 +488,47 @@ class FloatingButtonAmadeusService : Service() {
         }, 1000)
     }
 
+    // ── Test mode ─────────────────────────────────────────────────────────────
+    // Para ativar: mude AGENT_TEST_MODE para true e edite TEST_PLAN abaixo.
+    // Para desativar: mude AGENT_TEST_MODE para false.
+
+    private val AGENT_TEST_MODE = true // <-- true = pula Gemini e executa TEST_PLAN direto
+
+    private val TEST_PLAN = listOf(
+        // Exemplos — edite à vontade:
+        ActionIntent(ActionType.CLICK,    target = "Galeria"),
+//        ActionIntent(ActionType.TYPE,     value  = "one piece"),
+//        ActionIntent(ActionType.IME_ACTION),
+         ActionIntent(ActionType.SCROLL),
+        // ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
+    )
+
+    private fun runTestPlan() {
+        updateAgentMessage("[TEST] ${TEST_PLAN.size} ação(ões) → iniciando...")
+        val sent = AmadeusAccessibilityService.executeActions(
+            TEST_PLAN,
+            onFeedback = { updateAgentMessage("[TEST] $it") },
+            onDone = {
+                updateAgentMessage("[TEST] Concluído")
+                Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 1500)
+            }
+        )
+        if (!sent) {
+            updateAgentMessage(getString(R.string.acessibilidade_nao_ativa))
+            Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
+        }
+    }
+
+    // ── Command processing ────────────────────────────────────────────────────
+
     private fun processCommand(goal: String) {
         loopJob?.cancel()
         showAgentOverlay()
+
+        if (AGENT_TEST_MODE) {
+            runTestPlan()
+            return
+        }
 
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
