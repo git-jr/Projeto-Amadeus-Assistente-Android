@@ -55,6 +55,7 @@ class FloatingButtonAmadeusService : Service() {
 
     private var voiceOverlayView: View? = null
     private var screenHighlightView: ScreenHighlightView? = null
+    private var agentOverlayView: View? = null
     private var speechRecognizer: SpeechRecognizer? = null
 
     private val wakeWordManager by lazy {
@@ -272,6 +273,42 @@ class FloatingButtonAmadeusService : Service() {
         }, 3000)
     }
 
+    // ── Agent overlay ─────────────────────────────────────────────────────────
+
+    private fun showAgentOverlay() {
+        if (agentOverlayView != null) return
+        val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
+        agentOverlayView = LayoutInflater.from(themedContext).inflate(R.layout.layout_agent_overlay, null)
+        agentOverlayView?.findViewById<View>(R.id.agentCancelButton)?.setOnClickListener {
+            loopJob?.cancel()
+            hideAgentOverlay()
+        }
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            overlayType(),
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM
+        }
+        windowManager.addView(agentOverlayView, params)
+    }
+
+    private fun updateAgentMessage(message: String) {
+        agentOverlayView?.findViewById<TextView>(R.id.agentStatusText)?.text = message
+    }
+
+    private fun hideAgentOverlay() {
+        agentOverlayView?.let {
+            try {
+                windowManager.removeView(it)
+            } catch (_: Exception) {
+            }
+        }
+        agentOverlayView = null
+    }
+
     // ── Wake word ─────────────────────────────────────────────────────────────
 
     private fun startWakeWordDetection() = wakeWordManager.startDetection()
@@ -451,6 +488,7 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun processCommand(goal: String) {
         loopJob?.cancel()
+        showAgentOverlay()
 
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
@@ -461,11 +499,12 @@ class FloatingButtonAmadeusService : Service() {
 
         fun runStep() {
             if (step >= maxSteps) {
-                showMessage("Limite de $maxSteps passos atingido")
+                updateAgentMessage("Limite de $maxSteps passos atingido")
+                Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
                 return
             }
             step++
-            showMessage("Passo $step/$maxSteps — analisando...")
+            updateAgentMessage("Passo $step/$maxSteps — analisando...")
 
             val elements = AmadeusAccessibilityService.getVisibleElements()
             val bitmap = screenMapGenerator.generate(elements, screenW, screenH, sessionId, step)
@@ -474,19 +513,21 @@ class FloatingButtonAmadeusService : Service() {
                 val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap)
                 withContext(Dispatchers.Main) {
                     when {
-                        result.done -> showMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
-                        result.actions.isEmpty() -> showMessage(
-                            getString(
-                                R.string.acessibilidade_texto_nao_encontrado,
-                                goal
+                        result.done -> {
+                            updateAgentMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
+                            Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 1500)
+                        }
+                        result.actions.isEmpty() -> {
+                            updateAgentMessage(
+                                getString(R.string.acessibilidade_texto_nao_encontrado, goal)
                             )
-                        )
-
+                            Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
+                        }
                         else -> {
                             history.add("[Passo $step] ${result.actions.joinToString { "${it.type} \"${it.target}\"" }}")
                             val sent = AmadeusAccessibilityService.executeActions(
                                 result.actions,
-                                onFeedback = { showMessage(it) },
+                                onFeedback = { updateAgentMessage(it) },
                                 onDone = {
                                     Handler(Looper.getMainLooper()).postDelayed(
                                         { runStep() },
@@ -494,7 +535,10 @@ class FloatingButtonAmadeusService : Service() {
                                     )
                                 }
                             )
-                            if (!sent) showMessage(getString(R.string.acessibilidade_nao_ativa))
+                            if (!sent) {
+                                updateAgentMessage(getString(R.string.acessibilidade_nao_ativa))
+                                Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
+                            }
                         }
                     }
                 }
@@ -510,6 +554,7 @@ class FloatingButtonAmadeusService : Service() {
         voiceOverlayView?.let { windowManager.removeView(it) }
         voiceOverlayView = null
         removeScreenHighlight()
+        hideAgentOverlay()
         startWakeWordDetection()
     }
 
@@ -524,6 +569,7 @@ class FloatingButtonAmadeusService : Service() {
         voiceOverlayView?.let { windowManager.removeView(it) }
         voiceOverlayView = null
         removeScreenHighlight()
+        hideAgentOverlay()
         if (::buttonView.isInitialized) windowManager.removeView(buttonView)
     }
 
