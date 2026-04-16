@@ -86,6 +86,14 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
             android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
 
+        <activity
+            android:name=".activity.ListaMacrosActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.EditarMacroActivity"
+            android:exported="false" />
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

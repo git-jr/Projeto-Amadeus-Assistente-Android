@@ -15,9 +15,10 @@ import com.paradoxo.amadeus.dao.room.entities.*
         MensagemEntity::class,
         SentencaEntity::class,
         HistoricoSentencaEntity::class,
-        EntidadeEntity::class
+        EntidadeEntity::class,
+        AgentMacroEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -27,6 +28,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
     abstract fun mensagemDAO(): MensagemRoomDAO
     abstract fun sentencaDAO(): SentencaRoomDAO
     abstract fun entidadeDAO(): EntidadeRoomDAO
+    abstract fun agentMacroDAO(): AgentMacroDAO
 
     companion object {
         @Volatile
@@ -191,6 +193,24 @@ abstract class AmadeusDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `agent_macro` (
+                        `id`             INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `goalKey`        TEXT NOT NULL,
+                        `actionsJson`    TEXT NOT NULL,
+                        `executionCount` INTEGER NOT NULL,
+                        `isConfirmed`    INTEGER NOT NULL,
+                        `lastUsedAt`     INTEGER NOT NULL,
+                        `createdAt`      INTEGER NOT NULL,
+                        `successCount`   INTEGER NOT NULL,
+                        `failureCount`   INTEGER NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getInstance(context: Context): AmadeusDatabase {
             return INSTANCE ?: synchronized(this) {
                 Room.databaseBuilder(
@@ -198,7 +218,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
                     AmadeusDatabase::class.java,
                     "Amadeus.db"
                 )
-                    .addMigrations(MIGRATION_4_5)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                     // Versões 1, 2, 3 eram esquemas muito antigos já cobertos pelo
                     // onUpgrade do SQLiteOpenHelper. Na prática todos os usuários
                     // chegam na v4, mas caso alguém nunca tenha aberto o app o banco

@@ -80,6 +80,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         configuarBotaoLinkStart()
         configurarToggleButton()
         configurarBotaoAssistente()
+        configurarBotaoMacros()
     }
 
     private fun configurarToggleButton() {
@@ -162,6 +163,12 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun configurarBotaoAssistente() {
         findViewById<View>(R.id.assistenteVozLayout).setOnClickListener {
             abrirConfiguracaoAssistente()
+        }
+    }
+
+    private fun configurarBotaoMacros() {
+        findViewById<View>(R.id.macrosLayout).setOnClickListener {
+            startActivity(Intent(this, ListaMacrosActivity::class.java))
         }
     }
 

@@ -35,7 +35,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
     ) {
         val handler = Handler(Looper.getMainLooper())
         val initialDelay = 500L
-        val delayPerAction = 1000L
+        val delayPerAction = 1400L
 
         actions.forEachIndexed { index, action ->
             handler.postDelayed({

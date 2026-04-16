@@ -34,6 +34,7 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
+import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
@@ -67,6 +68,7 @@ class FloatingButtonAmadeusService : Service() {
     private val interpreter = CommandInterpreter()
     private val geminiInterpreter = GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
+    private val memoryManager by lazy { AgentMemoryManager(this) }
     private var lastElements: List<UiElement> = emptyList()
     private var loopJob: Job? = null
 
@@ -397,7 +399,7 @@ class FloatingButtonAmadeusService : Service() {
                 processCommand(text)
             } else {
                 // só para testes
-                processCommand("Abrir X e pesquisar por one piece")
+                processCommand("Abrir YouTube e pesquisar por one piece")
                 closeVoiceOverlay()
             }
         }
@@ -493,7 +495,7 @@ class FloatingButtonAmadeusService : Service() {
     // Para ativar: mude AGENT_TEST_MODE para true e edite TEST_PLAN abaixo.
     // Para desativar: mude AGENT_TEST_MODE para false.
 
-    private val AGENT_TEST_MODE = true // <-- true = pula Gemini e executa TEST_PLAN direto
+    private val AGENT_TEST_MODE = false // <-- true = pula Gemini e executa TEST_PLAN direto
 
     private val TEST_PLAN = listOf(
         // Exemplos — edite à vontade:
@@ -546,9 +548,47 @@ class FloatingButtonAmadeusService : Service() {
             return
         }
 
+        val allActions = mutableListOf<ActionIntent>()
+
+        loopJob = CoroutineScope(Dispatchers.IO).launch {
+            val macro = memoryManager.recallMacro(goal)
+            withContext(Dispatchers.Main) {
+                if (macro != null) {
+                    executeMacro(macro, goal)
+                } else {
+                    runGeminiLoop(goal, allActions)
+                }
+            }
+        }
+    }
+
+    private fun executeMacro(macro: com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity, goal: String) {
+        val actions = memoryManager.deserializeActions(macro.actionsJson)
+        if (actions.isEmpty()) {
+            CoroutineScope(Dispatchers.IO).launch { memoryManager.markMacroFailure(macro) }
+            runGeminiLoop(goal, mutableListOf())
+            return
+        }
+        updateAgentMessage("Macro: executando ${actions.size} ação(ões) conhecidas...")
+        val sent = AmadeusAccessibilityService.executeActions(
+            actions,
+            onFeedback = { updateAgentMessage(it) },
+            onDone = {
+                CoroutineScope(Dispatchers.IO).launch { memoryManager.markMacroSuccess(macro) }
+                updateAgentMessage("✓ Concluído via macro")
+                Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 1500)
+            }
+        )
+        if (!sent) {
+            CoroutineScope(Dispatchers.IO).launch { memoryManager.markMacroFailure(macro) }
+            runGeminiLoop(goal, mutableListOf())
+        }
+    }
+
+    private fun runGeminiLoop(goal: String, allActions: MutableList<ActionIntent>) {
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
-        val maxSteps = 10
+        val maxSteps = 30
         var step = 0
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
@@ -570,6 +610,11 @@ class FloatingButtonAmadeusService : Service() {
                 withContext(Dispatchers.Main) {
                     when {
                         result.done -> {
+                            if (allActions.isNotEmpty()) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    memoryManager.recordExecution(goal, allActions)
+                                }
+                            }
                             updateAgentMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
                             Handler(Looper.getMainLooper()).postDelayed(
                                 { hideAgentOverlay() },
@@ -589,6 +634,7 @@ class FloatingButtonAmadeusService : Service() {
 
                         else -> {
                             history.add("[Passo $step] ${result.actions.joinToString { "${it.type} \"${it.target}\"" }}")
+                            allActions.addAll(result.actions)
                             val sent = AmadeusAccessibilityService.executeActions(
                                 result.actions,
                                 onFeedback = { updateAgentMessage(it) },
