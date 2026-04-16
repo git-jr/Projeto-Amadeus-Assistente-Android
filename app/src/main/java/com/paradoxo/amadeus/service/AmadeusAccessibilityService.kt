@@ -57,7 +57,17 @@ class AmadeusAccessibilityService : AccessibilityService() {
                     }
 
                     ActionType.SCROLL -> {
-                        onFeedback("Rolando tela")
+                        val direction = action.value.lowercase().trim()
+                        val label = if (direction == "up") "para cima" else "para baixo"
+                        onFeedback("Rolando tela $label")
+                        scrollScreen(direction)
+                    }
+
+                    ActionType.SCROLL_HORIZONTAL -> {
+                        val direction = action.value.lowercase().trim()
+                        val label = if (direction == "left") "para esquerda" else "para direita"
+                        onFeedback("Rolando $label")
+                        scrollHorizontal(direction)
                     }
 
                     ActionType.IME_ACTION -> {
@@ -220,6 +230,95 @@ class AmadeusAccessibilityService : AccessibilityService() {
         val stroke = GestureDescription.StrokeDescription(path, 0, 500)
         val gesture = GestureDescription.Builder().addStroke(stroke).build()
         dispatchGesture(gesture, null, null)
+    }
+
+    // ── Scroll ────────────────────────────────────────────────────────────────
+
+    private fun scrollScreen(direction: String) {
+        // Estratégia 1: gesto de swipe — funciona em qualquer app independente da árvore de acessibilidade
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val w = resources.displayMetrics.widthPixels
+            val h = resources.displayMetrics.heightPixels
+            val x = w / 2f
+            if (direction == "up") {
+                swipe(x, h * 0.3f, x, h * 0.7f) // swipe para baixo = rola para cima
+            } else {
+                swipe(x, h * 0.7f, x, h * 0.3f) // swipe para cima = rola para baixo
+            }
+            return
+        }
+
+        // Estratégia 2: ACTION_SCROLL no nó rolável — fallback para API < 24 sem suporte a gestos
+        val action = if (direction == "up") {
+            AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD
+        } else {
+            AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
+        }
+        findScrollableNode()?.performAction(action)
+    }
+
+    private fun scrollHorizontal(direction: String) {
+        // Estratégia 1: gesto de swipe horizontal
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val w = resources.displayMetrics.widthPixels
+            val h = resources.displayMetrics.heightPixels
+            val y = h / 2f
+            if (direction == "left") {
+                swipe(w * 0.7f, y, w * 0.3f, y) // swipe para esquerda = avança (ex: próximo item)
+            } else {
+                swipe(w * 0.3f, y, w * 0.7f, y) // swipe para direita = volta (ex: item anterior)
+            }
+            return
+        }
+
+        // Estratégia 2: ACTION_SCROLL no nó rolável — fallback para API < 24
+        val action = if (direction == "left") {
+            AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
+        } else {
+            AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD
+        }
+        findScrollableNode()?.performAction(action)
+    }
+
+    private fun findScrollableNode(): AccessibilityNodeInfo? {
+        for (root in windows.mapNotNull { it.root }) {
+            val found = findScrollableInTreeDeep(root)
+            if (found != null) return found
+        }
+        return null
+    }
+
+    private fun findScrollableInTreeDeep(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        if (node == null) return null
+        var deepest: AccessibilityNodeInfo? = null
+        for (i in 0 until node.childCount) {
+            val found = findScrollableInTreeDeep(node.getChild(i))
+            if (found != null) deepest = found  // não para — continua buscando mais fundo
+        }
+        if (deepest != null) return deepest
+        return if (node.isScrollable) node else null
+    }
+
+
+    private fun findScrollableInTreeFirst(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        if (node == null) return null
+        if (node.isScrollable) return node
+        for (i in 0 until node.childCount) {
+            val found = findScrollableInTreeFirst(node.getChild(i))
+            if (found != null) return found
+        }
+        return null
+    }
+
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.N)
+    private fun swipe(fromX: Float, fromY: Float, toX: Float, toY: Float) {
+        val path = Path().apply {
+            moveTo(fromX, fromY)
+            lineTo(toX, toY)
+        }
+        val stroke = GestureDescription.StrokeDescription(path, 0, 300)
+        dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────

@@ -496,10 +496,19 @@ class FloatingButtonAmadeusService : Service() {
 
     private val TEST_PLAN = listOf(
         // Exemplos — edite à vontade:
-        ActionIntent(ActionType.CLICK,    target = "Galeria"),
+//        ActionIntent(ActionType.CLICK,    target = "Galeria"),
 //        ActionIntent(ActionType.TYPE,     value  = "one piece"),
 //        ActionIntent(ActionType.IME_ACTION),
-         ActionIntent(ActionType.SCROLL),
+
+        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "left"),
+        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "right"),
+
+//        ActionIntent(ActionType.SCROLL, value = "down"),
+//        ActionIntent(ActionType.SCROLL, value = "down"),
+//        ActionIntent(ActionType.SCROLL, value = "up"),
+//        ActionIntent(ActionType.SCROLL, value = "up"),
+//        ActionIntent(ActionType.SCROLL, value = "down"),
+
         // ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
     )
 

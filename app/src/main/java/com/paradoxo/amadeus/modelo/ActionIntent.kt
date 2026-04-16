@@ -5,6 +5,7 @@ enum class ActionType {
     TYPE,
     OPEN_APP,
     SCROLL,
+    SCROLL_HORIZONTAL,
     IME_ACTION
 }
 
