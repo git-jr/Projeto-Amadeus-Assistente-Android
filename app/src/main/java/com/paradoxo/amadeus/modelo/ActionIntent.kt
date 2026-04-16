@@ -6,7 +6,12 @@ enum class ActionType {
     OPEN_APP,
     SCROLL,
     SCROLL_HORIZONTAL,
-    IME_ACTION
+    IME_ACTION,
+    BACK,
+    HOME,
+    RECENTS,
+    NOTIFICATIONS,
+    QUICK_SETTINGS
 }
 
 data class ActionIntent(

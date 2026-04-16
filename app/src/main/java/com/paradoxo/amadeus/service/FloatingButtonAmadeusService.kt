@@ -280,7 +280,8 @@ class FloatingButtonAmadeusService : Service() {
     private fun showAgentOverlay() {
         if (agentOverlayView != null) return
         val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
-        agentOverlayView = LayoutInflater.from(themedContext).inflate(R.layout.layout_agent_overlay, null)
+        agentOverlayView =
+            LayoutInflater.from(themedContext).inflate(R.layout.layout_agent_overlay, null)
         agentOverlayView?.findViewById<View>(R.id.agentCancelButton)?.setOnClickListener {
             loopJob?.cancel()
             hideAgentOverlay()
@@ -500,8 +501,8 @@ class FloatingButtonAmadeusService : Service() {
 //        ActionIntent(ActionType.TYPE,     value  = "one piece"),
 //        ActionIntent(ActionType.IME_ACTION),
 
-        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "left"),
-        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "right"),
+//        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "left"),
+//        ActionIntent(ActionType.SCROLL_HORIZONTAL, value = "right"),
 
 //        ActionIntent(ActionType.SCROLL, value = "down"),
 //        ActionIntent(ActionType.SCROLL, value = "down"),
@@ -510,6 +511,12 @@ class FloatingButtonAmadeusService : Service() {
 //        ActionIntent(ActionType.SCROLL, value = "down"),
 
         // ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
+
+//        ActionIntent(ActionType.BACK),
+//        ActionIntent(ActionType.RECENTS),
+//        ActionIntent(ActionType.HOME),
+//        ActionIntent(ActionType.QUICK_SETTINGS),
+        ActionIntent(ActionType.NOTIFICATIONS),
     )
 
     private fun runTestPlan() {
@@ -564,14 +571,22 @@ class FloatingButtonAmadeusService : Service() {
                     when {
                         result.done -> {
                             updateAgentMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
-                            Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 1500)
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                { hideAgentOverlay() },
+                                1500
+                            )
                         }
+
                         result.actions.isEmpty() -> {
                             updateAgentMessage(
                                 getString(R.string.acessibilidade_texto_nao_encontrado, goal)
                             )
-                            Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                { hideAgentOverlay() },
+                                2000
+                            )
                         }
+
                         else -> {
                             history.add("[Passo $step] ${result.actions.joinToString { "${it.type} \"${it.target}\"" }}")
                             val sent = AmadeusAccessibilityService.executeActions(
@@ -586,7 +601,10 @@ class FloatingButtonAmadeusService : Service() {
                             )
                             if (!sent) {
                                 updateAgentMessage(getString(R.string.acessibilidade_nao_ativa))
-                                Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
+                                Handler(Looper.getMainLooper()).postDelayed(
+                                    { hideAgentOverlay() },
+                                    2000
+                                )
                             }
                         }
                     }

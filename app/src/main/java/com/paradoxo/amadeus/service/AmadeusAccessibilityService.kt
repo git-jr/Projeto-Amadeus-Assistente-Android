@@ -74,6 +74,31 @@ class AmadeusAccessibilityService : AccessibilityService() {
                         onFeedback("Confirmando...")
                         performImeAction()
                     }
+
+                    ActionType.BACK -> {
+                        onFeedback("Voltando...")
+                        performGlobalAction(GLOBAL_ACTION_BACK)
+                    }
+
+                    ActionType.HOME -> {
+                        onFeedback("Indo para home...")
+                        performGlobalAction(GLOBAL_ACTION_HOME)
+                    }
+
+                    ActionType.RECENTS -> {
+                        onFeedback("Abrindo recentes...")
+                        performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
+                    }
+
+                    ActionType.NOTIFICATIONS -> {
+                        onFeedback("Abrindo notificações...")
+                        performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+                    }
+
+                    ActionType.QUICK_SETTINGS -> {
+                        onFeedback("Abrindo configurações rápidas...")
+                        performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+                    }
                 }
                 if (index == actions.lastIndex) {
                     handler.postDelayed({ onDone() }, 700)
