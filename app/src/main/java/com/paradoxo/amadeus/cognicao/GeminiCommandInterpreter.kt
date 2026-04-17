@@ -111,10 +111,18 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         - {"action":"CLICK","target":"texto exato do elemento","value":""}
         - {"action":"TYPE","target":"texto do campo","value":"texto a digitar"}
         - {"action":"OPEN_APP","target":"nome do app","value":""}
-        - {"action":"SCROLL","target":"up ou down","value":""}
-        - {"action":"IME_ACTION","target":"","value":""}  ← pressiona o botão de busca/enviar/ir do teclado
+        - {"action":"SCROLL","target":"up ou down","value":""}           ← rola a tela verticalmente
+        - {"action":"SCROLL_HORIZONTAL","target":"left ou right","value":""}  ← rola horizontalmente
+        - {"action":"IME_ACTION","target":"","value":""}                 ← pressiona o botão de busca/enviar/ir do teclado
+        - {"action":"BACK","target":"","value":""}                       ← botão Voltar do Android
+        - {"action":"HOME","target":"","value":""}                       ← vai para a tela inicial
+        - {"action":"RECENTS","target":"","value":""}                    ← abre a lista de apps recentes
+        - {"action":"NOTIFICATIONS","target":"","value":""}              ← abre a barra de notificações
+        - {"action":"QUICK_SETTINGS","target":"","value":""}             ← abre as configurações rápidas
 
         Use IME_ACTION após TYPE quando o botão de confirmar só existe no teclado (ex: busca no Twitter/X, YouTube).
+        Use BACK para cancelar, fechar diálogos ou navegar para a tela anterior.
+        Use HOME quando precisar sair de qualquer app e retornar à tela inicial.
 
         Responda apenas com o array JSON:
     """.trimIndent()
@@ -130,9 +138,25 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         Elementos interativos visíveis na tela atual (a imagem mostra cada elemento marcado com [N]):
         $elementsList
 
-        Ações disponíveis: CLICK, TYPE, OPEN_APP, SCROLL, IME_ACTION.
-        Use IME_ACTION (target e value vazios) após TYPE quando o botão de confirmar só existe no teclado (ex: busca no Twitter/X, YouTube).
-        Use o texto EXATO do elemento como "target" nas ações.
+        Ações disponíveis e quando usar cada uma:
+        - CLICK        → toca em um elemento; "target" = texto exato do elemento
+        - TYPE         → digita texto em campo editável; "target" = texto do campo, "value" = texto a digitar
+        - OPEN_APP     → abre um aplicativo; "target" = nome do app
+        - SCROLL       → rola verticalmente; "target" = "up" ou "down"
+        - SCROLL_HORIZONTAL → rola horizontalmente; "target" = "left" ou "right"
+        - IME_ACTION   → pressiona o botão de enviar/buscar/ir do teclado; target e value vazios
+        - BACK         → pressiona o botão Voltar do Android; target e value vazios
+        - HOME         → vai para a tela inicial do Android; target e value vazios
+        - RECENTS      → abre a lista de apps recentes; target e value vazios
+        - NOTIFICATIONS → abre a barra de notificações; target e value vazios
+        - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
+
+        Regras importantes:
+        - Use o texto EXATO do elemento como "target" nas ações CLICK e TYPE.
+        - Use IME_ACTION após TYPE quando o botão de confirmar só existe no teclado (ex: busca no Twitter/X, YouTube).
+        - Use BACK para fechar diálogos, popups ou navegar à tela anterior.
+        - Prefira sequências de ações curtas e diretas — isso facilita o aprendizado de macros.
+        - Se a tela não mudou após um passo, tente uma abordagem diferente em vez de repetir.
 
         A meta foi concluída com base no estado atual da tela?
         Retorne APENAS este JSON sem markdown:
