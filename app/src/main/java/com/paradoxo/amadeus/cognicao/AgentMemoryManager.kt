@@ -7,10 +7,12 @@ import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity
 import com.paradoxo.amadeus.extensions.normalize
 import com.paradoxo.amadeus.modelo.ActionIntent
+import com.paradoxo.amadeus.modelo.ActionType
 
 class AgentMemoryManager(context: Context) {
 
     private val dao = AmadeusDatabase.getInstance(context).agentMacroDAO()
+    private val entidadeDao = AmadeusDatabase.getInstance(context).entidadeDAO()
     private val gson = Gson()
 
     companion object {
@@ -25,6 +27,7 @@ class AgentMemoryManager(context: Context) {
 
         private val NON_ALPHANUMERIC_REGEX = Regex("[^\\w\\s]")
         private val WHITESPACE_REGEX = Regex("\\s+")
+        private val REFERENCE_REGEX = Regex("\\{\\{([^}]+)\\}\\}")
     }
 
     fun normalizeGoal(goal: String): String {
@@ -106,5 +109,31 @@ class AgentMemoryManager(context: Context) {
         val newFailures = macro.failureCount + 1
         val stillConfirmed = newFailures < FAILURE_DEMOTION_THRESHOLD
         dao.updateFailureCount(macro.id, newFailures, stillConfirmed)
+    }
+
+    suspend fun resolveActionsReferences(actions: List<ActionIntent>): List<ActionIntent> {
+        return actions.map { action ->
+            if (action.type == ActionType.TYPE && action.value.contains("{{")) {
+                action.copy(value = resolveReferences(action.value))
+            } else {
+                action
+            }
+        }
+    }
+
+    private suspend fun resolveReferences(value: String): String {
+        var result = value
+        REFERENCE_REGEX.findAll(value).forEach { match ->
+            val entityName = match.groupValues[1].trim()
+            val entidade = entidadeDao.buscaPorChave(entityName)
+            val resolved = entidade?.significados?.let { json ->
+                try {
+                    val list: List<String> = gson.fromJson(json, object : TypeToken<List<String>>() {}.type)
+                    list.firstOrNull()
+                } catch (_: Exception) { null }
+            }
+            if (resolved != null) result = result.replace(match.value, resolved)
+        }
+        return result
     }
 }

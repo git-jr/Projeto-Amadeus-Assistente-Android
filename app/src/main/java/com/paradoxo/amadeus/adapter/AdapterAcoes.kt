@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
@@ -17,7 +18,8 @@ import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 
 class AdapterAcoes(
-    private val acoes: MutableList<ActionIntent>
+    private val acoes: MutableList<ActionIntent>,
+    private val onPickReference: (onPicked: (String) -> Unit) -> Unit
 ) : RecyclerView.Adapter<AdapterAcoes.ViewHolder>() {
 
     private val actionTypeNames = ActionType.values().map { it.name }
@@ -30,6 +32,7 @@ class AdapterAcoes(
         val valueLayout: TextInputLayout = view.findViewById(R.id.valueLayout)
         val valueEditText: TextInputEditText = view.findViewById(R.id.valueEditText)
         val deleteButton: ImageButton = view.findViewById(R.id.deleteActionButton)
+        val insertReferenceButton: MaterialButton = view.findViewById(R.id.insertReferenceButton)
 
         var targetWatcher: TextWatcher? = null
         var valueWatcher: TextWatcher? = null
@@ -108,6 +111,19 @@ class AdapterAcoes(
             // Atualiza numeração dos itens abaixo
             notifyItemRangeChanged(adapterPos, acoes.size - adapterPos)
         }
+
+        holder.insertReferenceButton.setOnClickListener {
+            onPickReference { entityName ->
+                val editText = holder.valueEditText
+                val start = editText.selectionStart.coerceAtLeast(0)
+                val end = editText.selectionEnd.coerceAtLeast(start)
+                editText.text?.replace(start, end, "{{$entityName}}")
+                val adapterPos = holder.adapterPosition
+                if (adapterPos != RecyclerView.NO_ID.toInt()) {
+                    acoes[adapterPos] = acoes[adapterPos].copy(value = editText.text?.toString() ?: "")
+                }
+            }
+        }
     }
 
     private fun updateFieldVisibility(holder: ViewHolder, type: ActionType) {
@@ -121,6 +137,7 @@ class AdapterAcoes(
         }
         holder.targetLayout.visibility = if (showTarget) View.VISIBLE else View.GONE
         holder.valueLayout.visibility = if (showValue) View.VISIBLE else View.GONE
+        holder.insertReferenceButton.visibility = if (type == ActionType.TYPE) View.VISIBLE else View.GONE
 
         if (!showTarget) holder.targetEditText.setText("")
         if (!showValue) holder.valueEditText.setText("")

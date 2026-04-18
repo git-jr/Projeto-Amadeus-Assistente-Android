@@ -43,9 +43,12 @@ class EditarMacroActivity : AppCompatActivity() {
         } else {
             lifecycleScope.launch {
                 val encontrado = withContext(Dispatchers.IO) {
-                    AmadeusDatabase.getInstance(this@EditarMacroActivity).agentMacroDAO().findById(macroId)
+                    AmadeusDatabase.getInstance(this@EditarMacroActivity).agentMacroDAO()
+                        .findById(macroId)
                 }
-                if (encontrado == null) { finish(); return@launch }
+                if (encontrado == null) {
+                    finish(); return@launch
+                }
                 macro = encontrado
                 configurarInterface(encontrado)
             }
@@ -61,9 +64,26 @@ class EditarMacroActivity : AppCompatActivity() {
             nomeLayout.hint = "Nome do macro"
         }
 
-        val acoes = macroCarregado?.let { memoryManager.deserializeActions(it.actionsJson).toMutableList() }
-            ?: mutableListOf()
-        adapterAcoes = AdapterAcoes(acoes)
+        val acoes =
+            macroCarregado?.let { memoryManager.deserializeActions(it.actionsJson).toMutableList() }
+                ?: mutableListOf()
+        adapterAcoes = AdapterAcoes(acoes) { onPicked ->
+            lifecycleScope.launch {
+                val entidades = withContext(Dispatchers.IO) {
+                    AmadeusDatabase.getInstance(this@EditarMacroActivity).entidadeDAO().listar()
+                }
+                if (entidades.isEmpty()) {
+                    meuToast("Nenhuma entidade cadastrada no banco.", this@EditarMacroActivity)
+                    return@launch
+                }
+                val nomes = entidades.mapNotNull { it.nome }.toTypedArray()
+                AlertDialog.Builder(this@EditarMacroActivity)
+                    .setTitle("Selecionar referência")
+                    .setItems(nomes) { _, i -> onPicked(nomes[i]) }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+        }
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewAcoes)
         recyclerView.adapter = adapterAcoes
@@ -95,7 +115,10 @@ class EditarMacroActivity : AppCompatActivity() {
             .setPositiveButton("Excluir") { _, _ ->
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        macro?.let { AmadeusDatabase.getInstance(this@EditarMacroActivity).agentMacroDAO().delete(it) }
+                        macro?.let {
+                            AmadeusDatabase.getInstance(this@EditarMacroActivity).agentMacroDAO()
+                                .delete(it)
+                        }
                     }
                     meuToast("Macro excluído.", this@EditarMacroActivity)
                     finish()
@@ -111,18 +134,25 @@ class EditarMacroActivity : AppCompatActivity() {
             meuToast("Adicione pelo menos uma ação antes de testar.", this)
             return
         }
-        // Minimiza o app para que o agente veja a tela real
         moveTaskToBack(true)
-        Handler(Looper.getMainLooper()).postDelayed({
-            val sent = AmadeusAccessibilityService.executeActions(
-                acoes,
-                onFeedback = { /* feedback visual ignorado fora do overlay */ },
-                onDone = { meuToast("Teste concluído!", applicationContext) }
-            )
-            if (!sent) {
-                meuToast("Serviço de acessibilidade inativo. Ative nas configurações do Android.", applicationContext)
+        lifecycleScope.launch {
+            val acoesResolvidas = withContext(Dispatchers.IO) {
+                memoryManager.resolveActionsReferences(acoes)
             }
-        }, 500)
+            Handler(Looper.getMainLooper()).postDelayed({
+                val sent = AmadeusAccessibilityService.executeActions(
+                    acoesResolvidas,
+                    onFeedback = { /* feedback visual ignorado fora do overlay */ },
+                    onDone = { meuToast("Teste concluído!", applicationContext) }
+                )
+                if (!sent) {
+                    meuToast(
+                        "Serviço de acessibilidade inativo. Ative nas configurações do Android.",
+                        applicationContext
+                    )
+                }
+            }, 500)
+        }
     }
 
     private fun salvarMacro() {
@@ -146,7 +176,8 @@ class EditarMacroActivity : AppCompatActivity() {
                 val db = AmadeusDatabase.getInstance(this@EditarMacroActivity)
                 val macroAtual = macro
                 if (macroAtual != null) {
-                    db.agentMacroDAO().update(macroAtual.copy(goalKey = nome, actionsJson = novoJson))
+                    db.agentMacroDAO()
+                        .update(macroAtual.copy(goalKey = nome, actionsJson = novoJson))
                 } else {
                     db.agentMacroDAO().insert(
                         AgentMacroEntity(

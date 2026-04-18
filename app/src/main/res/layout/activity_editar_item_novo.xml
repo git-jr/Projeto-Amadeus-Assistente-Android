@@ -97,6 +97,46 @@
                 app:stackFromEnd="true"
                 tools:listitem="@layout/item_lista_tipo_6" />
 
+            <LinearLayout
+                android:layout_marginTop="@dimen/item_lista"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/titulo3TexView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="9"
+                    android:gravity="center_vertical"
+                    android:text="Significados"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/adicionarSignificadoButton"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/descricao_img_botao_add_resposta"
+                    android:padding="@dimen/padding_bottom_card"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/colorPrimary" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewSignificados"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_margin"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:stackFromEnd="true"
+                tools:listitem="@layout/item_lista_tipo_6" />
 
             <TextView
                 android:layout_width="wrap_content"

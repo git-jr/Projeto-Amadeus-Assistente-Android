@@ -552,18 +552,18 @@ class FloatingButtonAmadeusService : Service() {
 
         loopJob = CoroutineScope(Dispatchers.IO).launch {
             val macro = memoryManager.recallMacro(goal)
-            withContext(Dispatchers.Main) {
-                if (macro != null) { // ação conhecida para esse comando → executar direto
-                    executeMacro(macro, goal)
-                } else {
-                    runGeminiLoop(goal, allActions) // ação desconhecida → rodar loop Gemini e aprender
-                }
+            if (macro != null) {
+                val actions = memoryManager.resolveActionsReferences(
+                    memoryManager.deserializeActions(macro.actionsJson)
+                )
+                withContext(Dispatchers.Main) { executeMacro(macro, goal, actions) } // ação conhecida para esse comando → executar direto
+            } else {
+                withContext(Dispatchers.Main) { runGeminiLoop(goal, allActions) } // ação desconhecida → rodar loop Gemini e aprender
             }
         }
     }
 
-    private fun executeMacro(macro: com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity, goal: String) {
-        val actions = memoryManager.deserializeActions(macro.actionsJson)
+    private fun executeMacro(macro: com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity, goal: String, actions: List<ActionIntent>) {
         if (actions.isEmpty()) {
             CoroutineScope(Dispatchers.IO).launch { memoryManager.markMacroFailure(macro) }
             runGeminiLoop(goal, mutableListOf())
