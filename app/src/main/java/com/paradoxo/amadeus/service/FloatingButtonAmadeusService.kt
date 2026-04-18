@@ -553,10 +553,10 @@ class FloatingButtonAmadeusService : Service() {
         loopJob = CoroutineScope(Dispatchers.IO).launch {
             val macro = memoryManager.recallMacro(goal)
             withContext(Dispatchers.Main) {
-                if (macro != null) {
+                if (macro != null) { // ação conhecida para esse comando → executar direto
                     executeMacro(macro, goal)
                 } else {
-                    runGeminiLoop(goal, allActions)
+                    runGeminiLoop(goal, allActions) // ação desconhecida → rodar loop Gemini e aprender
                 }
             }
         }

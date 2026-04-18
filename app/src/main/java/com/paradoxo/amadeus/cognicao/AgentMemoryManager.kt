@@ -22,12 +22,15 @@ class AgentMemoryManager(context: Context) {
             "de", "do", "da", "dos", "das", "em", "no", "na", "para", "pra",
             "abrir", "abra", "abre", "vai", "ir", "e", "ou", "um", "uma"
         )
+
+        private val NON_ALPHANUMERIC_REGEX = Regex("[^\\w\\s]")
+        private val WHITESPACE_REGEX = Regex("\\s+")
     }
 
     fun normalizeGoal(goal: String): String {
         val normalized = goal.normalize()
-            .replace(Regex("[^\\w\\s]"), "")
-        val filtered = normalized.split("\\s+".toRegex())
+            .replace(NON_ALPHANUMERIC_REGEX, "")
+        val filtered = normalized.split(WHITESPACE_REGEX)
             .filter { it.isNotBlank() && it !in FILLER_WORDS }
             .joinToString(" ")
         return filtered.ifBlank { normalized.trim() }
@@ -43,8 +46,19 @@ class AgentMemoryManager(context: Context) {
         emptyList()
     }
 
-    suspend fun recallMacro(goal: String): AgentMacroEntity? =
-        dao.findConfirmedByGoalKey(normalizeGoal(goal))
+    suspend fun recallMacro(goal: String): AgentMacroEntity? {
+        val keyNormalized = normalizeGoal(goal)
+        val entity = dao.findConfirmedByGoalKey(keyNormalized)
+
+        if (entity != null) return entity
+
+        val keyOriginal = goal.normalize().replace(NON_ALPHANUMERIC_REGEX, "").trim()
+        return if (keyOriginal != keyNormalized) {
+            dao.findConfirmedByGoalKey(keyOriginal)
+        } else {
+            null
+        }
+    }
 
     suspend fun recordExecution(goal: String, actions: List<ActionIntent>) {
         if (actions.isEmpty()) return
