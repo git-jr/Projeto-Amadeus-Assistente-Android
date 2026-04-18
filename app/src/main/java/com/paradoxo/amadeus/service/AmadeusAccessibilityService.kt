@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.content.Context
 import android.content.Intent
+import android.graphics.PixelFormat
 import android.graphics.Path
 import android.graphics.Rect
 import android.os.Build
@@ -11,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
@@ -18,8 +20,14 @@ import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.util.GerenciaApp
+import com.paradoxo.amadeus.view.TouchFeedbackView
 
 class AmadeusAccessibilityService : AccessibilityService() {
+
+    private val feedbackWindowManager: WindowManager by lazy {
+        getSystemService(WINDOW_SERVICE) as WindowManager
+    }
+    private var touchFeedbackView: TouchFeedbackView? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -77,17 +85,29 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
                     ActionType.BACK -> {
                         onFeedback("Voltando...")
-                        performGlobalAction(GLOBAL_ACTION_BACK)
+                        // delay para o feedback aparecer antes da ação
+                        showGlobalActionFeedback(ActionType.BACK)
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            performGlobalAction(GLOBAL_ACTION_BACK)
+                        }, 300)
                     }
 
                     ActionType.HOME -> {
                         onFeedback("Indo para home...")
-                        performGlobalAction(GLOBAL_ACTION_HOME)
+                        // delay para o feedback aparecer antes da ação
+                        showGlobalActionFeedback(ActionType.HOME)
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            performGlobalAction(GLOBAL_ACTION_HOME)
+                        }, 300)
                     }
 
                     ActionType.RECENTS -> {
                         onFeedback("Abrindo recentes...")
-                        performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
+                        // delay para o feedback aparecer antes da ação
+                        showGlobalActionFeedback(ActionType.RECENTS)
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            performGlobalAction(GLOBAL_ACTION_RECENTS)
+                        }, 300)
                     }
 
                     ActionType.NOTIFICATIONS -> {
@@ -105,6 +125,62 @@ class AmadeusAccessibilityService : AccessibilityService() {
                 }
             }, initialDelay + index * delayPerAction)
         }
+    }
+
+    // ── Touch feedback overlay ────────────────────────────────────────────────
+
+    private fun showTouchFeedback(bounds: Rect, type: ActionType) {
+        val view = buildFeedbackView()
+        view.show(bounds, type)
+        mountFeedbackView(view)
+    }
+
+    private fun showSwipeFeedback(fromX: Float, fromY: Float, toX: Float, toY: Float, type: ActionType) {
+        val view = buildFeedbackView()
+        view.showSwipe(fromX, fromY, toX, toY, type)
+        mountFeedbackView(view)
+    }
+
+    private fun showGlobalActionFeedback(type: ActionType) {
+        val view = buildFeedbackView()
+        view.showGlobalAction(type)
+        mountFeedbackView(view)
+    }
+
+    private fun buildFeedbackView(): TouchFeedbackView {
+        removeTouchFeedback()
+        return TouchFeedbackView(this).also { it.onDone = { removeTouchFeedback() } }
+    }
+
+    private fun mountFeedbackView(view: TouchFeedbackView) {
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            @Suppress("DEPRECATION")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        )
+        try {
+            feedbackWindowManager.addView(view, params)
+            touchFeedbackView = view
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun removeTouchFeedback() {
+        touchFeedbackView?.let {
+            try {
+                feedbackWindowManager.removeView(it)
+            } catch (_: Exception) {
+            }
+        }
+        touchFeedbackView = null
     }
 
     // ── Screen elements ───────────────────────────────────────────────────────
@@ -159,8 +235,14 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
         val clickableNode = if (node.isClickable) node else findClickableParent(node)
         if (clickableNode != null) {
-            clickableNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            onResult(true)
+            val bounds = Rect()
+            clickableNode.getBoundsInScreen(bounds)
+            // delay para o feedback aparecer antes do clique
+            showTouchFeedback(bounds, ActionType.CLICK)
+            Handler(Looper.getMainLooper()).postDelayed({
+                clickableNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                onResult(true)
+            }, 300)
         } else {
             onResult(false)
         }
@@ -182,10 +264,16 @@ class AmadeusAccessibilityService : AccessibilityService() {
         // ACTION_CLICK antes de setar texto garante que o campo tem foco e o teclado está visível
         // — necessário para que IME_ACTION funcione depois
         node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-        val args = Bundle().apply {
-            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, value)
-        }
-        node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        val bounds = Rect()
+        node.getBoundsInScreen(bounds)
+        // delay para o feedback aparecer antes da digitação
+        showTouchFeedback(bounds, ActionType.TYPE)
+        Handler(Looper.getMainLooper()).postDelayed({
+            val args = Bundle().apply {
+                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, value)
+            }
+            node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        }, 300)
     }
 
     private fun findFirstEditableNode(): AccessibilityNodeInfo? {
@@ -215,38 +303,48 @@ class AmadeusAccessibilityService : AccessibilityService() {
         val editableNode = focusedNode
             ?: windows.mapNotNull { it.root }.firstNotNullOfOrNull { findEditableInTree(it) }
 
-        // Estratégia 1: ACTION_IME_ENTER (API 30+)
-        // Aciona diretamente a ação do teclado (busca, enviar, ir, etc.) no campo focado.
-        if (editableNode != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val ok = editableNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id)
-            if (ok) return
-        }
-
-        // Estratégia 2: setar texto atual + "\n"
-        // Fallback para ROMs que não implementam ACTION_IME_ENTER via acessibilidade.
-        // Funciona em campos de busca single-line que tratam newline como submit.
         if (editableNode != null) {
-            val current = editableNode.text?.toString() ?: ""
-            val args = Bundle().apply {
-                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "$current\n")
-            }
-            val ok = editableNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-            if (ok) return
+            val bounds = Rect()
+            editableNode.getBoundsInScreen(bounds)
+            showTouchFeedback(bounds, ActionType.IME_ACTION)
         }
 
-        // Estratégia 3: tap por coordenadas estimadas no canto inf-dir da janela do teclado (API 24+)
-        // Último recurso para teclados (ex: Samsung) que não expõem teclas como nós de acessibilidade.
-        // Layout típico: 4 linhas de teclas, botão de ação sempre na última linha, coluna mais à direita.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return
-        val imeWindow = windows.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD } ?: return
-        val imeBounds = Rect()
-        imeWindow.getBoundsInScreen(imeBounds)
+        // delay para o feedback aparecer antes da confirmação
+        Handler(Looper.getMainLooper()).postDelayed({
+            // Estratégia 1: ACTION_IME_ENTER (API 30+)
+            // Aciona diretamente a ação do teclado (busca, enviar, ir, etc.) no campo focado.
+            if (editableNode != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val ok = editableNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id)
+                if (ok) return@postDelayed
+            }
 
-        val keyHeight = imeBounds.height() / 4f
-        val keyWidth = imeBounds.width() / 10f
-        val x = imeBounds.right - keyWidth / 2f
-        val y = imeBounds.bottom - keyHeight / 2f
-        tapAtCoordinates(x, y)
+            // Estratégia 2: setar texto atual + "\n"
+            // Fallback para ROMs que não implementam ACTION_IME_ENTER via acessibilidade.
+            // Funciona em campos de busca single-line que tratam newline como submit.
+            if (editableNode != null) {
+                val current = editableNode.text?.toString() ?: ""
+                val args = Bundle().apply {
+                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "$current\n")
+                }
+                val ok = editableNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                if (ok) return@postDelayed
+            }
+
+            // Estratégia 3: tap por coordenadas estimadas no canto inf-dir da janela do teclado (API 24+)
+            // Último recurso para teclados (ex: Samsung) que não expõem teclas como nós de acessibilidade.
+            // Layout típico: 4 linhas de teclas, botão de ação sempre na última linha, coluna mais à direita.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return@postDelayed
+            val imeWindow = windows.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+                ?: return@postDelayed
+            val imeBounds = Rect()
+            imeWindow.getBoundsInScreen(imeBounds)
+
+            val keyHeight = imeBounds.height() / 4f
+            val keyWidth = imeBounds.width() / 10f
+            val x = imeBounds.right - keyWidth / 2f
+            val y = imeBounds.bottom - keyHeight / 2f
+            tapAtCoordinates(x, y)
+        }, 300)
     }
 
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.N)
@@ -266,9 +364,19 @@ class AmadeusAccessibilityService : AccessibilityService() {
             val h = resources.displayMetrics.heightPixels
             val x = w / 2f
             if (direction == "up") {
-                swipe(x, h * 0.3f, x, h * 0.7f) // swipe para baixo = rola para cima
+                val fromY = h * 0.3f
+                // delay para o feedback aparecer antes do scroll
+                showSwipeFeedback(x, fromY, x, h * 0.7f, ActionType.SCROLL)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    swipe(x, fromY, x, h * 0.7f) // swipe para baixo = rola para cima
+                }, 300)
             } else {
-                swipe(x, h * 0.7f, x, h * 0.3f) // swipe para cima = rola para baixo
+                val fromY = h * 0.7f
+                // delay para o feedback aparecer antes do scroll
+                showSwipeFeedback(x, fromY, x, h * 0.3f, ActionType.SCROLL)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    swipe(x, fromY, x, h * 0.3f) // swipe para cima = rola para baixo
+                }, 300)
             }
             return
         }
@@ -289,9 +397,19 @@ class AmadeusAccessibilityService : AccessibilityService() {
             val h = resources.displayMetrics.heightPixels
             val y = h / 2f
             if (direction == "left") {
-                swipe(w * 0.7f, y, w * 0.3f, y) // swipe para esquerda = avança (ex: próximo item)
+                val fromX = w * 0.7f
+                // delay para o feedback aparecer antes do scroll
+                showSwipeFeedback(fromX, y, w * 0.3f, y, ActionType.SCROLL_HORIZONTAL)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    swipe(fromX, y, w * 0.3f, y) // swipe para esquerda = avança (ex: próximo item)
+                }, 300)
             } else {
-                swipe(w * 0.3f, y, w * 0.7f, y) // swipe para direita = volta (ex: item anterior)
+                val fromX = w * 0.3f
+                // delay para o feedback aparecer antes do scroll
+                showSwipeFeedback(fromX, y, w * 0.7f, y, ActionType.SCROLL_HORIZONTAL)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    swipe(fromX, y, w * 0.7f, y) // swipe para direita = volta (ex: item anterior)
+                }, 300)
             }
             return
         }
@@ -354,6 +472,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        removeTouchFeedback()
         instance = null
     }
 
