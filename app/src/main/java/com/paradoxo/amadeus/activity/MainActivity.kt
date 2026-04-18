@@ -279,6 +279,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarClickItem(R.id.configPrimariaLayout, ConfigPrimariaActivity())
         configurarClickItem(R.id.aprendizadoLayout, AprendizActivity())
         configurarClickItem(R.id.vozLayout, VozConfigActivity())
+        configurarClickItem(R.id.macrosLayout, ListaMacrosActivity())
         configurarClickItem(R.id.sobreLayout, SobreActivity())
     }
 

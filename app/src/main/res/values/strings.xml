@@ -18,6 +18,8 @@
     <string name="dicas_duvidas_bugs_sugestoes">Dicas, dúvidas, bugs, sugestões…</string>
     <string name="sobre">Sobre</string>
     <string name="versao_e_licencas">Versão, licenças e 42</string>
+    <string name="meus_aprendizados">Meus aprendizados</string>
+    <string name="meus_aprendizados_desc">Ver e editar ações gravadas pelo agente</string>
     <string name="adicionar_sentenca">Adicionar sentença</string>
     <string name="pesquisar_por">Pesquisar por…</string>
     <string name="digite_seu_nome">Digite seu nome</string>
