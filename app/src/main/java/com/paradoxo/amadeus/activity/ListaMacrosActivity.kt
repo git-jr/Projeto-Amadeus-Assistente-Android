@@ -3,6 +3,7 @@ package com.paradoxo.amadeus.activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -46,6 +47,26 @@ class ListaMacrosActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        adapterMacros.setOnItemLongClickListener { macro, view ->
+            val popup = PopupMenu(this, view)
+            popup.menuInflater.inflate(R.menu.menu_macro_item, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_excluir -> {
+                        val pos = adapterMacros.getItemPosition(macro)
+                        if (pos != -1) confirmarExclusao(pos)
+                        true
+                    }
+                    R.id.action_duplicar -> {
+                        duplicarMacro(macro)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+
         findViewById<FloatingActionButton>(R.id.fabNovoMacro).setOnClickListener {
             startActivity(Intent(this, EditarMacroActivity::class.java))
         }
@@ -61,6 +82,27 @@ class ListaMacrosActivity : AppCompatActivity() {
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
 
         carregarMacros()
+    }
+
+    private fun duplicarMacro(macro: AgentMacroEntity) {
+        val novaMacro = macro.copy(
+            id = 0,
+            goalKey = "${macro.goalKey} (Cópia)",
+            executionCount = 0,
+            isConfirmed = false,
+            successCount = 0,
+            failureCount = 0,
+            createdAt = System.currentTimeMillis(),
+            lastUsedAt = System.currentTimeMillis()
+        )
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                AmadeusDatabase.getInstance(this@ListaMacrosActivity).agentMacroDAO().insert(novaMacro)
+            }
+            carregarMacros()
+            meuToast("Macro duplicada com sucesso", this@ListaMacrosActivity)
+        }
     }
 
     private fun confirmarExclusao(pos: Int) {

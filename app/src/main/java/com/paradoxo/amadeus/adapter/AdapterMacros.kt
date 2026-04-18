@@ -18,6 +18,7 @@ class AdapterMacros(
 ) : RecyclerView.Adapter<AdapterMacros.ViewHolder>() {
 
     private var onItemClickListener: ((AgentMacroEntity) -> Unit)? = null
+    private var onItemLongClickListener: ((AgentMacroEntity, View) -> Unit)? = null
     private val gson = Gson()
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -49,6 +50,11 @@ class AdapterMacros(
         holder.layoutItemMacro.setOnClickListener {
             onItemClickListener?.invoke(macro)
         }
+
+        holder.layoutItemMacro.setOnLongClickListener {
+            onItemLongClickListener?.invoke(macro, it)
+            true
+        }
     }
 
     private fun setBadgeColor(view: TextView, color: Int) {
@@ -74,12 +80,18 @@ class AdapterMacros(
         onItemClickListener = listener
     }
 
+    fun setOnItemLongClickListener(listener: (AgentMacroEntity, View) -> Unit) {
+        onItemLongClickListener = listener
+    }
+
     fun remove(position: Int) {
         itens.removeAt(position)
         notifyItemRemoved(position)
     }
 
     fun getItem(position: Int): AgentMacroEntity = itens[position]
+
+    fun getItemPosition(macro: AgentMacroEntity): Int = itens.indexOf(macro)
 
     fun trocarLista(novaLista: List<AgentMacroEntity>) {
         itens = novaLista.toMutableList()
