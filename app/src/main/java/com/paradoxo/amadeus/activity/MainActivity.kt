@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             trocarLayoutBottom(false)
         }
         iniciarBotaoFlutuante()
-        openSettings(this)
+//        openSettings(this)
     }
 
     fun openSettings(context: Context) {

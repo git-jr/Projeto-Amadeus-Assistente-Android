@@ -8,7 +8,10 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.animation.ValueAnimator
 import android.graphics.PixelFormat
+import android.graphics.Point
+import android.view.animation.DecelerateInterpolator
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -42,6 +45,7 @@ import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.view.ScreenHighlightView
+import com.paradoxo.amadeus.view.BorderGlowView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -59,6 +63,9 @@ class FloatingButtonAmadeusService : Service() {
     private var voiceOverlayView: View? = null
     private var screenHighlightView: ScreenHighlightView? = null
     private var agentOverlayView: View? = null
+    private var borderGlowView: BorderGlowView? = null
+    private var borderGlowParams: WindowManager.LayoutParams? = null
+    private var borderGlowAnimator: ValueAnimator? = null
     private var speechRecognizer: SpeechRecognizer? = null
 
     private val wakeWordManager by lazy {
@@ -89,6 +96,7 @@ class FloatingButtonAmadeusService : Service() {
         super.onCreate()
         createNotification()
         createFloatingButton()
+        initBorderGlow()
         if (getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, this, true)) {
             wakeWordManager.initialize()
         }
@@ -320,6 +328,70 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun stopWakeWordDetection() = wakeWordManager.stopDetection()
 
+    // ── Border glow ───────────────────────────────────────────────────────────
+
+    // Pré-cria o BorderGlowView no onCreate para que o addView com FLAG_LAYOUT_NO_LIMITS
+    // aconteça uma única vez na inicialização do serviço (sem usuário olhando),
+    // não quando o assistente é acionado. showBorderGlow/hideBorderGlow apenas
+    // animam o params.alpha via updateViewLayout — sem novo addView, sem flash.
+    private fun initBorderGlow() {
+        val glow = BorderGlowView(this)
+        borderGlowView = glow
+
+        val size = Point()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            size.x = bounds.width()
+            size.y = bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getRealSize(size)
+        }
+
+        val params = WindowManager.LayoutParams(
+            size.x, size.y,
+            overlayType(),
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = 0; y = 0
+            alpha = 0f
+        }
+        borderGlowParams = params
+        windowManager.addView(glow, params)
+    }
+
+    private fun showBorderGlow() {
+        val glow = borderGlowView ?: return
+        val params = borderGlowParams ?: return
+        glow.startGlow()
+        borderGlowAnimator?.cancel()
+        borderGlowAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            startDelay = 100
+            duration = 1200
+            interpolator = DecelerateInterpolator(2f)
+            addUpdateListener { anim ->
+                params.alpha = anim.animatedValue as Float
+                try { windowManager.updateViewLayout(glow, params) } catch (_: Exception) {}
+            }
+            start()
+        }
+    }
+
+    private fun hideBorderGlow() {
+        borderGlowAnimator?.cancel()
+        borderGlowAnimator = null
+        val glow = borderGlowView ?: return
+        val params = borderGlowParams ?: return
+        glow.stopGlow()
+        params.alpha = 0f
+        try { windowManager.updateViewLayout(glow, params) } catch (_: Exception) {}
+    }
+
     // ── Listen ────────────────────────────────────────────────────────────────
 
     private fun startListening() {
@@ -338,8 +410,9 @@ class FloatingButtonAmadeusService : Service() {
             return
         }
         showScreenHighlight()
-        showVoiceOverlay()
         startSpeechRecognition()
+        showBorderGlow()
+        showVoiceOverlay()
     }
 
     private fun showScreenHighlight() {
@@ -352,6 +425,7 @@ class FloatingButtonAmadeusService : Service() {
 
         screenHighlightView = ScreenHighlightView(this).apply {
             this.elements = elements
+            alpha = 0f
         }
 
         val params = WindowManager.LayoutParams(
@@ -362,9 +436,23 @@ class FloatingButtonAmadeusService : Service() {
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply { alpha = 0f }
 
         windowManager.addView(screenHighlightView, params)
+
+        Handler(Looper.getMainLooper()).post {
+            try {
+                params.alpha = 1f
+                windowManager.updateViewLayout(screenHighlightView, params)
+            } catch (_: Exception) {}
+        }
+
+        screenHighlightView?.animate()
+            ?.alpha(1f)
+            ?.setStartDelay(800)
+            ?.setDuration(500)
+            ?.setInterpolator(android.view.animation.DecelerateInterpolator())
+            ?.start()
     }
 
     private fun removeScreenHighlight() {
@@ -417,18 +505,46 @@ class FloatingButtonAmadeusService : Service() {
             } else false
         }
 
+        // Primeiro frame: flags passivas + alpha 0 no nível de janela.
+        // FLAG_NOT_TOUCH_MODAL sem FLAG_NOT_FOCUSABLE força o WM a recalcular
+        // regiões de toque em todas as janelas, causando repaint na nav bar.
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             overlayType(),
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM
-            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+            alpha = 0f
+        }
+
+        voiceOverlayView?.apply {
+            alpha = 0f
+            translationY = 120f
         }
 
         windowManager.addView(voiceOverlayView, params)
+
+        // Frame seguinte: ativa interatividade e libera alpha da janela.
+        // Neste ponto a View ainda está em alpha=0 (sua animação ainda não começou),
+        // então não há flash visível mesmo com params.alpha = 1f.
+        Handler(Looper.getMainLooper()).post {
+            try {
+                params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+                params.alpha = 1f
+                windowManager.updateViewLayout(voiceOverlayView, params)
+            } catch (_: Exception) {}
+        }
+
+        voiceOverlayView?.animate()
+            ?.alpha(1f)
+            ?.translationY(0f)
+            ?.setDuration(500)
+            ?.setInterpolator(android.view.animation.OvershootInterpolator(3f))
+            ?.start()
     }
 
     private fun startSpeechRecognition() {
@@ -664,9 +780,24 @@ class FloatingButtonAmadeusService : Service() {
     private fun closeVoiceOverlay() {
         speechRecognizer?.destroy()
         speechRecognizer = null
-        voiceOverlayView?.let { windowManager.removeView(it) }
+
+        val overlay = voiceOverlayView
+        val highlight = screenHighlightView
         voiceOverlayView = null
-        removeScreenHighlight()
+        screenHighlightView = null
+
+        overlay?.animate()?.cancel(); overlay?.alpha = 0f
+        highlight?.animate()?.cancel(); highlight?.alpha = 0f
+
+        hideBorderGlow()
+
+        Handler(Looper.getMainLooper()).post {
+            listOf(overlay, highlight).forEach { view ->
+                view ?: return@forEach
+                try { windowManager.removeView(view) } catch (_: Exception) {}
+            }
+        }
+
         hideAgentOverlay()
         startWakeWordDetection()
     }
@@ -683,6 +814,11 @@ class FloatingButtonAmadeusService : Service() {
         voiceOverlayView = null
         removeScreenHighlight()
         hideAgentOverlay()
+        borderGlowAnimator?.cancel()
+        borderGlowAnimator = null
+        borderGlowView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        borderGlowView = null
+        borderGlowParams = null
         if (::buttonView.isInitialized) windowManager.removeView(buttonView)
     }
 
