@@ -134,23 +134,21 @@ class EditarMacroActivity : AppCompatActivity() {
             meuToast("Adicione pelo menos uma ação antes de testar.", this)
             return
         }
+        if (!AmadeusAccessibilityService.isActive(this)) {
+            meuToast("Serviço de acessibilidade inativo. Ative nas configurações do Android.", this)
+            return
+        }
         moveTaskToBack(true)
         lifecycleScope.launch {
             val acoesResolvidas = withContext(Dispatchers.IO) {
                 memoryManager.resolveActionsReferences(acoes)
             }
             Handler(Looper.getMainLooper()).postDelayed({
-                val sent = AmadeusAccessibilityService.executeActions(
+                AmadeusAccessibilityService.executeActions(
                     acoesResolvidas,
                     onFeedback = { /* feedback visual ignorado fora do overlay */ },
                     onDone = { meuToast("Teste concluído!", applicationContext) }
                 )
-                if (!sent) {
-                    meuToast(
-                        "Serviço de acessibilidade inativo. Ative nas configurações do Android.",
-                        applicationContext
-                    )
-                }
             }, 500)
         }
     }
