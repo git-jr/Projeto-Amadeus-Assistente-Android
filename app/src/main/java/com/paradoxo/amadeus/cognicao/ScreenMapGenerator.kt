@@ -26,6 +26,12 @@ class ScreenMapGenerator(private val context: Context) {
         strokeWidth = 3f
     }
 
+    private val paintImage = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#CCFF6D00")
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
+    }
+
     private val paintLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         textSize = 28f
@@ -51,7 +57,7 @@ class ScreenMapGenerator(private val context: Context) {
         stepNumber: Int
     ): Bitmap {
         val interactive = elements.filter {
-            (it.isClickable || it.isEditable) && it.labelLegivel.isNotBlank()
+            (it.isClickable || it.isEditable || it.text != null || it.contentDescription != null) && it.labelLegivel.isNotBlank()
         }
 
         val bmpW = (screenW * scale).toInt()
@@ -69,7 +75,11 @@ class ScreenMapGenerator(private val context: Context) {
 
             if (left >= right || top >= bottom) return@forEachIndexed
 
-            val paint = if (el.isEditable) paintEditable else paintClickable
+            val paint = when {
+                el.isEditable -> paintEditable
+                el.isClickable -> paintClickable
+                else -> paintImage
+            }
             canvas.drawRect(left, top, right, bottom, paint)
 
             val label = "[$i]"

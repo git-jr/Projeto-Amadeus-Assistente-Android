@@ -2,6 +2,7 @@ package com.paradoxo.amadeus.modelo
 
 enum class ActionType {
     CLICK,
+    CLICK_COORDS,
     TYPE,
     OPEN_APP,
     SCROLL,

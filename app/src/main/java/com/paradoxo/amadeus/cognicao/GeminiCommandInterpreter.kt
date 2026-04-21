@@ -16,7 +16,9 @@ class GeminiCommandInterpreter(private val apiKey: String) {
 
     private val model by lazy {
         GenerativeModel(
-            modelName = "gemini-2.5-flash-lite",
+            modelName = "gemini-3.1-flash-lite-preview",
+//            modelName = " gemini-3.1-flash-preview ",
+//            modelName = "gemini-2.5-flash-lite",
             apiKey = apiKey,
             generationConfig = generationConfig {
                 temperature = 0.1f
@@ -33,14 +35,20 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return emptyList()
 
         val interactive = elements.filter {
-            (it.isClickable || it.isEditable) && it.labelLegivel.isNotBlank()
+            (it.isClickable || it.isEditable || it.text != null || it.contentDescription != null) && it.labelLegivel.isNotBlank()
         }
         if (interactive.isEmpty()) return emptyList()
 
         val elementsList = interactive.mapIndexed { i, el ->
-            val tipo = if (el.isEditable) "EDITÁVEL" else "CLICÁVEL"
+            val tipo = when {
+                el.isEditable -> "EDITÁVEL"
+                el.isClickable -> "CLICÁVEL"
+                else -> "IMAGEM"
+            }
             val classe = el.className?.substringAfterLast('.') ?: "View"
-            "[$i] $tipo | texto: \"${el.labelLegivel}\" | classe: $classe"
+            val coords = if (!el.isClickable && !el.isEditable) " | coords: ${el.bounds.centerX()},${el.bounds.centerY()}" else ""
+            val labelPart = if (el.isEditable) "(preenchido: \"${el.labelLegivel}\")" else "| texto: \"${el.labelLegivel}\""
+            "[$i] $tipo $labelPart | classe: $classe$coords"
         }.joinToString("\n")
 
         return try {
@@ -63,19 +71,26 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return AgentStepResult(done = true, reason = "API key não configurada")
 
         val interactive = elements.filter {
-            (it.isClickable || it.isEditable) && it.labelLegivel.isNotBlank()
+            (it.isClickable || it.isEditable || it.text != null || it.contentDescription != null) && it.labelLegivel.isNotBlank()
         }
 
         val elementsList = interactive.mapIndexed { i, el ->
-            val tipo = if (el.isEditable) "EDITÁVEL" else "CLICÁVEL"
+            val tipo = when {
+                el.isEditable -> "EDITÁVEL"
+                el.isClickable -> "CLICÁVEL"
+                else -> "IMAGEM"
+            }
             val classe = el.className?.substringAfterLast('.') ?: "View"
-            "[$i] $tipo | texto: \"${el.labelLegivel}\" | classe: $classe"
+            val coords = if (!el.isClickable && !el.isEditable) " | coords: ${el.bounds.centerX()},${el.bounds.centerY()}" else ""
+            val labelPart = if (el.isEditable) "(preenchido: \"${el.labelLegivel}\")" else "| texto: \"${el.labelLegivel}\""
+            "[$i] $tipo $labelPart | classe: $classe$coords"
         }.joinToString("\n").ifEmpty { "Nenhum elemento interativo encontrado" }
 
         val historyText = if (history.isEmpty()) "Nenhum — este é o primeiro passo"
         else history.joinToString("\n")
 
         val prompt = buildLoopPrompt(goal, historyText, elementsList)
+        Log.w( "AgenteLog", "AgenteLog, prompt enviado: \n$prompt")
 
         return try {
             val response = model.generateContent(
@@ -109,6 +124,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
 
         Ações disponíveis:
         - {"action":"CLICK","target":"texto exato do elemento","value":""}
+        - {"action":"CLICK_COORDS","target":"descrição opcional","value":"x,y"}  ← toca em coordenadas (use para elementos IMAGEM da lista)
         - {"action":"TYPE","target":"texto do campo","value":"texto a digitar"}
         - {"action":"OPEN_APP","target":"nome do app","value":""}
         - {"action":"SCROLL","target":"up ou down","value":""}           ← rola a tela verticalmente
@@ -120,7 +136,10 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         - {"action":"NOTIFICATIONS","target":"","value":""}              ← abre a barra de notificações
         - {"action":"QUICK_SETTINGS","target":"","value":""}             ← abre as configurações rápidas
 
-        Use IME_ACTION após TYPE quando o botão de confirmar só existe no teclado (ex: busca no Twitter/X, YouTube).
+        PRINCÍPIO: leia o estado atual antes de agir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
+        Não use TYPE em campo EDITÁVEL (preenchido:) com conteúdo correto. Não use TYPE + IME_ACTION se resultados relevantes já estão na tela.
+        Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão visível na tela (ex: barra de busca do Twitter/X, YouTube).
+        Use CLICK_COORDS para elementos do tipo IMAGEM que aparecem na lista com coordenadas — quando não há nó clicável correspondente (ex: banners de imagem na Netflix). O value deve ser EXATAMENTE as coordenadas fornecidas na lista.
         Use BACK para cancelar, fechar diálogos ou navegar para a tela anterior.
         Use HOME quando precisar sair de qualquer app e retornar à tela inicial.
 
@@ -140,6 +159,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
 
         Ações disponíveis e quando usar cada uma:
         - CLICK        → toca em um elemento; "target" = texto exato do elemento
+        - CLICK_COORDS → toca em coordenadas exatas; "target" = descrição opcional, "value" = "x,y" das coordenadas da lista
         - TYPE         → digita texto em campo editável; "target" = texto do campo, "value" = texto a digitar
         - OPEN_APP     → abre um aplicativo; "target" = nome do app
         - SCROLL       → rola verticalmente; "target" = "up" ou "down"
@@ -152,8 +172,12 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
 
         Regras importantes:
+        - PRINCÍPIO: leia o estado atual da tela antes de decidir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles diretamente — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
         - Use o texto EXATO do elemento como "target" nas ações CLICK e TYPE.
-        - Use IME_ACTION após TYPE quando o botão de confirmar só existe no teclado (ex: busca no Twitter/X, YouTube).
+        - Não use TYPE em campo EDITÁVEL que já está (preenchido:) com o conteúdo correto para a meta.
+        - Não use TYPE + IME_ACTION se resultados relevantes já são visíveis na tela.
+        - Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão de confirmação visível na tela (ex: barra de busca do Twitter/X, YouTube).
+        - Use CLICK_COORDS para elementos do tipo IMAGEM que aparecem na lista com coordenadas (ex: banners de imagem na Netflix sem nó clicável). O value deve ser EXATAMENTE as coordenadas fornecidas na lista.
         - Use BACK para fechar diálogos, popups ou navegar à tela anterior.
         - Prefira sequências de ações curtas e diretas — isso facilita o aprendizado de macros.
         - Se a tela não mudou após um passo, tente uma abordagem diferente em vez de repetir.

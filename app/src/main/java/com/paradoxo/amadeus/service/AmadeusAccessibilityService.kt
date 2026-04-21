@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -52,6 +53,23 @@ class AmadeusAccessibilityService : AccessibilityService() {
                         val target = action.target
                         onFeedback("Clicando em: $target")
                         findAndClick(target) { }
+                    }
+
+                    ActionType.CLICK_COORDS -> {
+                        val parts = action.value.split(",")
+                        val x = parts.getOrNull(0)?.trim()?.toFloatOrNull()
+                        val y = parts.getOrNull(1)?.trim()?.toFloatOrNull()
+                        if (x != null && y != null) {
+                            val label = action.target.ifBlank { "(${x.toInt()},${y.toInt()})" }
+                            onFeedback("Tocando em: $label")
+                            val bounds = Rect(x.toInt() - 20, y.toInt() - 20, x.toInt() + 20, y.toInt() + 20)
+                            showTouchFeedback(bounds, ActionType.CLICK)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    tapAtCoordinates(x, y)
+                                }, 300)
+                            }
+                        }
                     }
 
                     ActionType.TYPE -> {
@@ -528,6 +546,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
         ): Boolean {
             val service = instance ?: return false
             service.executeActions(actions, onFeedback, onDone)
+            Log.w("AgenteLog", "AgenteLog Açoes sendo sendo executadas: \n$actions")
             return true
         }
 

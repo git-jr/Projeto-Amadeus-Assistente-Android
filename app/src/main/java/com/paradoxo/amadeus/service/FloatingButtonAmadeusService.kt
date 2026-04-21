@@ -487,7 +487,8 @@ class FloatingButtonAmadeusService : Service() {
                 processCommand(text)
             } else {
                 // só para testes
-                processCommand("Abrir YouTube e pesquisar por one piece")
+//                processCommand("Abrir YouTube e pesquisar por one piece")
+                processCommand("Abra o WhatsApp e mande uma mensagem de teste para o grupo Nozes")
                 closeVoiceOverlay()
             }
         }
@@ -706,6 +707,7 @@ class FloatingButtonAmadeusService : Service() {
         val history = mutableListOf<String>()
         val maxSteps = 30
         var step = 0
+        var prevElementsKey = ""
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
 
@@ -719,6 +721,12 @@ class FloatingButtonAmadeusService : Service() {
             updateAgentMessage("Passo $step/$maxSteps — analisando...")
 
             val elements = AmadeusAccessibilityService.getVisibleElements()
+            val currentElementsKey = elements.joinToString("|") { it.labelLegivel }
+            val screenStuck = prevElementsKey.isNotEmpty() && currentElementsKey == prevElementsKey
+            if (screenStuck && history.isNotEmpty()) {
+                history[history.lastIndex] = history.last() + " — ⚠ TELA NÃO MUDOU, tente outra abordagem"
+            }
+            prevElementsKey = currentElementsKey
             val bitmap = screenMapGenerator.generate(elements, screenW, screenH, sessionId, step)
 
             loopJob = CoroutineScope(Dispatchers.IO).launch {
@@ -833,7 +841,7 @@ class FloatingButtonAmadeusService : Service() {
 
     companion object Companion {
         private const val NOTIFICATION_ID = 101
-        private const val STEP_DELAY_MS = 1500L
+        private const val STEP_DELAY_MS = 100L
         const val ACTION_ENABLE_WAKE_WORD = "ACTION_ENABLE_WAKE_WORD"
         const val ACTION_DISABLE_WAKE_WORD = "ACTION_DISABLE_WAKE_WORD"
         const val ACTION_START_LISTENING = "ACTION_START_LISTENING"
