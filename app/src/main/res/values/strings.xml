@@ -78,6 +78,8 @@
     <string name="botao_flutuante_ativo">Toque para abrir o Amadeus</string>
     <string name="escuta_frase_ativacao">Escutar frase de ativação</string>
     <string name="escuta_frase_ativacao_desc">Ativar ao falar \"Amadeus\"</string>
+    <string name="reusar_macros_prompt_gemini">Reusar macros no prompt do Gemini</string>
+    <string name="reusar_macros_prompt_gemini_desc">Usa macros confirmadas como referência no prompt do agente; não afeta macros executadas diretamente</string>
     <string name="escuta_requer_botao_flutuante">Ative o botão flutuante primeiro</string>
     <string name="definir_assistente_voz">Definir como Assistente de Voz</string>
     <string name="definir_assistente_voz_desc">Abrir configurações do sistema para selecionar o assistente padrão</string>

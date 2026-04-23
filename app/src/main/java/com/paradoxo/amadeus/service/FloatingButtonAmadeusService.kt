@@ -724,6 +724,11 @@ class FloatingButtonAmadeusService : Service() {
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
         val maxSteps = 30
+        val reusarMacrosNoPrompt = getPrefBool(
+            ConfigPrimariaActivity.PREF_REUSAR_MACROS_PROMPT_GEMINI,
+            this,
+            false
+        )
         var step = 0
         var prevElementsKey = ""
         var fewShot = listOf<MacroExample>()
@@ -749,7 +754,9 @@ class FloatingButtonAmadeusService : Service() {
             val bitmap = screenMapGenerator.generate(elements, screenW, screenH, sessionId, step)
 
             loopJob = CoroutineScope(Dispatchers.IO).launch {
-                if (step == 1) fewShot = loadFewShot(goal)
+                if (step == 1 && reusarMacrosNoPrompt) {
+                    fewShot = loadFewShot(goal)
+                }
                 val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap, fewShot)
                 withContext(Dispatchers.Main) {
                     when {

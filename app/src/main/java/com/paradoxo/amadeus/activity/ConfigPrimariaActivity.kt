@@ -35,6 +35,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private lateinit var acessoDadosToggleButton: MaterialSwitch
     private lateinit var botaoFlutuanteToggle: MaterialSwitch
     private lateinit var wakeWordToggle: MaterialSwitch
+    private lateinit var reusarMacrosPromptToggle: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
 
@@ -66,6 +67,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
         const val PREF_BOTAO_FLUTUANTE = "botao_flutuante"
         const val PREF_WAKE_WORD_ATIVO = "wake_word_ativo"
+        const val PREF_REUSAR_MACROS_PROMPT_GEMINI = "reusar_macros_prompt_gemini"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +90,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
         botaoFlutuanteToggle = findViewById(R.id.botaoFlutuanteToggle)
         wakeWordToggle = findViewById(R.id.wakeWordToggle)
+        reusarMacrosPromptToggle = findViewById(R.id.reusarMacrosPromptToggle)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
         acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
@@ -98,6 +101,8 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         wakeWordToggle.isChecked =
             getPrefBool(PREF_WAKE_WORD_ATIVO, this, false) && botaoFlutuanteAtivo
         wakeWordToggle.isEnabled = botaoFlutuanteAtivo
+        reusarMacrosPromptToggle.isChecked =
+            getPrefBool(PREF_REUSAR_MACROS_PROMPT_GEMINI, this, false)
 
         modoFalaToggleButton.setOnCheckedChangeListener { _, valor ->
             setPrefBool(
@@ -147,6 +152,10 @@ class ConfigPrimariaActivity : AppCompatActivity() {
             startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
                 this.action = action
             })
+        }
+
+        reusarMacrosPromptToggle.setOnCheckedChangeListener { _, ativado ->
+            setPrefBool(PREF_REUSAR_MACROS_PROMPT_GEMINI, ativado, applicationContext)
         }
     }
 
