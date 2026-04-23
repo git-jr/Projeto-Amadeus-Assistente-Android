@@ -12,6 +12,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.lifecycleScope
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.DefaultMacroSeeder
 import com.paradoxo.amadeus.dao.room.JsonAssetLoader
 import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.dao.room.toHistoricoEntity
@@ -49,7 +50,12 @@ class SplashScreenActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // ── Etapa 2: carga inicial de assets ───────────────────────────
+            // ── Etapa 2: seed de macros padrão (só insere se não existir) ──
+            withContext(Dispatchers.IO) {
+                DefaultMacroSeeder.seed(AmadeusDatabase.getInstance(this@SplashScreenActivity))
+            }
+
+            // ── Etapa 3: carga inicial de assets ───────────────────────────
             verificarBanco(appJaFoiAberto(this@SplashScreenActivity), this@SplashScreenActivity)
         }
     }

@@ -41,8 +41,10 @@ import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
+import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.view.ScreenHighlightView
 import com.paradoxo.amadeus.view.BorderGlowView
@@ -702,12 +704,29 @@ class FloatingButtonAmadeusService : Service() {
         }
     }
 
+    private suspend fun loadFewShot(goal: String): List<MacroExample> {
+        val goalWords = goal.lowercase().split(Regex("\\s+")).toSet()
+        return AmadeusDatabase.getInstance(this)
+            .agentMacroDAO().listAll()
+            .filter { it.isConfirmed }
+            .map { entity ->
+                val overlap = entity.goalKey.lowercase().split(Regex("\\s+")).count { it in goalWords }
+                entity to overlap
+            }
+            .sortedByDescending { it.second }
+            .take(3)
+            .map { (entity, _) ->
+                MacroExample(entity.goalKey, memoryManager.deserializeActions(entity.actionsJson))
+            }
+    }
+
     private fun runGeminiLoop(goal: String, allActions: MutableList<ActionIntent>) {
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
         val maxSteps = 30
         var step = 0
         var prevElementsKey = ""
+        var fewShot = listOf<MacroExample>()
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
 
@@ -730,7 +749,8 @@ class FloatingButtonAmadeusService : Service() {
             val bitmap = screenMapGenerator.generate(elements, screenW, screenH, sessionId, step)
 
             loopJob = CoroutineScope(Dispatchers.IO).launch {
-                val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap)
+                if (step == 1) fewShot = loadFewShot(goal)
+                val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap, fewShot)
                 withContext(Dispatchers.Main) {
                     when {
                         result.done -> {

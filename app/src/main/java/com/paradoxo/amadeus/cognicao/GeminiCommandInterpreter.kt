@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.AgentStepResult
+import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
 
 class GeminiCommandInterpreter(private val apiKey: String) {
@@ -66,7 +67,8 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         goal: String,
         history: List<String>,
         elements: List<UiElement>,
-        mapBitmap: Bitmap
+        mapBitmap: Bitmap,
+        fewShotExamples: List<MacroExample> = emptyList()
     ): AgentStepResult {
         if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return AgentStepResult(done = true, reason = "API key não configurada")
 
@@ -89,7 +91,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         val historyText = if (history.isEmpty()) "Nenhum — este é o primeiro passo"
         else history.joinToString("\n")
 
-        val prompt = buildLoopPrompt(goal, historyText, elementsList)
+        val prompt = buildLoopPrompt(goal, historyText, elementsList, fewShotExamples)
         Log.w( "AgenteLog", "AgenteLog, prompt enviado: \n$prompt")
 
         return try {
@@ -146,14 +148,34 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         Responda apenas com o array JSON:
     """.trimIndent()
 
-    private fun buildLoopPrompt(goal: String, historyText: String, elementsList: String) = """
+    private fun buildFewShotBlock(examples: List<MacroExample>): String {
+        if (examples.isEmpty()) return ""
+        val sb = StringBuilder(
+            "\n⚡ MACROS CONFIRMADOS — sequências que já funcionaram para metas similares." +
+            " Siga a mesma ordem de ações, adaptando apenas o \"target\" para o texto exato visível na tela:\n"
+        )
+        examples.forEach { ex ->
+            val json = ex.actions.joinToString(",", "[", "]") { a ->
+                """{"action":"${a.type.name}","target":"${a.target}","value":"${a.value}"}"""
+            }
+            sb.append("• \"${ex.goalKey}\" → $json\n")
+        }
+        return sb.toString()
+    }
+
+    private fun buildLoopPrompt(
+        goal: String,
+        historyText: String,
+        elementsList: String,
+        fewShotExamples: List<MacroExample> = emptyList()
+    ) = """
         Você é um assistente que controla um celular Android via acessibilidade.
 
         Meta do usuário: "$goal"
 
         Passos já executados:
         $historyText
-
+        ${buildFewShotBlock(fewShotExamples)}
         Elementos interativos visíveis na tela atual (a imagem mostra cada elemento marcado com [N]):
         $elementsList
 
@@ -172,6 +194,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
 
         Regras importantes:
+        - MACROS CONFIRMADOS: se houver macros de referência acima com meta similar, siga a mesma sequência de tipos de ação (OPEN_APP → CLICK → TYPE → CLICK etc.), ajustando o "target" para o texto exato que aparecer na tela. Não invente uma abordagem diferente quando uma sequência confirmada existe.
         - PRINCÍPIO: leia o estado atual da tela antes de decidir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles diretamente — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
         - Use o texto EXATO do elemento como "target" nas ações CLICK e TYPE.
         - Não use TYPE em campo EDITÁVEL que já está (preenchido:) com o conteúdo correto para a meta.
