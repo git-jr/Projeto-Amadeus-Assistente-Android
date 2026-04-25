@@ -90,7 +90,7 @@ class SplashScreenActivity : AppCompatActivity() {
             if (Preferencias.getPrefString("nomeUsu", context).isNotEmpty()) {
                 context.startActivity(Intent(context.applicationContext, MainActivity::class.java))
             } else {
-                context.startActivity(Intent(context.applicationContext, ConfigPrimariaActivity::class.java))
+                context.startActivity(Intent(context.applicationContext, CadastroInicialActivity::class.java))
             }
             context.finish()
         }

@@ -1,27 +1,22 @@
 package com.paradoxo.amadeus.activity
 
 import android.Manifest
-import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Permissao
-import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
@@ -31,7 +26,6 @@ import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
 class ConfigPrimariaActivity : AppCompatActivity() {
 
-    private var primeiroUso = true
     private lateinit var acessoDadosToggleButton: MaterialSwitch
     private lateinit var botaoFlutuanteToggle: MaterialSwitch
     private lateinit var wakeWordToggle: MaterialSwitch
@@ -79,7 +73,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private fun configurarInterface() {
         configurarToolBarBranca(this)
         configurarTextInput()
-        configuarBotaoLinkStart()
+        configurarBotaoSalvar()
         configurarToggleButton()
         configurarBotaoAssistente()
         configurarBotaoMacros()
@@ -105,18 +99,10 @@ class ConfigPrimariaActivity : AppCompatActivity() {
             getPrefBool(PREF_REUSAR_MACROS_PROMPT_GEMINI, this, false)
 
         modoFalaToggleButton.setOnCheckedChangeListener { _, valor ->
-            setPrefBool(
-                PREF_VOZ_ATIVA,
-                valor,
-                applicationContext
-            )
+            setPrefBool(PREF_VOZ_ATIVA, valor, applicationContext)
         }
         acessoDadosToggleButton.setOnCheckedChangeListener { _, valor ->
-            setPrefBool(
-                PREF_UPLOAD_DADOS_AUTORIZADO,
-                valor,
-                applicationContext
-            )
+            setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, valor, applicationContext)
         }
         botaoFlutuanteToggle.setOnCheckedChangeListener { _, ativado ->
             if (ativado) {
@@ -170,24 +156,20 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     }
 
     private fun configurarBotaoAssistente() {
-        findViewById<View>(R.id.assistenteVozLayout).setOnClickListener {
-            abrirConfiguracaoAssistente()
+        findViewById<android.view.View>(R.id.assistenteVozLayout).setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })
+            } catch (_: Exception) {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
         }
     }
 
     private fun configurarBotaoMacros() {
-        findViewById<View>(R.id.macrosLayout).setOnClickListener {
+        findViewById<android.view.View>(R.id.macrosLayout).setOnClickListener {
             startActivity(Intent(this, ListaMacrosActivity::class.java))
-        }
-    }
-
-    private fun abrirConfiguracaoAssistente() {
-        try {
-            val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-        } catch (_: Exception) {
-            startActivity(Intent(Settings.ACTION_SETTINGS))
         }
     }
 
@@ -195,17 +177,12 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         nomeUsuarioEditText = findViewById(R.id.nomeUsuarioEditText)
         nomeIaEditText = findViewById(R.id.nomeIaEditText)
 
-        val nomeUsu = getPrefString(PREF_NOME_USU, this)
-        if (nomeUsu.isNotEmpty()) {
-            val nomeIA = getPrefString(PREF_NOME_IA, this)
-            nomeUsuarioEditText.setText(nomeUsu)
-            nomeIaEditText.setText(nomeIA)
-            primeiroUso = false
-        }
+        nomeUsuarioEditText.setText(getPrefString(PREF_NOME_USU, this))
+        nomeIaEditText.setText(getPrefString(PREF_NOME_IA, this))
 
         nomeIaEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
-                verificarNomes()
+                salvarNomes()
                 true
             } else {
                 false
@@ -213,12 +190,17 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         }
     }
 
-    fun verificarNomes() {
+    private fun configurarBotaoSalvar() {
+        findViewById<android.view.View>(R.id.okButton).setOnClickListener { salvarNomes() }
+    }
+
+    private fun salvarNomes() {
         val nomeUsuarioTextInput = findViewById<TextInputLayout>(R.id.nomeUsuarioTextInput)
         val nomeIATextInput = findViewById<TextInputLayout>(R.id.nomeIaTextInput)
 
         if (nomeUsuarioEditText.text.toString().isEmpty()) {
             nomeUsuarioTextInput.error = getString(R.string.nome_invalido)
+            return
         } else {
             nomeUsuarioTextInput.isErrorEnabled = false
         }
@@ -230,71 +212,9 @@ class ConfigPrimariaActivity : AppCompatActivity() {
             nomeIATextInput.isErrorEnabled = false
         }
 
-        dialogUsoDados()
-    }
-
-    private fun configuarBotaoLinkStart() {
-        findViewById<android.view.View>(R.id.okButton).setOnClickListener { verificarNomes() }
-    }
-
-    fun dialogUsoDados() {
-        val uploadDadosAutorizado =
-            Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
-        if (uploadDadosAutorizado && !primeiroUso) {
-            gravarDados()
-            return
-        }
-
-        val alertDialogBuilder = Dialog(this)
-        val inflater = layoutInflater
-        alertDialogBuilder.setContentView(
-            inflater.inflate(
-                R.layout.dialog_sim_nao,
-                findViewById(R.id.configPrimariaLayout),
-                false
-            )
-        )
-        (alertDialogBuilder.findViewById<TextView>(R.id.tituloTextView)).setText(R.string.acesso_e_uso_dados_titulo)
-        (alertDialogBuilder.findViewById<TextView>(R.id.conteudoTexView)).setText(R.string.acesso_e_uso_dados_descri)
-
-        val botaoNegar = alertDialogBuilder.findViewById<TextView>(R.id.botaoNegar)
-        botaoNegar.setText(R.string.negar)
-        botaoNegar.setOnClickListener {
-            setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, false, applicationContext)
-            acessoDadosToggleButton.isChecked = false
-            alertDialogBuilder.dismiss()
-            gravarDados()
-        }
-
-        val botaoAutorizar = alertDialogBuilder.findViewById<MaterialButton>(R.id.botaoAutorizar)
-        botaoAutorizar.setText(R.string.autorizar)
-        botaoAutorizar.setOnClickListener {
-            setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, true, applicationContext)
-            acessoDadosToggleButton.isChecked = true
-            alertDialogBuilder.dismiss()
-            gravarDados()
-        }
-
-        alertDialogBuilder.findViewById<android.view.View>(R.id.linkTextView).setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(getString(R.string.link_politica_privaicade))
-            startActivity(intent)
-        }
-
-        alertDialogBuilder.setCancelable(false)
-        alertDialogBuilder.show()
-    }
-
-    private fun gravarDados() {
         setPrefString(nomeUsuarioEditText.text.toString().trim(), PREF_NOME_USU, this)
         setPrefString(nomeIaEditText.text.toString().trim(), PREF_NOME_IA, this)
-
-        if (primeiroUso) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        } else {
-            finish()
-        }
+        finish()
     }
 
     override fun finish() {

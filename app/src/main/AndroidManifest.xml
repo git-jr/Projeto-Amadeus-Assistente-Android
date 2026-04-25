@@ -17,6 +17,11 @@
             android:theme="@style/Theme.Amadeus.ConfigPrimaria"
             android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
         <activity
+            android:name=".activity.CadastroInicialActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.Amadeus.ConfigPrimaria"
+            android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
+        <activity
             android:name=".activity.SplashScreenActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"

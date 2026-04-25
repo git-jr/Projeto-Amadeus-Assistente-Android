@@ -17,43 +17,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="@dimen/text_margin"
-            android:paddingTop="48dp"
+            android:paddingTop="16dp"
             android:paddingEnd="@dimen/text_margin"
             android:paddingBottom="32dp">
-
-            <!-- Header -->
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_horizontal"
-                android:contentDescription="@null"
-                android:scaleX="1.52"
-                android:scaleY="1.5"
-                android:src="@drawable/ic_launcher_foreground" />
-
-            <TextView
-                android:id="@+id/tituloTexView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
-                android:text="@string/projeto_amadeus"
-                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                android:textColor="?attr/colorOnSurface" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"
-                android:text="@string/configuracao_inicial"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="8dp"
                 android:orientation="vertical"
                 android:padding="20dp">
 
@@ -111,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="@string/configuracao_inicial"
+                    android:text="@string/voz"
                     android:textAppearance="?attr/textAppearanceTitleSmall"
                     android:textColor="@color/conteudo_card" />
 
@@ -387,24 +358,13 @@
 
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:text="@string/configs_podem_ser_alteradas_depois"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <!-- Botão principal -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/okButton"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/link_start"
+                android:text="@string/salvar"
                 android:textAppearance="?attr/textAppearanceButton"
                 app:backgroundTint="@color/colorPrimary"
                 app:cornerRadius="12dp" />
