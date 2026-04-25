@@ -3,12 +3,17 @@ package com.paradoxo.amadeus.activity
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Vibrator
+import android.provider.Settings
 import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -38,8 +43,13 @@ import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Acao
 import com.paradoxo.amadeus.modelo.EventoMensagem
 import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
+import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.service.GravaHistoricoService
 import com.paradoxo.amadeus.util.Animacoes.animarComFade
+import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_MICROFONE
+import com.paradoxo.amadeus.util.Permissao
+import com.paradoxo.amadeus.util.Permissao.hasRecordAudioPermission
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
@@ -54,14 +64,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.util.ArrayList
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
-import com.paradoxo.amadeus.service.AmadeusAccessibilityService
-import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
-import com.paradoxo.amadeus.util.Permissao
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -86,18 +88,17 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         setContentView(R.layout.activity_main)
         configurarServicosSegundoPlano()
         configurarIterface()
-        if (!Permissao.armazenamentoAcessivel(this)) {
-            Permissao.solicitarAcessoArmazenamento(this)
-        }
+
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
         }
-        iniciarBotaoFlutuante()
-        openSettings(this)
+//        iniciarBotaoFlutuante()
+//        openSettings(this)
     }
 
     fun openSettings(context: Context) {
-        val componentName = "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
+        val componentName =
+            "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
 
         // Deep-link direto para o toggle do serviço (funciona na maioria dos ROMs)
         val deepLink = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
@@ -129,11 +130,17 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun configurarServicosSegundoPlano() {
-        escutadaoraServiceIntent = Intent(this, EscutadaoraService::class.java)
-        vozParaTexto = VozParaTexto(applicationContext)
+        initVozParaTexto()
         textoParaVoz = TextoParaVoz(applicationContext)
         processadora = Processadora(this)
         acionadora = Acionadora(this)
+    }
+
+    private fun initVozParaTexto() {
+        if (hasRecordAudioPermission()) {
+            escutadaoraServiceIntent = Intent(this, EscutadaoraService::class.java)
+            vozParaTexto = VozParaTexto(applicationContext)
+        }
     }
 
     private fun configurarIterface() {
@@ -156,8 +163,10 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun configurarNomesIaUsu() {
-        findViewById<TextView>(R.id.nomeIaTextView).text = Preferencias.getPrefString("nomeIA", this)
-        findViewById<TextView>(R.id.nomeUsuarioTextView).text = Preferencias.getPrefString("nomeUsu", this)
+        findViewById<TextView>(R.id.nomeIaTextView).text =
+            Preferencias.getPrefString("nomeIA", this)
+        findViewById<TextView>(R.id.nomeUsuarioTextView).text =
+            Preferencias.getPrefString("nomeUsu", this)
     }
 
     private fun configurarBotoaEnviarTeclado() {
@@ -195,7 +204,10 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         } else {
             textoParaVoz.configurarFalaIA(sentenca.respostas[0])
         }
-        Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
+        Handler(mainLooper).postDelayed(
+            { recyclerView.smoothScrollToPosition(adapter.itemCount) },
+            250
+        )
 
         lifecycleScope.launch(Dispatchers.IO) {
             val id = AmadeusDatabase.getInstance(this@MainActivity)
@@ -290,7 +302,11 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun trocarLayoutBottom(tipoTexto: Boolean) {
-        Permissao.solicitarPermissaoMicrofone(this)
+        if (!hasRecordAudioPermission()) {
+            Permissao.solicitarPermissaoMicrofone(this)
+            return
+        }
+
         val layoutEscrevendo = findViewById<LinearLayout>(R.id.layoutEscrevendo)
         val layoutOuvindo = findViewById<LinearLayout>(R.id.layoutOuvindo)
         if (tipoTexto) {
@@ -298,12 +314,18 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             animarComFade(layoutOuvindo, false)
             animarComFade(layoutEscrevendo, true)
         } else {
-            iniciarEscutadoraService()
-            esconderTeclado(this@MainActivity)
-            animarComFade(layoutEscrevendo, false)
-            animarComFade(layoutOuvindo, true)
-            findViewById<View>(R.id.layoutOuvindo).setOnClickListener { trocarLayoutBottom(true) }
+            iniciarModoVoz()
         }
+    }
+
+    private fun iniciarModoVoz() {
+        val layoutEscrevendo = findViewById<LinearLayout>(R.id.layoutEscrevendo)
+        val layoutOuvindo = findViewById<LinearLayout>(R.id.layoutOuvindo)
+        iniciarEscutadoraService()
+        esconderTeclado(this@MainActivity)
+        animarComFade(layoutEscrevendo, false)
+        animarComFade(layoutOuvindo, true)
+        findViewById<View>(R.id.layoutOuvindo).setOnClickListener { trocarLayoutBottom(true) }
     }
 
     private fun trocarIconeBotaoEnviar(textoDaBusca: String) {
@@ -334,9 +356,26 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.action_add -> startActivity(Intent(applicationContext, EditarSentencaActivity::class.java))
-                R.id.action_aprendizado -> startActivity(Intent(applicationContext, AprendizActivity::class.java))
-                R.id.action_sobre -> startActivity(Intent(applicationContext, SobreActivity::class.java))
+                R.id.action_add -> startActivity(
+                    Intent(
+                        applicationContext,
+                        EditarSentencaActivity::class.java
+                    )
+                )
+
+                R.id.action_aprendizado -> startActivity(
+                    Intent(
+                        applicationContext,
+                        AprendizActivity::class.java
+                    )
+                )
+
+                R.id.action_sobre -> startActivity(
+                    Intent(
+                        applicationContext,
+                        SobreActivity::class.java
+                    )
+                )
             }
             false
         }
@@ -450,7 +489,8 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             return
         }
         try {
-            val uploadDadosAutorizado = Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+            val uploadDadosAutorizado =
+                Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
             if (!uploadDadosAutorizado) return
             val idUltimoUpload = Preferencias.getPrefLong(PREF_ID_ULTIMO_UPLOAD, this)
             if (idUltimoUpload < idUltimoHistoricoGravado) {
@@ -463,19 +503,30 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            1 -> {
+            PERMISSAO_ACESSO_MICROFONE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    meuToast("Permissão de microfone concedida", applicationContext)
+                    Log.w("Permissão", "Permissão de microfone concedida")
+                    initVozParaTexto()
+                    iniciarModoVoz()
                 } else {
-                    meuToast("Permissão de microfone negada", applicationContext)
+                    meuToastLong(
+                        "Sem a permissão de microfone, o recurso de voz não funcionará. Você pode conceder a permissão nas configurações do aplicativo.",
+                        applicationContext
+                    )
+                    Log.w("Permissão", "Permissão de microfone negada")
                 }
             }
+
             2 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    meuToast("Permissão de armazenamento concedida", applicationContext)
+                    Log.w("Permissão", "Permissão de armazenamento concedida")
                 } else {
                     meuToast("Permissão de armazenamento negada", applicationContext)
                 }

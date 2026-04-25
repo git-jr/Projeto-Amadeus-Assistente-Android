@@ -8,6 +8,8 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
+const val PERMISSAO_ACESSO_MICROFONE = 1
+
 object Permissao {
 
     fun armazenamentoAcessivel(context: Context): Boolean {
@@ -25,13 +27,11 @@ object Permissao {
                 Manifest.permission.RECORD_AUDIO
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val PERMISSAO_ACESSO_MICROFONE = 1
-                activity.requestPermissions(
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    PERMISSAO_ACESSO_MICROFONE
-                )
-            }
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                PERMISSAO_ACESSO_MICROFONE
+            )
         }
     }
 
@@ -43,6 +43,13 @@ object Permissao {
         }
         ActivityCompat.requestPermissions(activity, arrayOf(permissao), 2)
     }
+
+    fun Context.hasRecordAudioPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    }
+
 }
 
 /*
