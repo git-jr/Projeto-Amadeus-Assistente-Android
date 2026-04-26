@@ -3,12 +3,24 @@ package com.paradoxo.amadeus.util
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 
 const val PERMISSAO_ACESSO_MICROFONE = 1
+
+fun Context.canDrawOverlays(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        Settings.canDrawOverlays(this)
+    } else {
+        true
+    }
+}
 
 object Permissao {
 
@@ -19,6 +31,14 @@ object Permissao {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
         return ContextCompat.checkSelfPermission(context, permissao) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun getIntentSolicitarSobreposicao(packageName: String): Intent {
+        return Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            "package:$packageName".toUri()
+        )
     }
 
     fun solicitarPermissaoMicrofone(activity: Activity) {

@@ -37,6 +37,7 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
+import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
@@ -97,6 +98,10 @@ class FloatingButtonAmadeusService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotification()
+        if (!AmadeusAccessibilityService.isActive(this)) {
+            desativarBotaoFlutuantePorFaltaDeAcessibilidade()
+            return
+        }
         createFloatingButton()
         initBorderGlow()
         if (getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, this, true)) {
@@ -402,19 +407,50 @@ class FloatingButtonAmadeusService : Service() {
             != PackageManager.PERMISSION_GRANTED
         ) {
             showMessage(getString(R.string.permissao_microfone_necessaria))
-            startWakeWordDetection()
+            solicitarPermissaoMicrofone()
             return
         }
         if (!AmadeusAccessibilityService.isActive(this)) {
-            showMessage(getString(R.string.acessibilidade_nao_ativa))
-            AmadeusAccessibilityService.openSettings(this)
-            startWakeWordDetection()
+            abrirConfigPrimariaParaAcessibilidade()
+            desativarBotaoFlutuantePorFaltaDeAcessibilidade()
             return
         }
         showScreenHighlight()
         startSpeechRecognition()
         showBorderGlow()
         showVoiceOverlay()
+    }
+
+    private fun solicitarPermissaoMicrofone() {
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(MainActivity.EXTRA_SOLICITAR_PERMISSAO_MICROFONE, true)
+            putExtra(MainActivity.EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE, true)
+        })
+    }
+
+    private fun abrirConfigPrimariaParaAcessibilidade() {
+        startActivity(Intent(this, ConfigPrimariaActivity::class.java).apply {
+            flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(ConfigPrimariaActivity.EXTRA_SOLICITAR_ACESSIBILIDADE, true)
+            putExtra(
+                ConfigPrimariaActivity.EXTRA_ATIVAR_BOTAO_FLUTUANTE_APOS_ACESSIBILIDADE,
+                true
+            )
+        })
+    }
+
+    private fun desativarBotaoFlutuantePorFaltaDeAcessibilidade() {
+        setPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, false, applicationContext)
+        setPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, false, applicationContext)
+        wakeWordManager.stopDetection()
+        stopSelf()
     }
 
     private fun showScreenHighlight() {

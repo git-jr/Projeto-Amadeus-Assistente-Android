@@ -523,7 +523,8 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
             try {
                 context.startActivity(deepLink)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.w("openSettings", "Erro ao abrir as configurações de acessibilidade: ${e.message}")
                 // Fallback para a lista genérica de acessibilidade
                 context.startActivity(
                     Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {

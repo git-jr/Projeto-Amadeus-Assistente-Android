@@ -1,21 +1,19 @@
 package com.paradoxo.amadeus.activity
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
+import com.paradoxo.amadeus.util.DialogPermissao
 import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
@@ -23,34 +21,35 @@ import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.canDrawOverlays
 
 class ConfigPrimariaActivity : AppCompatActivity() {
 
     private lateinit var acessoDadosToggleButton: MaterialSwitch
     private lateinit var botaoFlutuanteToggle: MaterialSwitch
     private lateinit var wakeWordToggle: MaterialSwitch
+    private lateinit var acessibilidadeToggle: MaterialSwitch
     private lateinit var reusarMacrosPromptToggle: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
+    private var sincronizandoToggles = false
+    private var solicitarDialogAcessibilidadeAoEntrar = false
+    private var aguardandoRetornoConfiguracaoAcessibilidade = false
+    private var ativarBotaoFlutuanteAposAcessibilidade = false
+    private var aguardandoRetornoAcessibilidadeAtivacao = false
+    private var ativarBotaoAposAtivarAcessibilidade = false
 
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        val temPermissao = Settings.canDrawOverlays(this)
-        botaoFlutuanteToggle.isChecked = temPermissao
-        if (temPermissao) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                Toast.makeText(
-                    this,
-                    getString(R.string.permissao_microfone_necessaria),
-                    Toast.LENGTH_SHORT
-                ).show()
-                Permissao.solicitarPermissaoMicrofone(this)
-            } else {
+        if (canDrawOverlays()) {
+            if (AmadeusAccessibilityService.isActive(this)) {
                 ativarBotaoFlutuante()
+            } else {
+                solicitarAcessibilidadeComRationale()
             }
+        } else {
+            exibirFeedbackEReverterAtivacaoBotaoFlutuante(R.string.permissao_overlay_nao_concedida)
         }
     }
 
@@ -62,12 +61,28 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         const val PREF_BOTAO_FLUTUANTE = "botao_flutuante"
         const val PREF_WAKE_WORD_ATIVO = "wake_word_ativo"
         const val PREF_REUSAR_MACROS_PROMPT_GEMINI = "reusar_macros_prompt_gemini"
+        const val EXTRA_SOLICITAR_ACESSIBILIDADE = "solicitar_acessibilidade"
+        const val EXTRA_ATIVAR_BOTAO_FLUTUANTE_APOS_ACESSIBILIDADE =
+            "ativar_botao_flutuante_apos_acessibilidade"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_config_primaria)
+        processarIntent(intent)
         configurarInterface()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        processarIntent(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sincronizarEstadoBotaoFlutuante()
+        processarSolicitacoesPendentes()
     }
 
     private fun configurarInterface() {
@@ -83,20 +98,15 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         val modoFalaToggleButton = findViewById<MaterialSwitch>(R.id.modoFalaToggleButton)
         acessoDadosToggleButton = findViewById(R.id.acessoDadosToggleButton)
         botaoFlutuanteToggle = findViewById(R.id.botaoFlutuanteToggle)
+        acessibilidadeToggle = findViewById(R.id.acessibilidadeToggle)
         wakeWordToggle = findViewById(R.id.wakeWordToggle)
         reusarMacrosPromptToggle = findViewById(R.id.reusarMacrosPromptToggle)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
         acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
-        val botaoFlutuanteAtivo =
-            getPrefBool(PREF_BOTAO_FLUTUANTE, this, false) && Settings.canDrawOverlays(this)
-        botaoFlutuanteToggle.isChecked = botaoFlutuanteAtivo
-
-        wakeWordToggle.isChecked =
-            getPrefBool(PREF_WAKE_WORD_ATIVO, this, false) && botaoFlutuanteAtivo
-        wakeWordToggle.isEnabled = botaoFlutuanteAtivo
         reusarMacrosPromptToggle.isChecked =
             getPrefBool(PREF_REUSAR_MACROS_PROMPT_GEMINI, this, false)
+        sincronizarEstadoBotaoFlutuante()
 
         modoFalaToggleButton.setOnCheckedChangeListener { _, valor ->
             setPrefBool(PREF_VOZ_ATIVA, valor, applicationContext)
@@ -104,37 +114,40 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         acessoDadosToggleButton.setOnCheckedChangeListener { _, valor ->
             setPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, valor, applicationContext)
         }
-        botaoFlutuanteToggle.setOnCheckedChangeListener { _, ativado ->
+        acessibilidadeToggle.setOnCheckedChangeListener { _, ativado ->
+            if (sincronizandoToggles) return@setOnCheckedChangeListener
             if (ativado) {
-                if (Settings.canDrawOverlays(this)) {
-                    ativarBotaoFlutuante()
-                    wakeWordToggle.isEnabled = true
-                } else {
-                    meuToast(getString(R.string.permissao_overlay_necessaria), applicationContext)
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
-                    )
-                    overlayPermissionLauncher.launch(intent)
-                    botaoFlutuanteToggle.isChecked = false
+                if (!AmadeusAccessibilityService.isActive(this)) {
+                    aguardandoRetornoAcessibilidadeAtivacao = true
+                    ativarBotaoAposAtivarAcessibilidade = canDrawOverlays()
+                    solicitarAcessibilidadeComRationale(ativarBotaoAoConcluir = false)
                 }
             } else {
-                desativarBotaoFlutuante()
-                wakeWordToggle.isChecked = false
-                wakeWordToggle.isEnabled = false
-                setPrefBool(PREF_WAKE_WORD_ATIVO, false, applicationContext)
+                setPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, false, applicationContext)
+                desativarBotaoFlutuanteCompleto()
+            }
+        }
+        botaoFlutuanteToggle.setOnCheckedChangeListener { _, ativado ->
+            if (sincronizandoToggles) return@setOnCheckedChangeListener
+            if (ativado) {
+                iniciarFluxoAtivacaoBotaoFlutuante()
+            } else {
+                desativarBotaoFlutuanteCompleto()
             }
         }
 
         wakeWordToggle.setOnCheckedChangeListener { _, ativado ->
+            if (sincronizandoToggles) return@setOnCheckedChangeListener
             if (!botaoFlutuanteToggle.isChecked) {
                 meuToast(getString(R.string.escuta_requer_botao_flutuante), applicationContext)
-                wakeWordToggle.isChecked = false
+                atualizarToggles {
+                    wakeWordToggle.isChecked = false
+                }
                 return@setOnCheckedChangeListener
             }
             setPrefBool(PREF_WAKE_WORD_ATIVO, ativado, applicationContext)
             val action = if (ativado) FloatingButtonAmadeusService.ACTION_ENABLE_WAKE_WORD
-                         else FloatingButtonAmadeusService.ACTION_DISABLE_WAKE_WORD
+            else FloatingButtonAmadeusService.ACTION_DISABLE_WAKE_WORD
             startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
                 this.action = action
             })
@@ -145,14 +158,121 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         }
     }
 
+    private fun processarIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_SOLICITAR_ACESSIBILIDADE, false) == true) {
+            solicitarDialogAcessibilidadeAoEntrar = true
+            ativarBotaoFlutuanteAposAcessibilidade = intent.getBooleanExtra(
+                EXTRA_ATIVAR_BOTAO_FLUTUANTE_APOS_ACESSIBILIDADE,
+                true
+            )
+        }
+    }
+
+    private fun processarSolicitacoesPendentes() {
+        if (aguardandoRetornoAcessibilidadeAtivacao) {
+            aguardandoRetornoAcessibilidadeAtivacao = false
+            sincronizarEstadoBotaoFlutuante()
+            if (ativarBotaoAposAtivarAcessibilidade &&
+                AmadeusAccessibilityService.isActive(this) &&
+                canDrawOverlays()) {
+                ativarBotaoFlutuante()
+            }
+            ativarBotaoAposAtivarAcessibilidade = false
+            return
+        }
+
+        if (aguardandoRetornoConfiguracaoAcessibilidade) {
+            aguardandoRetornoConfiguracaoAcessibilidade = false
+            if (AmadeusAccessibilityService.isActive(this) && canDrawOverlays()) {
+                if (ativarBotaoFlutuanteAposAcessibilidade) {
+                    ativarBotaoFlutuante()
+                }
+            } else {
+                exibirFeedbackEReverterAtivacaoBotaoFlutuante(R.string.acessibilidade_nao_concedida)
+            }
+            ativarBotaoFlutuanteAposAcessibilidade = false
+            return
+        }
+
+        if (solicitarDialogAcessibilidadeAoEntrar && !AmadeusAccessibilityService.isActive(this)) {
+            solicitarDialogAcessibilidadeAoEntrar = false
+            window.decorView.post {
+                solicitarAcessibilidadeComRationale(ativarBotaoFlutuanteAposAcessibilidade)
+            }
+        }
+    }
+
+    private fun iniciarFluxoAtivacaoBotaoFlutuante() {
+        when {
+            !canDrawOverlays() -> solicitarPermissaoOverlayComRationale()
+            !AmadeusAccessibilityService.isActive(this) -> solicitarAcessibilidadeComRationale()
+            else -> ativarBotaoFlutuante()
+        }
+    }
+
+    private fun sincronizarEstadoBotaoFlutuante() {
+        val botaoPodeFicarAtivo =
+            getPrefBool(PREF_BOTAO_FLUTUANTE, this, false) &&
+                canDrawOverlays() &&
+                AmadeusAccessibilityService.isActive(this)
+
+        if (!botaoPodeFicarAtivo) {
+            setPrefBool(PREF_BOTAO_FLUTUANTE, false, applicationContext)
+            setPrefBool(PREF_WAKE_WORD_ATIVO, false, applicationContext)
+            stopService(Intent(this, FloatingButtonAmadeusService::class.java))
+        }
+
+        atualizarToggles {
+            acessibilidadeToggle.isChecked = AmadeusAccessibilityService.isActive(this)
+            botaoFlutuanteToggle.isChecked = botaoPodeFicarAtivo
+            wakeWordToggle.isChecked =
+                botaoPodeFicarAtivo && getPrefBool(PREF_WAKE_WORD_ATIVO, this, false)
+            wakeWordToggle.isEnabled = botaoPodeFicarAtivo
+        }
+    }
+
+    private fun atualizarToggles(bloco: () -> Unit) {
+        sincronizandoToggles = true
+        try {
+            bloco()
+        } finally {
+            sincronizandoToggles = false
+        }
+    }
+
     private fun ativarBotaoFlutuante() {
+        if (!canDrawOverlays() || !AmadeusAccessibilityService.isActive(this)) {
+            sincronizarEstadoBotaoFlutuante()
+            return
+        }
         setPrefBool(PREF_BOTAO_FLUTUANTE, true, applicationContext)
         startService(Intent(this, FloatingButtonAmadeusService::class.java))
+        atualizarToggles {
+            botaoFlutuanteToggle.isChecked = true
+            wakeWordToggle.isEnabled = true
+        }
     }
 
     private fun desativarBotaoFlutuante() {
         setPrefBool(PREF_BOTAO_FLUTUANTE, false, applicationContext)
         stopService(Intent(this, FloatingButtonAmadeusService::class.java))
+    }
+
+    private fun desativarBotaoFlutuanteCompleto() {
+        desativarBotaoFlutuante()
+        setPrefBool(PREF_WAKE_WORD_ATIVO, false, applicationContext)
+        atualizarToggles {
+            wakeWordToggle.isChecked = false
+            wakeWordToggle.isEnabled = false
+        }
+    }
+
+    private fun exibirFeedbackEReverterAtivacaoBotaoFlutuante(messageResId: Int) {
+        desativarBotaoFlutuanteCompleto()
+        atualizarToggles {
+            botaoFlutuanteToggle.isChecked = false
+        }
+        meuToast(getString(messageResId), applicationContext)
     }
 
     private fun configurarBotaoAssistente() {
@@ -215,6 +335,46 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         setPrefString(nomeUsuarioEditText.text.toString().trim(), PREF_NOME_USU, this)
         setPrefString(nomeIaEditText.text.toString().trim(), PREF_NOME_IA, this)
         finish()
+    }
+
+    private fun solicitarPermissaoOverlayComRationale() {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.permissao_overlay_rationale_titulo),
+            mensagem = getString(R.string.permissao_overlay_rationale_mensagem),
+            textoConfirmar = getString(R.string.ir_para_configuracoes),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    overlayPermissionLauncher.launch(
+                        Permissao.getIntentSolicitarSobreposicao(packageName)
+                    )
+                }
+            },
+            onCancelar = {
+                exibirFeedbackEReverterAtivacaoBotaoFlutuante(R.string.permissao_overlay_nao_concedida)
+            }
+        )
+    }
+
+    private fun solicitarAcessibilidadeComRationale(ativarBotaoAoConcluir: Boolean = true) {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.acessibilidade_rationale_titulo),
+            mensagem = getString(R.string.acessibilidade_rationale_mensagem),
+            textoConfirmar = getString(R.string.ir_para_configuracoes),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                ativarBotaoFlutuanteAposAcessibilidade = ativarBotaoAoConcluir
+                aguardandoRetornoConfiguracaoAcessibilidade = true
+                AmadeusAccessibilityService.openSettings(this)
+            },
+            onCancelar = {
+                ativarBotaoFlutuanteAposAcessibilidade = false
+                solicitarDialogAcessibilidadeAoEntrar = false
+                exibirFeedbackEReverterAtivacaoBotaoFlutuante(R.string.acessibilidade_nao_concedida)
+            }
+        )
     }
 
     override fun finish() {

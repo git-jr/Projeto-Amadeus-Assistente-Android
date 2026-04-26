@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -47,6 +46,7 @@ import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.service.GravaHistoricoService
 import com.paradoxo.amadeus.util.Animacoes.animarComFade
+import com.paradoxo.amadeus.util.DialogPermissao
 import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_MICROFONE
 import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Permissao.hasRecordAudioPermission
@@ -82,51 +82,69 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     private lateinit var menuSlidingPaneLayout: SlidingPaneLayout
 
     private var emTeste = false
+    private var aguardarPermissaoMicrofoneParaBotaoFlutuante = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         configurarServicosSegundoPlano()
         configurarIterface()
+        processarAcoesDeIntent(intent)
 
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
         }
-//        iniciarBotaoFlutuante()
-//        openSettings(this)
-    }
-
-    fun openSettings(context: Context) {
-        val componentName =
-            "${context.packageName}/${AmadeusAccessibilityService::class.java.canonicalName}"
-
-        // Deep-link direto para o toggle do serviço (funciona na maioria dos ROMs)
-        val deepLink = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            val args = android.os.Bundle().apply {
-                putString(":settings:fragment_args_key", componentName)
-            }
-            putExtra(":settings:show_fragment_args", args)
-            putExtra(":settings:fragment_args_key", componentName)
-        }
-
-        try {
-            context.startActivity(deepLink)
-        } catch (_: Exception) {
-            // Fallback para a lista genérica de acessibilidade
-            context.startActivity(
-                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-            )
-        }
+//        if (Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, this, false)) {
+//            iniciarBotaoFlutuante()
+//        }
+//        startActivity(Intent(this, ConfigPrimariaActivity::class.java))
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        processarAcoesDeIntent(intent)
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
         }
+    }
+
+    private fun processarAcoesDeIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_SOLICITAR_PERMISSAO_MICROFONE, false) != true) return
+
+        if (hasRecordAudioPermission()) {
+            if (intent.getBooleanExtra(EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE, false)) {
+                startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
+                    action = FloatingButtonAmadeusService.ACTION_START_LISTENING
+                })
+            }
+            return
+        }
+
+        aguardarPermissaoMicrofoneParaBotaoFlutuante =
+            intent.getBooleanExtra(EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE, false)
+        if (aguardarPermissaoMicrofoneParaBotaoFlutuante) {
+            solicitarPermissaoMicrofoneComRationaleParaBotaoFlutuante()
+        } else {
+            Permissao.solicitarPermissaoMicrofone(this)
+        }
+    }
+
+    private fun solicitarPermissaoMicrofoneComRationaleParaBotaoFlutuante() {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.permissao_microfone_rationale_titulo),
+            mensagem = getString(R.string.permissao_microfone_rationale_mensagem),
+            textoConfirmar = getString(R.string.autorizar),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                Permissao.solicitarPermissaoMicrofone(this)
+            },
+            onCancelar = {
+                aguardarPermissaoMicrofoneParaBotaoFlutuante = false
+                meuToast(getString(R.string.permissao_microfone_nao_concedida), applicationContext)
+            }
+        )
     }
 
     private fun configurarServicosSegundoPlano() {
@@ -236,14 +254,16 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun iniciarBotaoFlutuante() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
-        } else {
-            startService(Intent(this, FloatingButtonAmadeusService::class.java))
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this) -> {
+                solicitarPermissaoOverlayComRationale()
+            }
+
+            !AmadeusAccessibilityService.isActive(this) -> {
+                abrirConfiguracaoPrimariaParaAcessibilidade()
+            }
+
+            else -> startService(Intent(this, FloatingButtonAmadeusService::class.java))
         }
     }
 
@@ -252,7 +272,13 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_OVERLAY_PERMISSION) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
-                startService(Intent(this, FloatingButtonAmadeusService::class.java))
+                if (AmadeusAccessibilityService.isActive(this)) {
+                    startService(Intent(this, FloatingButtonAmadeusService::class.java))
+                } else {
+                    abrirConfiguracaoPrimariaParaAcessibilidade()
+                }
+            } else {
+                meuToast(getString(R.string.permissao_overlay_nao_concedida), applicationContext)
             }
         }
     }
@@ -263,6 +289,35 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
 
     fun pararEscutadoraService() {
         stopService(escutadaoraServiceIntent)
+    }
+
+    private fun solicitarPermissaoOverlayComRationale() {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.permissao_overlay_rationale_titulo),
+            mensagem = getString(R.string.permissao_overlay_rationale_mensagem),
+            textoConfirmar = getString(R.string.ir_para_configuracoes),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val intent = Permissao.getIntentSolicitarSobreposicao(packageName)
+                    startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+                }
+            },
+            onCancelar = {
+                meuToast(getString(R.string.permissao_overlay_nao_concedida), applicationContext)
+            }
+        )
+    }
+
+    private fun abrirConfiguracaoPrimariaParaAcessibilidade() {
+        startActivity(Intent(this, ConfigPrimariaActivity::class.java).apply {
+            putExtra(ConfigPrimariaActivity.EXTRA_SOLICITAR_ACESSIBILIDADE, true)
+            putExtra(
+                ConfigPrimariaActivity.EXTRA_ATIVAR_BOTAO_FLUTUANTE_APOS_ACESSIBILIDADE,
+                true
+            )
+        })
     }
 
     private fun configurarEditeText() {
@@ -514,7 +569,13 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.w("Permissão", "Permissão de microfone concedida")
                     initVozParaTexto()
-                    iniciarModoVoz()
+                    if (aguardarPermissaoMicrofoneParaBotaoFlutuante) {
+                        startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
+                            action = FloatingButtonAmadeusService.ACTION_START_LISTENING
+                        })
+                    } else {
+                        iniciarModoVoz()
+                    }
                 } else {
                     meuToastLong(
                         "Sem a permissão de microfone, o recurso de voz não funcionará. Você pode conceder a permissão nas configurações do aplicativo.",
@@ -522,6 +583,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
                     )
                     Log.w("Permissão", "Permissão de microfone negada")
                 }
+                aguardarPermissaoMicrofoneParaBotaoFlutuante = false
             }
 
             2 -> {
@@ -546,6 +608,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
 
         const val EXTRA_INICIAR_VOZ = "iniciar_voz"
+        const val EXTRA_SOLICITAR_PERMISSAO_MICROFONE = "solicitar_permissao_microfone"
+        const val EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE =
+            "retornar_escuta_botao_flutuante"
         private const val REQUEST_OVERLAY_PERMISSION = 3
 
         private fun atualizarRecycler(sentencas: List<Sentenca>, context: Activity) {
