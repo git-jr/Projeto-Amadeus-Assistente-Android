@@ -24,8 +24,8 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 21
         targetSdk 35
-        versionCode 28
-        versionName "3.0.0 | Agent Version 1"
+        versionCode 31
+        versionName "3.0.0 | Agent Alpha 2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "GEMINI_API_KEY", "\"${localProperties.getProperty('GEMINI_API_KEY', '')}\""
     }
@@ -34,6 +34,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            ndk {
+                debugSymbolLevel 'FULL'
+            }
         }
         debug {
             debuggable true
