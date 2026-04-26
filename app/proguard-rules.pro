@@ -1,21 +1,50 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve source file names and line numbers for crash stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ── EventBus ──────────────────────────────────────────────────────────────────
+# @Subscribe methods are called via reflection at runtime
+-keepclassmembers class ** {
+    @org.greenrobot.eventbus.Subscribe <methods>;
+}
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ── Gson ──────────────────────────────────────────────────────────────────────
+# Fields annotated with @SerializedName must keep their names
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# ── Room ──────────────────────────────────────────────────────────────────────
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class *
+-keep @androidx.room.Dao class *
+-keepclassmembers @androidx.room.Dao class * { *; }
+
+# ── Firebase ──────────────────────────────────────────────────────────────────
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+
+# ── Vosk (JNI / native bindings) ──────────────────────────────────────────────
+-keep class org.vosk.** { *; }
+-keepclassmembers class org.vosk.** { *; }
+
+# ── Gemini / Google AI SDK ────────────────────────────────────────────────────
+-keep class com.google.ai.client.** { *; }
+-keep class com.google.generativeai.** { *; }
+
+# ── Joda-Time ─────────────────────────────────────────────────────────────────
+# joda-convert is an optional compile-time dependency of joda-time; not shipped at runtime
+-dontwarn org.joda.convert.**
+
+# ── Jsoup ─────────────────────────────────────────────────────────────────────
+-keep public class org.jsoup.** { *; }
+
+# ── App packages that use reflection / EventBus ───────────────────────────────
+-keep class com.paradoxo.amadeus.cognicao.** { *; }
+-keep class com.paradoxo.amadeus.dao.** { *; }
+-keep class com.paradoxo.amadeus.model.** { *; }
