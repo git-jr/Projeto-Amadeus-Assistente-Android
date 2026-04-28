@@ -19,6 +19,7 @@ import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,6 +66,7 @@ class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_sentencas)
+        aplicarInsets(findViewById(R.id.listaSetencasLayout))
         configurarIterface()
     }
 

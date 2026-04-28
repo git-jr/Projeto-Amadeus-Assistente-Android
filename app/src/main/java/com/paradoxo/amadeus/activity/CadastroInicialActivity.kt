@@ -18,6 +18,7 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity.Companion.PREF_NOME_IA
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity.Companion.PREF_NOME_USU
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
 class CadastroInicialActivity : AppCompatActivity() {
@@ -28,6 +29,7 @@ class CadastroInicialActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cadastro_inicial)
+        aplicarInsets(findViewById(R.id.cadastroInicialLayout))
         configurarToolBarBranca(this)
 
         nomeUsuarioEditText = findViewById(R.id.nomeUsuarioEditText)

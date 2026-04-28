@@ -53,6 +53,7 @@ import com.paradoxo.amadeus.util.Permissao.hasRecordAudioPermission
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
 import com.paradoxo.amadeus.util.Validadora.validarTexto
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        aplicarInsets(findViewById(R.id.menuSlidingPaneLayout))
         configurarServicosSegundoPlano()
         configurarIterface()
         processarAcoesDeIntent(intent)

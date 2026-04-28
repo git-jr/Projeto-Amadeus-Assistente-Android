@@ -20,6 +20,7 @@ import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
 import com.paradoxo.amadeus.util.Toasts.meuToast
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.canDrawOverlays
 
@@ -69,6 +70,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_config_primaria)
+        aplicarInsets(findViewById(R.id.configPrimariaLayout))
         processarIntent(intent)
         configurarInterface()
     }

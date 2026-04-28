@@ -23,6 +23,7 @@ import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Toasts.meuToast
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
 import kotlinx.coroutines.Dispatchers
@@ -87,6 +88,7 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_editar_item_novo)
+        aplicarInsets(findViewById(R.id.editarItemEntidadeLayout))
         configurarInterface()
     }
 

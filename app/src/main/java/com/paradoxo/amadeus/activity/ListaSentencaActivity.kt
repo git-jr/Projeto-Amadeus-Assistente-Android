@@ -16,6 +16,7 @@ import com.paradoxo.amadeus.adapter.SimpleCallbackSentenca
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ class ListaSentencaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_sentencas)
+        aplicarInsets(findViewById(R.id.listaSetencasLayout))
         configurarIterface()
     }
 

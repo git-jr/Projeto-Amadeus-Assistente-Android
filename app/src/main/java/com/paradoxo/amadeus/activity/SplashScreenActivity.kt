@@ -22,6 +22,7 @@ import com.paradoxo.amadeus.util.Preferencias.appJaFoiAberto
 import com.paradoxo.amadeus.util.Preferencias.confirmarAberturaApp
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
+        aplicarInsets(findViewById(R.id.splashScreenLayout))
         configurarToolBarBranca(this)
         iniciar()
     }

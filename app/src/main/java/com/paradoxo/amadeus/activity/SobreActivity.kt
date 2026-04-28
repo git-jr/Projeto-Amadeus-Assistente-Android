@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
 class SobreActivity : AppCompatActivity() {
@@ -15,6 +16,7 @@ class SobreActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sobre)
+        aplicarInsets(findViewById(R.id.sobreLayout))
         configurarInterface()
     }
 

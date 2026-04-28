@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace 'com.paradoxo.amadeus'
-    compileSdk 35
+    compileSdk 36
 
     buildFeatures {
         buildConfig true
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "com.paradoxo.amadeus"
         minSdk 21
-        targetSdk 35
+        targetSdk 36
         versionCode 32
         versionName "3.0.0 | Agent Alpha 2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

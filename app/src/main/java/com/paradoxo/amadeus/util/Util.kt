@@ -8,8 +8,28 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 object Util {
+    fun aplicarInsets(view: View) {
+        val initialPaddingLeft = view.paddingLeft
+        val initialPaddingTop = view.paddingTop
+        val initialPaddingRight = view.paddingRight
+        val initialPaddingBottom = view.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val types = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
+            val bars = insets.getInsets(types)
+            v.setPadding(
+                initialPaddingLeft + bars.left,
+                initialPaddingTop + bars.top,
+                initialPaddingRight + bars.right,
+                initialPaddingBottom + bars.bottom
+            )
+            insets
+        }
+    }
     fun configurarToolBarBranca(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             activity.window.apply {

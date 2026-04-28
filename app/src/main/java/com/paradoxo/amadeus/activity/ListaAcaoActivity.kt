@@ -15,6 +15,7 @@ import com.paradoxo.amadeus.adapter.AdapterSimples
 import com.paradoxo.amadeus.dao.AcaoDAO
 import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 
 class ListaAcaoActivity : AppCompatActivity() {
@@ -72,6 +73,7 @@ class ListaAcaoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_sentencas)
+        aplicarInsets(findViewById(R.id.listaSetencasLayout))
         configurarIterface()
     }
 
