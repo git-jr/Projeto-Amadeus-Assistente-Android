@@ -45,9 +45,9 @@ class CadastroInicialActivity : AppCompatActivity() {
         findViewById<View>(R.id.okButton).setOnClickListener { verificarNomes() }
         configurarTextoTermos()
 
-        nomeUsuarioEditText.setText("Paradoxo")
-        nomeIaEditText.setText("Amadeus")
-        gravarDados()
+//        nomeUsuarioEditText.setText("Paradoxo")
+//        nomeIaEditText.setText("Amadeus")
+//        gravarDados()
 
     }
 

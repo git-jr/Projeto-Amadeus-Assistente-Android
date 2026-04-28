@@ -47,4 +47,4 @@
 # ── App packages that use reflection / EventBus ───────────────────────────────
 -keep class com.paradoxo.amadeus.cognicao.** { *; }
 -keep class com.paradoxo.amadeus.dao.** { *; }
--keep class com.paradoxo.amadeus.model.** { *; }
+-keep class com.paradoxo.amadeus.modelo.** { *; }
