@@ -6,6 +6,7 @@ import android.content.Context.MODE_PRIVATE
 object Preferencias {
     private const val PREFS_USU = "PrefsUsu"
     const val PREF_JA_FOI_ABERTO = "ja_foi_aberto"
+    const val PREF_ONBOARDING_AGENT_SEEN = "onboarding_agent_mode_seen"
 
     fun confirmarAberturaApp(context: Context) {
         context.getSharedPreferences(PREFS_USU, MODE_PRIVATE).edit()

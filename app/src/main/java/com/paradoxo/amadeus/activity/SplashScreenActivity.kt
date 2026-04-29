@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.lifecycleScope
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.onboarding.OnboardingActivity
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.DefaultMacroSeeder
 import com.paradoxo.amadeus.dao.room.JsonAssetLoader
@@ -89,11 +90,16 @@ class SplashScreenActivity : AppCompatActivity() {
         }
 
         private fun decidirParaOndevai(context: Activity) {
-            if (Preferencias.getPrefString("nomeUsu", context).isNotEmpty()) {
-                context.startActivity(Intent(context.applicationContext, MainActivity::class.java))
-            } else {
-                context.startActivity(Intent(context.applicationContext, CadastroInicialActivity::class.java))
+            val onboardingVisto = Preferencias.getPrefBool(
+                Preferencias.PREF_ONBOARDING_AGENT_SEEN, context, false
+            )
+
+            val destino = when {
+                Preferencias.getPrefString("nomeUsu", context).isEmpty() -> CadastroInicialActivity::class.java
+                !onboardingVisto -> OnboardingActivity::class.java
+                else -> MainActivity::class.java
             }
+            context.startActivity(Intent(context.applicationContext, destino))
             context.finish()
         }
 

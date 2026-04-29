@@ -93,6 +93,11 @@
             android:windowSoftInputMode="stateVisible|adjustResize|stateAlwaysHidden" />
 
         <activity
+            android:name=".onboarding.OnboardingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent" />
+
+        <activity
             android:name=".activity.ListaMacrosActivity"
             android:exported="false" />
 
