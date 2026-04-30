@@ -105,9 +105,10 @@ class GeminiCommandInterpreter(private val apiKey: String) {
                     }
                 )
             }
+            Log.w("AgenteLog", "Resposta do modelo: ${response.text}")
             parseStepResult(response.text ?: return AgentStepResult(done = true, reason = "Resposta vazia"))
         } catch (e: Exception) {
-            Log.e("GeminiInterpreter", "Erro no passo do loop: ${e.message}")
+            Log.e("GeminiInterpreter", "Erro no passo do loop: ${e.message}\nCausa: ${e.cause?.message}", e)
             AgentStepResult(done = true, reason = "Erro: ${e.message}")
         }
     }

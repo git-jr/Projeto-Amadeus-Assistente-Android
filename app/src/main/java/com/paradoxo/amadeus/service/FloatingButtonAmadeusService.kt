@@ -321,6 +321,7 @@ class FloatingButtonAmadeusService : Service() {
     }
 
     private fun hideAgentOverlay() {
+        AmadeusAccessibilityService.cancelPendingActions()
         agentOverlayView?.let {
             try {
                 windowManager.removeView(it)
@@ -697,6 +698,7 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun processCommand(goal: String) {
         loopJob?.cancel()
+        AmadeusAccessibilityService.cancelPendingActions()
         showAgentOverlay()
 
         if (AGENT_TEST_MODE) {

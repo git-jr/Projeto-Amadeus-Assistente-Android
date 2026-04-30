@@ -29,10 +29,15 @@ class AmadeusAccessibilityService : AccessibilityService() {
         getSystemService(WINDOW_SERVICE) as WindowManager
     }
     private var touchFeedbackView: TouchFeedbackView? = null
+    private val actionHandler = Handler(Looper.getMainLooper())
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
+    }
+
+    fun cancelPendingActions() {
+        actionHandler.removeCallbacksAndMessages(null)
     }
 
     // ── Action execution ──────────────────────────────────────────────────────
@@ -42,7 +47,8 @@ class AmadeusAccessibilityService : AccessibilityService() {
         onFeedback: (String) -> Unit,
         onDone: () -> Unit
     ) {
-        val handler = Handler(Looper.getMainLooper())
+        actionHandler.removeCallbacksAndMessages(null)
+        val handler = actionHandler
         val initialDelay = 500L
         val delayPerAction = 1400L
 
@@ -538,6 +544,10 @@ class AmadeusAccessibilityService : AccessibilityService() {
             val service = instance ?: return false
             service.clickOnText(targetText, onResult)
             return true
+        }
+
+        fun cancelPendingActions() {
+            instance?.cancelPendingActions()
         }
 
         fun executeActions(
