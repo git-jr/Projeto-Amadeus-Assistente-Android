@@ -10,6 +10,7 @@
     <string name="seta_ir_para">Arrow go to</string>
     <string name="diga_algo">Say something</string>
     <string name="update_pretty">Update Pretty</string>
+    <string name="update_agent">Agent Update</string>
     <string name="botao_enviar">Send button</string>
     <string name="aprendizado">Learning</string>
     <string name="edite_perguntas_respostas_acoes">Manage responses, synonyms, entities…</string>
@@ -180,5 +181,6 @@
     <string name="app_nao_encontrado">App not found</string>
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, is not currently installed, tap the card to search</string>
     <string name="thinking">Thinking…</string>
+    <string name="loading">Loading…</string>
 
 </resources>

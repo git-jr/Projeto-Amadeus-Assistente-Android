@@ -75,8 +75,9 @@ class SplashScreenActivity : AppCompatActivity() {
 
     companion object {
         private fun trocarTextoPreCarregamentoBanco(context: Activity) {
+            context.findViewById<TextView>(R.id.subTituloTextView)?.text = context.getString(R.string.carregando_banco)
             context.findViewById<TextView>(R.id.subTituloTextView)?.text =
-                context.getString(R.string.carregando_banco)
+                context.getString(R.string.loading)
             Animacoes.animarComFade(context.findViewById(R.id.logoAmadeusImageView), false)
             Animacoes.animarComFade(context.findViewById(R.id.progressoLayout), true)
         }
@@ -95,8 +96,8 @@ class SplashScreenActivity : AppCompatActivity() {
             )
 
             val destino = when {
-                Preferencias.getPrefString("nomeUsu", context).isEmpty() -> CadastroInicialActivity::class.java
                 !onboardingVisto -> OnboardingActivity::class.java
+                Preferencias.getPrefString("nomeUsu", context).isEmpty() -> CadastroInicialActivity::class.java
                 else -> MainActivity::class.java
             }
             context.startActivity(Intent(context.applicationContext, destino))

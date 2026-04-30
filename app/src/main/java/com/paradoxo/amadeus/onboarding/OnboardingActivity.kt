@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
+import com.paradoxo.amadeus.activity.CadastroInicialActivity
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.onboarding.ui.OnboardingScreen
 import com.paradoxo.amadeus.util.Preferencias
@@ -26,7 +27,12 @@ class OnboardingActivity : ComponentActivity() {
         if (dontShowAgain) {
             Preferencias.setPrefBool(Preferencias.PREF_ONBOARDING_AGENT_SEEN, true, this)
         }
-        startActivity(Intent(this, MainActivity::class.java))
+        val destino = if (Preferencias.getPrefString("nomeUsu", this).isEmpty()) {
+            CadastroInicialActivity::class.java
+        } else {
+            MainActivity::class.java
+        }
+        startActivity(Intent(this, destino))
         finish()
     }
 }

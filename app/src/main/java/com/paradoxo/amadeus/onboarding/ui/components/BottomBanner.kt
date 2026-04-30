@@ -1,12 +1,10 @@
 package com.paradoxo.amadeus.onboarding.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CardGiftcard
@@ -15,6 +13,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -30,11 +30,12 @@ fun BottomBanner(
     onExplore: () -> Unit,
     dontShowAgain: Boolean,
     onDontShowAgainChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 //        Row(
 //            modifier = Modifier
@@ -104,5 +105,29 @@ fun BottomBanner(
                 color = Color(0xFF888888)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomBannerPreview() {
+    MaterialTheme {
+        BottomBanner(
+            onExplore = {},
+            dontShowAgain = false,
+            onDontShowAgainChange = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomBannerCheckedPreview() {
+    MaterialTheme {
+        BottomBanner(
+            onExplore = {},
+            dontShowAgain = true,
+            onDontShowAgainChange = {}
+        )
     }
 }
