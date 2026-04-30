@@ -12,6 +12,7 @@ import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.AgentStepResult
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
+import kotlinx.coroutines.delay
 
 class GeminiCommandInterpreter(private val apiKey: String) {
 
@@ -53,7 +54,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         }.joinToString("\n")
 
         return try {
-            val response = model.generateContent(buildSingleShotPrompt(elementsList, command))
+            val response = withRetry { model.generateContent(buildSingleShotPrompt(elementsList, command)) }
             parseActions(response.text ?: return emptyList())
         } catch (e: Exception) {
             Log.e("GeminiInterpreter", "Erro ao interpretar comando: ${e.message}")
@@ -68,7 +69,8 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         history: List<String>,
         elements: List<UiElement>,
         mapBitmap: Bitmap,
-        fewShotExamples: List<MacroExample> = emptyList()
+        fewShotExamples: List<MacroExample> = emptyList(),
+        onRetry: (suspend (attempt: Int, waitMs: Long) -> Unit)? = null
     ): AgentStepResult {
         if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return AgentStepResult(done = true, reason = "API key não configurada")
 
@@ -95,17 +97,54 @@ class GeminiCommandInterpreter(private val apiKey: String) {
         Log.w( "AgenteLog", "AgenteLog, prompt enviado: \n$prompt")
 
         return try {
-            val response = model.generateContent(
-                content {
-                    image(mapBitmap)
-                    text(prompt)
-                }
-            )
+            val response = withRetry(onRetry = onRetry) {
+                model.generateContent(
+                    content {
+                        image(mapBitmap)
+                        text(prompt)
+                    }
+                )
+            }
             parseStepResult(response.text ?: return AgentStepResult(done = true, reason = "Resposta vazia"))
         } catch (e: Exception) {
             Log.e("GeminiInterpreter", "Erro no passo do loop: ${e.message}")
             AgentStepResult(done = true, reason = "Erro: ${e.message}")
         }
+    }
+
+    private fun isRetryable(e: Exception): Boolean {
+        val msg = e.message ?: e.cause?.message ?: ""
+        return msg.contains("503") ||
+               msg.contains("UNAVAILABLE", ignoreCase = true) ||
+               msg.contains("high demand", ignoreCase = true) ||
+               msg.contains("currently experiencing", ignoreCase = true) ||
+               e::class.simpleName == "MissingFieldException" ||
+               e.cause?.let { it::class.simpleName == "MissingFieldException" } == true
+    }
+
+    private suspend fun <T> withRetry(
+        maxRetries: Int = 4,
+        initialDelayMs: Long = 8000L,
+        onRetry: (suspend (attempt: Int, waitMs: Long) -> Unit)? = null,
+        block: suspend () -> T
+    ): T {
+        var lastException: Exception? = null
+        repeat(maxRetries) { attempt ->
+            try {
+                return block()
+            } catch (e: Exception) {
+                if (isRetryable(e)) {
+                    lastException = e
+                    val waitMs = initialDelayMs * (attempt + 1)
+                    Log.w("GeminiInterpreter", "Serviço indisponível (tentativa ${attempt + 1}/$maxRetries), aguardando ${waitMs}ms... — ${e.message}")
+                    onRetry?.invoke(attempt + 1, waitMs)
+                    delay(waitMs)
+                } else {
+                    throw e
+                }
+            }
+        }
+        throw lastException!!
     }
 
     // ── Prompts ───────────────────────────────────────────────────────────────

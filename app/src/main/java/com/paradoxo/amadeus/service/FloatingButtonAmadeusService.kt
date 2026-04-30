@@ -20,6 +20,7 @@ import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -793,7 +794,15 @@ class FloatingButtonAmadeusService : Service() {
                 if (step == 1 && reusarMacrosNoPrompt) {
                     fewShot = loadFewShot(goal)
                 }
-                val result = geminiInterpreter.interpretStep(goal, history, elements, bitmap, fewShot)
+                val result = geminiInterpreter.interpretStep(
+                    goal, history, elements, bitmap, fewShot,
+                    onRetry = { attempt, waitMs ->
+                        withContext(Dispatchers.Main) {
+                            Log.w( "AgenteLog", "AgenteLog, Serviço ocupado, tentativa $attempt/4, esperando ${waitMs}ms para nova tentativa")
+                            updateAgentMessage("⏳ Processando... (tentativa $attempt/4)")
+                        }
+                    }
+                )
                 withContext(Dispatchers.Main) {
                     when {
                         result.done -> {
