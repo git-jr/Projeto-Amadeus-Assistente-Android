@@ -179,5 +179,6 @@
     <string name="erro_abrir_app">Erro ao tentar abrir o app </string>
     <string name="app_nao_encontrado">App não encontrado</string>
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, não está instalado no momento, toque no card para fazer uma busca</string>
+    <string name="thinking">Pensando…</string>
 
 </resources>

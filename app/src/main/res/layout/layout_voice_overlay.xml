@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_floating_menu"
+        android:elevation="8dp"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="20dp">
@@ -42,7 +43,7 @@
                 android:gravity="start"
                 android:minHeight="40dp"
                 android:text="@string/ouvindo"
-                android:textColor="#FFFFFF"
+                android:textColor="#1A1A1A"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -53,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="12dp"
-            android:background="#33FFFFFF" />
+            android:background="#E0E0E0" />
 
         <!-- Campo de digitação manual -->
         <LinearLayout
@@ -72,8 +73,8 @@
                 android:imeOptions="actionSend"
                 android:inputType="text"
                 android:padding="8dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#FFFFFF"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#9E9E9E"
                 android:textSize="15sp" />
 
             <ImageView
@@ -95,7 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/cancelar"
-            android:textColor="#AAFFFFFF"
+            android:textColor="@color/colorPrimary"
             android:textSize="14sp" />
 
     </LinearLayout>
