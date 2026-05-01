@@ -12,6 +12,7 @@ import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.AgentStepResult
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import kotlinx.coroutines.delay
 
 class GeminiCommandInterpreter(private val apiKey: String) {
@@ -211,6 +212,7 @@ class GeminiCommandInterpreter(private val apiKey: String) {
     ) = """
         Você é um assistente que controla um celular Android via acessibilidade.
 
+        App aberto: ${AmadeusAccessibilityService.currentForegroundPackage.ifEmpty { "desconhecido" }}
         Meta do usuário: "$goal"
 
         Passos já executados:

@@ -490,7 +490,12 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            val pkg = event.packageName?.toString() ?: return
+            if (pkg != packageName) currentForegroundPackage = pkg
+        }
+    }
 
     override fun onInterrupt() {}
 
@@ -502,6 +507,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
     companion object {
         private var instance: AmadeusAccessibilityService? = null
+        var currentForegroundPackage: String = ""
 
         fun isActive(context: Context): Boolean {
             val serviceName =
