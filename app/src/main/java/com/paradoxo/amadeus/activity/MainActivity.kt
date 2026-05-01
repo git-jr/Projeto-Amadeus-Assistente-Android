@@ -1,5 +1,7 @@
 package com.paradoxo.amadeus.activity
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -7,7 +9,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
+import android.view.animation.AccelerateInterpolator
 import android.provider.Settings
 import android.speech.SpeechRecognizer
 import android.text.Editable
@@ -180,6 +184,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarBotoaEnviarTeclado()
         val lottieAnimationView = findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         lottieAnimationView.speed = 0.5f
+        animarBrilhoAgentButton()
     }
 
     private fun configurarNomesIaUsu() {
@@ -332,7 +337,43 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         })
     }
 
+    private fun animarBrilhoAgentButton() {
+        val glowView = findViewById<View>(R.id.agentButtonGlow)
+        val button = findViewById<ImageView>(R.id.agentButton)
+        val pulsos = 4
+
+        fun dispararPulso(restantes: Int) {
+            if (restantes == 0) return
+            glowView.alpha = 0.75f
+            glowView.scaleX = 0.5f
+            glowView.scaleY = 0.5f
+            val glow = ObjectAnimator.ofPropertyValuesHolder(
+                glowView,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 0.5f, 2.6f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 0.5f, 2.6f),
+                PropertyValuesHolder.ofFloat(View.ALPHA, 0.75f, 0f)
+            ).apply {
+                duration = 850
+                interpolator = AccelerateInterpolator(1.2f)
+            }
+            val pulse = ObjectAnimator.ofPropertyValuesHolder(
+                button,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.15f, 1f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.15f, 1f)
+            ).apply { duration = 850 }
+            glow.start()
+            pulse.start()
+            Handler(Looper.getMainLooper()).postDelayed({ dispararPulso(restantes - 1) }, 950)
+        }
+
+        Handler(Looper.getMainLooper()).postDelayed({ dispararPulso(pulsos) }, 600)
+    }
+
     private fun configurarBotaoEnviar() {
+        findViewById<ImageView>(R.id.agentButton).setOnClickListener {
+            startActivity(Intent(this, AgentDashboardActivity::class.java))
+        }
+
         botoaEnviar.setOnClickListener {
             val tag = botoaEnviar.tag.toString()
             if (tag == tagEnviar) {

@@ -300,6 +300,8 @@
                     android:layout_height="@dimen/item_lista"
                     android:layout_gravity="bottom"
                     android:orientation="vertical"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     app:layout_anchorGravity="bottom"
                     app:layout_constraintBottom_toBottomOf="parent">
 
@@ -353,6 +355,8 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingStart="12dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         tools:ignore="RtlSymmetry">
 
                         <EditText
@@ -368,6 +372,36 @@
                             android:selectAllOnFocus="false"
                             android:textColorHint="@color/gray_300"
                             tools:ignore="Autofill,TextFields" />
+
+                        <FrameLayout
+                            android:layout_width="24dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <View
+                                android:id="@+id/agentButtonGlow"
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:layout_gravity="center"
+                                android:alpha="0"
+                                android:background="@drawable/agent_button_glow" />
+
+                            <ImageView
+                                android:id="@+id/agentButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="?selectableItemBackground"
+                                android:clickable="true"
+                                android:contentDescription="@string/botao_enviar"
+                                android:focusable="true"
+                                android:padding="12dp"
+                                android:src="@drawable/ic_logo_white"
+                                android:tag="@string/tag_mic"
+                                app:tint="@color/colorSecondaryDark3" />
+
+                        </FrameLayout>
 
                         <ImageView
                             android:id="@+id/enviarButton"

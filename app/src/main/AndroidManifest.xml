@@ -105,6 +105,10 @@
             android:name=".activity.EditarMacroActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activity.AgentDashboardActivity"
+            android:exported="false" />
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
