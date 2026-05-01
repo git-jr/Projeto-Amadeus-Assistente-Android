@@ -41,7 +41,8 @@ import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
-import com.paradoxo.amadeus.cognicao.GeminiCommandInterpreter
+import com.paradoxo.amadeus.cognicao.AgentInterpreter
+import com.paradoxo.amadeus.cognicao.AIProviderFactory
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.modelo.ActionIntent
@@ -77,7 +78,7 @@ class FloatingButtonAmadeusService : Service() {
     }
 
     private val interpreter = CommandInterpreter()
-    private val geminiInterpreter = GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
+    private val geminiInterpreter: AgentInterpreter = AIProviderFactory.create()
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
     private val memoryManager by lazy { AgentMemoryManager(this) }
     private var lastElements: List<UiElement> = emptyList()
