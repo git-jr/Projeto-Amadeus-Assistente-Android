@@ -77,6 +77,7 @@
     <string name="negar">Negar</string>
     <string name="nome_invalido">Nome inválido</string>
     <string name="permitir_uso_de_dados">Permitir uso de dados</string>
+    <string name="permitir_uso_de_dados_descri_curta">Permitir melhorias na Amadeus com dados de uso não vinculados a você.</string>
     <string name="botao_flutuante">Botão flutuante</string>
     <string name="botao_flutuante_ativo">Toque para abrir o Amadeus</string>
     <string name="escuta_frase_ativacao">Escutar frase de ativação</string>

@@ -105,7 +105,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         reusarMacrosPromptToggle = findViewById(R.id.reusarMacrosPromptToggle)
 
         modoFalaToggleButton.isChecked = getPrefBool(PREF_VOZ_ATIVA, this, false)
-        acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+        acessoDadosToggleButton.isChecked = getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, true)
         reusarMacrosPromptToggle.isChecked =
             getPrefBool(PREF_REUSAR_MACROS_PROMPT_GEMINI, this, false)
         sincronizarEstadoBotaoFlutuante()

@@ -70,7 +70,7 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
             val response = withRetry(onRetry = onRetry) {
                 client.chatCompletion(
                     ChatCompletionRequest(
-                        model = ModelId("o4-mini"),
+                        model = ModelId("gpt-4.1-mini"),
                         messages = listOf(
                             ChatMessage(
                                 role = ChatRole.User,

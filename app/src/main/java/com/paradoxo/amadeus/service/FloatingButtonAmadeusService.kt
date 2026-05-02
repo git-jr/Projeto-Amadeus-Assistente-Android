@@ -81,6 +81,7 @@ class FloatingButtonAmadeusService : Service() {
     private val geminiInterpreter: AgentInterpreter = AIProviderFactory.create()
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
     private val memoryManager by lazy { AgentMemoryManager(this) }
+    private val goalAnalyticsTracker by lazy { GoalAnalyticsTracker(applicationContext) }
     private var lastElements: List<UiElement> = emptyList()
     private var loopJob: Job? = null
 
@@ -701,6 +702,7 @@ class FloatingButtonAmadeusService : Service() {
         loopJob?.cancel()
         AmadeusAccessibilityService.cancelPendingActions()
         showAgentOverlay()
+        goalAnalyticsTracker.track(goal)
 
         if (AGENT_TEST_MODE) {
             runTestPlan()
@@ -717,7 +719,7 @@ class FloatingButtonAmadeusService : Service() {
                 )
                 withContext(Dispatchers.Main) { executeMacro(macro, goal, actions) } // ação conhecida para esse comando → executar direto
             } else {
-                withContext(Dispatchers.Main) { runGeminiLoop(goal, allActions) } // ação desconhecida → rodar loop Gemini e aprender
+                withContext(Dispatchers.Main) { runGeminiLoop(goal, allActions) } // ação desconhecida → rodar IA loop, deixar ela executar e aprender
             }
         }
     }
