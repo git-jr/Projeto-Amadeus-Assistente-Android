@@ -22,6 +22,7 @@ import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.UiElement
 import com.paradoxo.amadeus.util.GerenciaApp
 import com.paradoxo.amadeus.view.TouchFeedbackView
+import kotlin.math.abs
 
 class AmadeusAccessibilityService : AccessibilityService() {
 
@@ -30,6 +31,15 @@ class AmadeusAccessibilityService : AccessibilityService() {
     }
     private var touchFeedbackView: TouchFeedbackView? = null
     private val actionHandler = Handler(Looper.getMainLooper())
+
+    // ── Recording state ───────────────────────────────────────────────────────
+    private var isRecording = false
+    private val recordedActions = mutableListOf<ActionIntent>()
+    private val lastScrollY = mutableMapOf<Int, Int>()
+    private val lastScrollX = mutableMapOf<Int, Int>()
+    private var pendingTypeText: String? = null
+    private var lastRecordedPackage: String = ""
+    var onActionRecorded: ((count: Int) -> Unit)? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -497,13 +507,121 @@ class AmadeusAccessibilityService : AccessibilityService() {
         dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
     }
 
+    // ── Recording ─────────────────────────────────────────────────────────────
+
+    private fun startRecordingInternal() {
+        isRecording = true
+        recordedActions.clear()
+        lastScrollY.clear()
+        lastScrollX.clear()
+        pendingTypeText = null
+        lastRecordedPackage = ""
+    }
+
+    private fun stopRecordingInternal(): List<ActionIntent> {
+        commitPendingType()
+        isRecording = false
+        return recordedActions.toList()
+    }
+
+    private fun captureEvent(event: AccessibilityEvent) {
+        val pkg = event.packageName?.toString() ?: return
+        if (pkg == packageName) return
+
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_VIEW_CLICKED -> {
+                commitPendingType()
+                val source = event.source ?: return
+                if (isImeWindow(source.windowId)) return
+                val text = source.text?.toString()?.takeIf { it.isNotBlank() }
+                    ?: source.contentDescription?.toString()?.takeIf { it.isNotBlank() }
+                if (text != null) {
+                    addRecordedAction(ActionIntent(ActionType.CLICK, target = text))
+                } else {
+                    val bounds = Rect()
+                    source.getBoundsInScreen(bounds)
+                    if (!bounds.isEmpty) {
+                        addRecordedAction(ActionIntent(
+                            ActionType.CLICK_COORDS,
+                            value = "${bounds.centerX()},${bounds.centerY()}"
+                        ))
+                    }
+                }
+            }
+            AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> {
+                pendingTypeText = event.text?.firstOrNull()?.toString() ?: ""
+            }
+            AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
+                commitPendingType()
+                val nodeId = event.source?.windowId ?: return
+                val scrollY = event.scrollY
+                val scrollX = event.scrollX
+                val prevY = lastScrollY[nodeId]
+                val prevX = lastScrollX[nodeId]
+                if (scrollY >= 0) lastScrollY[nodeId] = scrollY
+                if (scrollX >= 0) lastScrollX[nodeId] = scrollX
+                if (prevY == null || (scrollY < 0 && scrollX < 0)) return
+                val deltaY = if (scrollY >= 0 && prevY >= 0) scrollY - prevY else 0
+                val deltaX = if (scrollX >= 0 && prevX != null && prevX >= 0) scrollX - prevX else 0
+                if (deltaY == 0 && deltaX == 0) return
+                if (abs(deltaX) > abs(deltaY)) {
+                    val direction = if (deltaX > 0) "left" else "right"
+                    val last = recordedActions.lastOrNull()
+                    if (last?.type != ActionType.SCROLL_HORIZONTAL || last.value != direction) {
+                        addRecordedAction(ActionIntent(ActionType.SCROLL_HORIZONTAL, value = direction))
+                    }
+                } else {
+                    val direction = if (deltaY > 0) "down" else "up"
+                    val last = recordedActions.lastOrNull()
+                    if (last?.type != ActionType.SCROLL || last.value != direction) {
+                        addRecordedAction(ActionIntent(ActionType.SCROLL, value = direction))
+                    }
+                }
+            }
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                commitPendingType()
+                if (pkg != lastRecordedPackage) {
+                    val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
+                    if (launchIntent != null) {
+                        lastRecordedPackage = pkg
+                        val appName = try {
+                            val info = packageManager.getApplicationInfo(pkg, 0)
+                            packageManager.getApplicationLabel(info).toString()
+                        } catch (_: Exception) { pkg }
+                        val last = recordedActions.lastOrNull()
+                        if (last?.type != ActionType.OPEN_APP || last.target != appName) {
+                            addRecordedAction(ActionIntent(ActionType.OPEN_APP, target = appName))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isImeWindow(windowId: Int): Boolean = try {
+        windows.any { it.id == windowId && it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+    } catch (_: Exception) { false }
+
+    private fun commitPendingType() {
+        val text = pendingTypeText?.takeIf { it.isNotBlank() } ?: return
+        pendingTypeText = null
+        addRecordedAction(ActionIntent(ActionType.TYPE, value = text))
+    }
+
+    private fun addRecordedAction(action: ActionIntent) {
+        recordedActions.add(action)
+        onActionRecorded?.invoke(recordedActions.size)
+    }
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+        event ?: return
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val pkg = event.packageName?.toString() ?: return
             if (pkg != packageName) currentForegroundPackage = pkg
         }
+        if (isRecording) captureEvent(event)
     }
 
     override fun onInterrupt() {}
@@ -582,6 +700,18 @@ class AmadeusAccessibilityService : AccessibilityService() {
             val service = instance ?: return false
             service.performImeAction()
             return true
+        }
+
+        fun startRecording(): Boolean {
+            val service = instance ?: return false
+            service.startRecordingInternal()
+            return true
+        }
+
+        fun stopRecording(): List<ActionIntent> = instance?.stopRecordingInternal() ?: emptyList()
+
+        fun setOnActionRecordedCallback(callback: ((Int) -> Unit)?) {
+            instance?.onActionRecorded = callback
         }
     }
 }

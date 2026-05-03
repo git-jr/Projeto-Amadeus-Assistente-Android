@@ -15,6 +15,8 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.adapter.AdapterMacros
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
+import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
@@ -71,6 +73,18 @@ class ListaMacrosActivity : AppCompatActivity() {
 
         findViewById<FloatingActionButton>(R.id.fabNovoMacro).setOnClickListener {
             startActivity(Intent(this, EditarMacroActivity::class.java))
+        }
+
+        findViewById<FloatingActionButton>(R.id.fabGravarMacro).setOnClickListener {
+            if (!AmadeusAccessibilityService.isActive(this)) {
+                meuToast("Habilite o serviço de acessibilidade do Amadeus", this)
+                AmadeusAccessibilityService.openSettings(this)
+                return@setOnClickListener
+            }
+            val serviceIntent = Intent(this, FloatingButtonAmadeusService::class.java)
+                .setAction(FloatingButtonAmadeusService.ACTION_START_RECORDING)
+            startService(serviceIntent)
+            moveTaskToBack(true)
         }
 
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {

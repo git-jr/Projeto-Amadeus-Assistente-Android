@@ -129,6 +129,7 @@ class AdapterAcoes(
     private fun updateFieldVisibility(holder: ViewHolder, type: ActionType) {
         val (showTarget, showValue) = when (type) {
             ActionType.CLICK -> true to false
+            ActionType.CLICK_COORDS -> false to true
             ActionType.TYPE -> false to true
             ActionType.OPEN_APP -> true to false
             ActionType.SCROLL -> false to true
@@ -154,6 +155,12 @@ class AdapterAcoes(
     fun addAcao(acao: ActionIntent = ActionIntent(ActionType.CLICK)) {
         acoes.add(acao)
         notifyItemInserted(acoes.size - 1)
+    }
+
+    fun setActions(actions: List<ActionIntent>) {
+        acoes.clear()
+        acoes.addAll(actions)
+        notifyDataSetChanged()
     }
 
     fun getAcoes(): List<ActionIntent> = acoes.toList()

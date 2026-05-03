@@ -40,8 +40,17 @@ class EditarMacroActivity : AppCompatActivity() {
         configurarToolBarBranca(this)
 
         val macroId = intent.getIntExtra("macroId", -1)
+        val recordedJson = intent.getStringExtra(EXTRA_RECORDED_ACTIONS_JSON)
+
         if (macroId == -1) {
             configurarInterface(null)
+            if (!recordedJson.isNullOrBlank()) {
+                val recorded = memoryManager.deserializeActions(recordedJson)
+                if (recorded.isNotEmpty()) {
+                    adapterAcoes.setActions(recorded)
+                    meuToast("${recorded.size} ações gravadas. Revise e salve.", this)
+                }
+            }
         } else {
             lifecycleScope.launch {
                 val encontrado = withContext(Dispatchers.IO) {
@@ -55,6 +64,10 @@ class EditarMacroActivity : AppCompatActivity() {
                 configurarInterface(encontrado)
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_RECORDED_ACTIONS_JSON = "extra_recorded_actions_json"
     }
 
     private fun configurarInterface(macroCarregado: AgentMacroEntity?) {
