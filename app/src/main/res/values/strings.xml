@@ -61,6 +61,8 @@
     <string name="cornfimar_exclusao_item">Tem certeza que deseja excluir esse item?</string>
     <string name="ok">OK</string>
     <string name="cancelar">Cancelar</string>
+    <string name="minimizar">Minimizar</string>
+    <string name="ir_para_amadeus">Amadeus</string>
     <string name="erro_excluir_sentenca">Erro ao tentar excluir sentença</string>
     <string name="sem_sentencas_no_momento" tools:ignore="Typos">Não há sentenças gravadas no momento</string>
     <string name="excluido_com_sucesso">Excluído com sucesso</string>
@@ -108,7 +110,7 @@
     <string name="acessibilidade_elemento_nao_clicavel">Elemento \"%s\" encontrado mas não é clicável</string>
     <string name="tirar_print">Tirar print</string>
     <string name="ouvir">Ouvir</string>
-    <string name="ouvir_dica">Diga: \"Clicar em [texto]\" ou \"Responda Oi\"</string>
+    <string name="ouvir_dica">Peça Amadeus para fazer algo</string>
     <string name="print_salvo">Print salvo na galeria</string>
     <string name="erro_captura_tela">Não foi possível capturar a tela</string>
     <string name="link_politica_privaicade">https://paradoxostudios.blogspot.com/2018/11/amadeus-politica-de-privacidade.html</string>

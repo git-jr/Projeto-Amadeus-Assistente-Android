@@ -1,6 +1,7 @@
 package com.paradoxo.amadeus.service
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,10 +9,8 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
-import android.animation.ValueAnimator
 import android.graphics.PixelFormat
 import android.graphics.Point
-import android.view.animation.DecelerateInterpolator
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -26,6 +25,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageView
@@ -33,24 +33,24 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.paradoxo.amadeus.BuildConfig
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.activity.AgentDashboardActivity
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
-import com.paradoxo.amadeus.util.Preferencias.getPrefBool
-import com.paradoxo.amadeus.util.Preferencias.setPrefBool
+import com.paradoxo.amadeus.cognicao.AIProviderFactory
+import com.paradoxo.amadeus.cognicao.AgentInterpreter
 import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
-import com.paradoxo.amadeus.cognicao.AgentInterpreter
-import com.paradoxo.amadeus.cognicao.AIProviderFactory
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
-import com.paradoxo.amadeus.view.ScreenHighlightView
+import com.paradoxo.amadeus.util.Preferencias.getPrefBool
+import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.view.BorderGlowView
+import com.paradoxo.amadeus.view.ScreenHighlightView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -515,7 +515,20 @@ class FloatingButtonAmadeusService : Service() {
             LayoutInflater.from(themedContext).inflate(R.layout.layout_voice_overlay, null)
 
         voiceOverlayView?.findViewById<View>(R.id.cancelarOuvirButton)?.setOnClickListener {
+            setPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, false, applicationContext)
             closeVoiceOverlay()
+            stopSelf()
+        }
+
+        voiceOverlayView?.findViewById<View>(R.id.minimizarOuvirButton)?.setOnClickListener {
+            closeVoiceOverlay()
+        }
+
+        voiceOverlayView?.findViewById<View>(R.id.irParaAmadeusButton)?.setOnClickListener {
+            closeVoiceOverlay()
+            startActivity(Intent(this, AgentDashboardActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            })
         }
 
         val inputField = voiceOverlayView?.findViewById<EditText>(R.id.campoComandoEditText)

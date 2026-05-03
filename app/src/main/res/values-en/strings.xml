@@ -61,6 +61,8 @@
     <string name="cornfimar_exclusao_item">Are you sure you want to delete this item?</string>
     <string name="ok">OK</string>
     <string name="cancelar">Cancel</string>
+    <string name="minimizar">Minimize</string>
+    <string name="ir_para_amadeus">Go to Amadeus</string>
     <string name="erro_excluir_sentenca">Error trying to delete sentence</string>
     <string name="sem_sentencas_no_momento" tools:ignore="Typos">There are no saved sentences at the moment</string>
     <string name="excluido_com_sucesso">Deleted successfully</string>
@@ -108,7 +110,7 @@
     <string name="acessibilidade_elemento_nao_clicavel">Element \"%s\" found but is not clickable</string>
     <string name="tirar_print">Take screenshot</string>
     <string name="ouvir">Listen</string>
-    <string name="ouvir_dica">Say: \"Click on [text]\" or \"Reply Hi\"</string>
+    <string name="ouvir_dica">Ask Amadeus to do something</string>
     <string name="print_salvo">Screenshot saved to gallery</string>
     <string name="erro_captura_tela">Could not capture the screen</string>
     <string name="link_politica_privaicade">https://paradoxostudios.blogspot.com/2018/11/amadeus-politica-de-privacidade.html</string>
