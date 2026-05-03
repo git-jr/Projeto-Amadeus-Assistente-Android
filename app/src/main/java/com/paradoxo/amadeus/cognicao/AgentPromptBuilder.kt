@@ -76,22 +76,8 @@ object AgentPromptBuilder {
         return sb.toString()
     }
 
-    fun buildLoopPrompt(
-        goal: String,
-        historyText: String,
-        elementsList: String,
-        fewShotExamples: List<MacroExample> = emptyList()
-    ) = """
+    fun buildSystemPrompt() = """
         Você é um assistente que controla um celular Android via acessibilidade.
-
-        App aberto: ${AmadeusAccessibilityService.currentForegroundPackage.ifEmpty { "desconhecido" }}
-        Meta do usuário: "$goal"
-
-        Passos já executados:
-        $historyText
-        ${buildFewShotBlock(fewShotExamples)}
-        Elementos interativos visíveis na tela atual (a imagem mostra cada elemento marcado com [N]):
-        $elementsList
 
         Ações disponíveis e quando usar cada uma:
         - CLICK        → toca em um elemento; "target" = texto exato do elemento
@@ -107,17 +93,33 @@ object AgentPromptBuilder {
         - NOTIFICATIONS → abre a barra de notificações; target e value vazios
         - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
 
-        Regras importantes:
-        - MACROS CONFIRMADOS: se houver macros de referência acima com meta similar, siga a mesma sequência de tipos de ação (OPEN_APP → CLICK → TYPE → CLICK etc.), ajustando o "target" para o texto exato que aparecer na tela. Não invente uma abordagem diferente quando uma sequência confirmada existe.
-        - PRINCÍPIO: leia o estado atual da tela antes de decidir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles diretamente — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
+        Regras imutáveis:
+        - MACROS CONFIRMADOS: se houver macros de referência com meta similar, siga a mesma sequência de tipos de ação, ajustando o "target" para o texto exato visível. Não invente abordagem diferente quando sequência confirmada existe.
         - Use o texto EXATO do elemento como "target" nas ações CLICK e TYPE.
         - Não use TYPE em campo EDITÁVEL que já está (preenchido:) com o conteúdo correto para a meta.
         - Não use TYPE + IME_ACTION se resultados relevantes já são visíveis na tela.
-        - Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão de confirmação visível na tela (ex: barra de busca do Twitter/X, YouTube).
-        - Use CLICK_COORDS para elementos do tipo IMAGEM que aparecem na lista com coordenadas (ex: banners de imagem na Netflix sem nó clicável). O value deve ser EXATAMENTE as coordenadas fornecidas na lista.
+        - Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão de confirmação visível na tela.
+        - Use CLICK_COORDS para elementos do tipo IMAGEM com coordenadas na lista. O value deve ser EXATAMENTE as coordenadas fornecidas.
         - Use BACK para fechar diálogos, popups ou navegar à tela anterior.
-        - Prefira sequências de ações curtas e diretas — isso facilita o aprendizado de macros.
+        - Prefira sequências curtas e diretas — facilita o aprendizado de macros.
         - Se a tela não mudou após um passo, tente uma abordagem diferente em vez de repetir.
+        - Retorne APENAS o JSON sem markdown, sem explicação.
+    """.trimIndent()
+
+    fun buildUserTurn(
+        goal: String,
+        historyText: String,
+        elementsList: String,
+        fewShotExamples: List<MacroExample> = emptyList()
+    ) = """
+        App aberto: ${AmadeusAccessibilityService.currentForegroundPackage.ifEmpty { "desconhecido" }}
+        Meta do usuário: "$goal"
+
+        Passos já executados:
+        $historyText
+        ${buildFewShotBlock(fewShotExamples)}
+        Elementos interativos visíveis na tela atual (a imagem mostra cada elemento marcado com [N]):
+        $elementsList
 
         A meta foi concluída com base no estado atual da tela?
         Retorne APENAS este JSON sem markdown:

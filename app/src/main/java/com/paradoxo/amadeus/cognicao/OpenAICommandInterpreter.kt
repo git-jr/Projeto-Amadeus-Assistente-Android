@@ -61,9 +61,10 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
         val elementsList = AgentPromptBuilder.buildElementsList(elements)
             .ifEmpty { "Nenhum elemento interativo encontrado" }
         val historyText = if (history.isEmpty()) "Nenhum — este é o primeiro passo" else history.joinToString("\n")
-        val prompt = AgentPromptBuilder.buildLoopPrompt(goal, historyText, elementsList, fewShotExamples)
+        val systemPrompt = AgentPromptBuilder.buildSystemPrompt()
+        val userTurn = AgentPromptBuilder.buildUserTurn(goal, historyText, elementsList, fewShotExamples)
 
-        Log.w("AgenteLog", "AgenteLog [OpenAI], prompt enviado: \n$prompt")
+        Log.w("AgenteLog", "AgenteLog, prompt enviado OpenAI: \n$userTurn")
 
         return try {
             val base64Image = bitmapToBase64(mapBitmap)
@@ -73,10 +74,14 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
                         model = ModelId("gpt-4.1-mini"),
                         messages = listOf(
                             ChatMessage(
+                                role = ChatRole.System,
+                                content = systemPrompt
+                            ),
+                            ChatMessage(
                                 role = ChatRole.User,
                                 content = listOf(
                                     ImagePart(imageUrl = ImagePart.ImageURL(url = "data:image/jpeg;base64,$base64Image")),
-                                    TextPart(text = prompt)
+                                    TextPart(text = userTurn)
                                 )
                             )
                         ),
@@ -85,7 +90,7 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
                 )
             }
             val text = response.choices.firstOrNull()?.message?.content
-            Log.w("AgenteLog", "Resposta OpenAI: $text")
+            Log.w("AgenteLog", "AgenteLog, resposta do modelo: ${text}")
             AgentResponseParser.parseStepResult(text ?: return AgentStepResult(done = true, reason = "Resposta vazia"))
         } catch (e: Exception) {
             Log.e("OpenAIInterpreter", "Erro no passo do loop: ${e.message}", e)

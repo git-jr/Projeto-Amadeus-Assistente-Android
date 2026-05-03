@@ -20,7 +20,8 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
             generationConfig = generationConfig {
                 temperature = 0.1f
                 maxOutputTokens = 512
-            }
+            },
+            systemInstruction = content { text(AgentPromptBuilder.buildSystemPrompt()) }
         )
     }
 
@@ -59,8 +60,8 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
         val historyText = if (history.isEmpty()) "Nenhum — este é o primeiro passo"
         else history.joinToString("\n")
 
-        val prompt = AgentPromptBuilder.buildLoopPrompt(goal, historyText, elementsList, fewShotExamples)
-        Log.w("AgenteLog", "AgenteLog, prompt enviado: \n$prompt")
+        val prompt = AgentPromptBuilder.buildUserTurn(goal, historyText, elementsList, fewShotExamples)
+        Log.w("AgenteLog", "AgenteLog, prompt enviado Gemini: \n$prompt")
 
         return try {
             val response = withRetry(onRetry = onRetry) {
@@ -71,7 +72,7 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
                     }
                 )
             }
-            Log.w("AgenteLog", "Resposta do modelo: ${response.text}")
+            Log.w("AgenteLog", "AgenteLog, resposta do modelo: ${response.text}")
             AgentResponseParser.parseStepResult(response.text ?: return AgentStepResult(done = true, reason = "Resposta vazia"))
         } catch (e: Exception) {
             Log.e("GeminiInterpreter", "Erro no passo do loop: ${e.message}\nCausa: ${e.cause?.message}", e)
