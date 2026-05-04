@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -110,19 +111,41 @@ class MacroRecordingOverlayService : Service() {
     }
 
     private fun showRecordingOverlay() {
+        val dp = resources.displayMetrics.density
         val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
         val view = LayoutInflater.from(themedContext).inflate(R.layout.layout_recording_overlay, null)
         tvActionCount = view.findViewById(R.id.tvActionCount)
         view.findViewById<View>(R.id.btnStopRecording).setOnClickListener { stopRecordingMode() }
 
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             overlayType(),
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            gravity = Gravity.TOP or Gravity.START
+            x = (16 * dp).toInt()
+            y = (80 * dp).toInt()
+        }
+
+        // Drag via handle area only — button keeps its own click
+        var dX = 0; var dY = 0
+        view.findViewById<View>(R.id.dragHandle).setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dX = params.x - event.rawX.toInt()
+                    dY = params.y - event.rawY.toInt()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    params.x = event.rawX.toInt() + dX
+                    params.y = event.rawY.toInt() + dY
+                    try { windowManager.updateViewLayout(view, params) } catch (_: Exception) {}
+                    true
+                }
+                else -> false
+            }
         }
 
         try {

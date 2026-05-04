@@ -1,53 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_floating_menu"
         android:elevation="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp">
+        android:paddingVertical="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp">
 
-        <View
-            android:id="@+id/viewRecDot"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:background="@drawable/shape_circle_red"
-            android:layout_marginEnd="8dp" />
-
-        <TextView
+        <!-- Drag handle: dot + REC + counter -->
+        <LinearLayout
+            android:id="@+id/dragHandle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="REC"
-            android:textColor="#E53935"
-            android:textStyle="bold"
-            android:textSize="13sp"
-            android:layout_marginEnd="16dp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="8dp">
 
-        <TextView
-            android:id="@+id/tvActionCount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0 ações gravadas"
-            android:textColor="#1A1A1A"
-            android:textSize="13sp" />
+            <View
+                android:id="@+id/viewRecDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/shape_circle_red"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REC"
+                android:textColor="#E53935"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tvActionCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 ações"
+                android:textColor="#1A1A1A"
+                android:textSize="12sp" />
+
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStopRecording"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
             android:text="Parar"
             android:textColor="@color/colorPrimary"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
     </LinearLayout>
 
