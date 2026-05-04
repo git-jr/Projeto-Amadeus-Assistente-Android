@@ -68,8 +68,6 @@ class FloatingButtonAmadeusService : Service() {
     private var voiceOverlayView: View? = null
     private var screenHighlightView: ScreenHighlightView? = null
     private var agentOverlayView: View? = null
-    private var recordingOverlayView: View? = null
-    private var tvActionCount: TextView? = null
     private var borderGlowView: BorderGlowView? = null
     private var borderGlowParams: WindowManager.LayoutParams? = null
     private var borderGlowAnimator: ValueAnimator? = null
@@ -96,7 +94,6 @@ class FloatingButtonAmadeusService : Service() {
             ACTION_START_LISTENING -> {
                 Handler(Looper.getMainLooper()).postDelayed({ startListening() }, 400)
             }
-            ACTION_START_RECORDING -> startRecordingMode()
         }
         return START_STICKY
     }
@@ -334,76 +331,6 @@ class FloatingButtonAmadeusService : Service() {
             }
         }
         agentOverlayView = null
-    }
-
-    // ── Recording mode ────────────────────────────────────────────────────────
-
-    private fun startRecordingMode() {
-        if (recordingOverlayView != null) return
-        if (!::windowManager.isInitialized) {
-            windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        }
-        AmadeusAccessibilityService.setOnActionRecordedCallback { count ->
-            tvActionCount?.text = if (count == 1) "1 ação gravada" else "$count ações gravadas"
-        }
-        AmadeusAccessibilityService.startRecording()
-        showRecordingOverlay()
-    }
-
-    private fun stopRecordingMode() {
-        val actions = AmadeusAccessibilityService.stopRecording()
-        AmadeusAccessibilityService.setOnActionRecordedCallback(null)
-        hideRecordingOverlay()
-        if (actions.isEmpty()) {
-            showMessage("Nenhuma ação foi gravada")
-            return
-        }
-        val json = memoryManager.serializeActions(actions)
-        val intent = Intent(this, com.paradoxo.amadeus.activity.EditarMacroActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(com.paradoxo.amadeus.activity.EditarMacroActivity.EXTRA_RECORDED_ACTIONS_JSON, json)
-        }
-        startActivity(intent)
-    }
-
-    private fun showRecordingOverlay() {
-        val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
-        val view = LayoutInflater.from(themedContext).inflate(R.layout.layout_recording_overlay, null)
-        tvActionCount = view.findViewById(R.id.tvActionCount)
-        view.findViewById<View>(R.id.btnStopRecording).setOnClickListener { stopRecordingMode() }
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            overlayType(),
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-        }
-
-        try {
-            windowManager.addView(view, params)
-            recordingOverlayView = view
-        } catch (_: Exception) {}
-
-        // Blink animation on REC dot
-        val dot = view.findViewById<View>(R.id.viewRecDot)
-        val blink = android.view.animation.AlphaAnimation(1f, 0.15f).apply {
-            duration = 600
-            repeatMode = android.view.animation.Animation.REVERSE
-            repeatCount = android.view.animation.Animation.INFINITE
-        }
-        dot?.startAnimation(blink)
-    }
-
-    private fun hideRecordingOverlay() {
-        recordingOverlayView?.let {
-            it.findViewById<View>(R.id.viewRecDot)?.clearAnimation()
-            try { windowManager.removeView(it) } catch (_: Exception) {}
-        }
-        recordingOverlayView = null
-        tvActionCount = null
     }
 
     // ── Wake word ─────────────────────────────────────────────────────────────
@@ -985,8 +912,6 @@ class FloatingButtonAmadeusService : Service() {
         voiceOverlayView = null
         removeScreenHighlight()
         hideAgentOverlay()
-        hideRecordingOverlay()
-        AmadeusAccessibilityService.setOnActionRecordedCallback(null)
         borderGlowAnimator?.cancel()
         borderGlowAnimator = null
         borderGlowView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
@@ -1010,6 +935,5 @@ class FloatingButtonAmadeusService : Service() {
         const val ACTION_ENABLE_WAKE_WORD = "ACTION_ENABLE_WAKE_WORD"
         const val ACTION_DISABLE_WAKE_WORD = "ACTION_DISABLE_WAKE_WORD"
         const val ACTION_START_LISTENING = "ACTION_START_LISTENING"
-        const val ACTION_START_RECORDING = "ACTION_START_RECORDING"
     }
 }

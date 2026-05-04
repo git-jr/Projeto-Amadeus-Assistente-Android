@@ -16,7 +16,7 @@ import com.paradoxo.amadeus.adapter.AdapterMacros
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
-import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
+import com.paradoxo.amadeus.service.MacroRecordingOverlayService
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
@@ -81,8 +81,8 @@ class ListaMacrosActivity : AppCompatActivity() {
                 AmadeusAccessibilityService.openSettings(this)
                 return@setOnClickListener
             }
-            val serviceIntent = Intent(this, FloatingButtonAmadeusService::class.java)
-                .setAction(FloatingButtonAmadeusService.ACTION_START_RECORDING)
+            val serviceIntent = Intent(this, MacroRecordingOverlayService::class.java)
+                .setAction(MacroRecordingOverlayService.ACTION_START_RECORDING)
             startService(serviceIntent)
             moveTaskToBack(true)
         }
