@@ -185,5 +185,6 @@
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, não está instalado no momento, toque no card para fazer uma busca</string>
     <string name="thinking">Pensando…</string>
     <string name="loading">Carregando…</string>
-
+    <string name="iniciar">Iniciar</string>
+    <string name="parar">Parar</string>
 </resources>

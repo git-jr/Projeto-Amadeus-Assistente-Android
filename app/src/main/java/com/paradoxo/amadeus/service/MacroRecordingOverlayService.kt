@@ -16,6 +16,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
+import com.google.android.material.button.MaterialButton
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.EditarMacroActivity
 import com.paradoxo.amadeus.activity.MainActivity
@@ -29,6 +30,7 @@ class MacroRecordingOverlayService : Service() {
     private var tvActionCount: TextView? = null
 
     private val memoryManager by lazy { AgentMemoryManager(this) }
+    private var isRecordingActive = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -80,21 +82,13 @@ class MacroRecordingOverlayService : Service() {
 
     private fun startRecordingMode() {
         if (recordingOverlayView != null) return
-        val started = AmadeusAccessibilityService.startRecording()
-        if (!started) {
-            meuToast("Serviço de acessibilidade não está ativo", this)
-            stopSelf()
-            return
-        }
-        AmadeusAccessibilityService.setOnActionRecordedCallback { count ->
-            tvActionCount?.text = if (count == 1) "1 ação gravada" else "$count ações gravadas"
-        }
         showRecordingOverlay()
     }
 
     private fun stopRecordingMode() {
         val actions = AmadeusAccessibilityService.stopRecording()
         AmadeusAccessibilityService.setOnActionRecordedCallback(null)
+        isRecordingActive = false
         hideRecordingOverlay()
         if (actions.isEmpty()) {
             meuToast("Nenhuma ação foi gravada", this)
@@ -115,7 +109,26 @@ class MacroRecordingOverlayService : Service() {
         val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
         val view = LayoutInflater.from(themedContext).inflate(R.layout.layout_recording_overlay, null)
         tvActionCount = view.findViewById(R.id.tvActionCount)
-        view.findViewById<View>(R.id.btnStopRecording).setOnClickListener { stopRecordingMode() }
+        val btn = view.findViewById<MaterialButton>(R.id.btnStopRecording)
+        btn.text = getString(R.string.iniciar)
+        btn.setOnClickListener {
+            if (!isRecordingActive) {
+                val started = AmadeusAccessibilityService.startRecording()
+                if (!started) {
+                    meuToast("Serviço de acessibilidade não está ativo", this)
+                    hideRecordingOverlay()
+                    stopSelf()
+                    return@setOnClickListener
+                }
+                AmadeusAccessibilityService.setOnActionRecordedCallback { count ->
+                    tvActionCount?.text = if (count == 1) "1 ação gravada" else "$count ações gravadas"
+                }
+                isRecordingActive = true
+                btn.text = getString(R.string.parar)
+            } else {
+                stopRecordingMode()
+            }
+        }
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -124,7 +137,7 @@ class MacroRecordingOverlayService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
+            gravity = Gravity.BOTTOM or Gravity.END
             x = (16 * dp).toInt()
             y = (80 * dp).toInt()
         }
@@ -180,6 +193,7 @@ class MacroRecordingOverlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (isRecordingActive) AmadeusAccessibilityService.stopRecording()
         hideRecordingOverlay()
         AmadeusAccessibilityService.setOnActionRecordedCallback(null)
     }

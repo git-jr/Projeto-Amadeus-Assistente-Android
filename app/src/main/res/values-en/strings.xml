@@ -185,5 +185,6 @@
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, is not currently installed, tap the card to search</string>
     <string name="thinking">Thinking…</string>
     <string name="loading">Loading…</string>
-
+    <string name="iniciar">Start</string>
+    <string name="parar">Stop</string>
 </resources>

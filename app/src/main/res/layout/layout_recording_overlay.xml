@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:paddingHorizontal="8dp"
-            android:text="Parar"
+            android:text="@string/iniciar"
             android:textColor="@color/colorPrimary"
             android:textSize="12sp" />
 
