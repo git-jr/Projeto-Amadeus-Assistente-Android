@@ -34,6 +34,24 @@
                 android:layout_weight="1" />
 
             <ImageButton
+                android:id="@+id/moveUpButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Mover para cima"
+                android:src="@drawable/ic_arrow_up"
+                android:tint="@color/subtitulo" />
+
+            <ImageButton
+                android:id="@+id/moveDownButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Mover para baixo"
+                android:src="@drawable/ic_arrow_down"
+                android:tint="@color/subtitulo" />
+
+            <ImageButton
                 android:id="@+id/deleteActionButton"
                 android:layout_width="32dp"
                 android:layout_height="32dp"

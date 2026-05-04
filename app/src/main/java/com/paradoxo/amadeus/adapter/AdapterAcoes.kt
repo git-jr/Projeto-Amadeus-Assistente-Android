@@ -32,6 +32,8 @@ class AdapterAcoes(
         val valueLayout: TextInputLayout = view.findViewById(R.id.valueLayout)
         val valueEditText: TextInputEditText = view.findViewById(R.id.valueEditText)
         val deleteButton: ImageButton = view.findViewById(R.id.deleteActionButton)
+        val moveUpButton: ImageButton = view.findViewById(R.id.moveUpButton)
+        val moveDownButton: ImageButton = view.findViewById(R.id.moveDownButton)
         val insertReferenceButton: MaterialButton = view.findViewById(R.id.insertReferenceButton)
 
         var targetWatcher: TextWatcher? = null
@@ -108,8 +110,26 @@ class AdapterAcoes(
             if (adapterPos == RecyclerView.NO_ID.toInt()) return@setOnClickListener
             acoes.removeAt(adapterPos)
             notifyItemRemoved(adapterPos)
-            // Atualiza numeração dos itens abaixo
             notifyItemRangeChanged(adapterPos, acoes.size - adapterPos)
+        }
+
+        holder.moveUpButton.visibility = if (position > 0) View.VISIBLE else View.INVISIBLE
+        holder.moveDownButton.visibility = if (position < acoes.size - 1) View.VISIBLE else View.INVISIBLE
+
+        holder.moveUpButton.setOnClickListener {
+            val adapterPos = holder.adapterPosition
+            if (adapterPos <= 0) return@setOnClickListener
+            acoes.add(adapterPos - 1, acoes.removeAt(adapterPos))
+            notifyItemMoved(adapterPos, adapterPos - 1)
+            notifyItemRangeChanged(adapterPos - 1, 2)
+        }
+
+        holder.moveDownButton.setOnClickListener {
+            val adapterPos = holder.adapterPosition
+            if (adapterPos >= acoes.size - 1) return@setOnClickListener
+            acoes.add(adapterPos + 1, acoes.removeAt(adapterPos))
+            notifyItemMoved(adapterPos, adapterPos + 1)
+            notifyItemRangeChanged(adapterPos, 2)
         }
 
         holder.insertReferenceButton.setOnClickListener {
