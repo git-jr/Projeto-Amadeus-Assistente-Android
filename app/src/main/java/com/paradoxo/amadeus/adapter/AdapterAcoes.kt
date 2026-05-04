@@ -133,11 +133,17 @@ class AdapterAcoes(
             ActionType.OPEN_APP -> true to false
             ActionType.SCROLL -> false to true
             ActionType.SCROLL_HORIZONTAL -> false to true
+            ActionType.WAIT -> false to true
             else -> false to false // IME_ACTION, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS
         }
         holder.targetLayout.visibility = if (showTarget) View.VISIBLE else View.GONE
         holder.valueLayout.visibility = if (showValue) View.VISIBLE else View.GONE
         holder.insertReferenceButton.visibility = if (type == ActionType.TYPE) View.VISIBLE else View.GONE
+        holder.valueLayout.hint = when (type) {
+            ActionType.WAIT -> "Tempo em ms (ex: 2000)"
+            ActionType.SCROLL, ActionType.SCROLL_HORIZONTAL -> "Direção (up/down ou left/right)"
+            else -> "Valor"
+        }
 
         if (!showTarget) holder.targetEditText.setText("")
         if (!showValue) holder.valueEditText.setText("")

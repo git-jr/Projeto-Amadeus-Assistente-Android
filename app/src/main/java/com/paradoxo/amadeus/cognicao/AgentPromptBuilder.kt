@@ -50,6 +50,7 @@ object AgentPromptBuilder {
         - {"action":"RECENTS","target":"","value":""}                    ← abre a lista de apps recentes
         - {"action":"NOTIFICATIONS","target":"","value":""}              ← abre a barra de notificações
         - {"action":"QUICK_SETTINGS","target":"","value":""}             ← abre as configurações rápidas
+        - {"action":"WAIT","target":"","value":"2000"}                   ← aguarda N ms (use após OPEN_APP se o app for lento)
 
         PRINCÍPIO: leia o estado atual antes de agir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
         Não use TYPE em campo EDITÁVEL (preenchido:) com conteúdo correto. Não use TYPE + IME_ACTION se resultados relevantes já estão na tela.
@@ -92,6 +93,7 @@ object AgentPromptBuilder {
         - RECENTS      → abre a lista de apps recentes; target e value vazios
         - NOTIFICATIONS → abre a barra de notificações; target e value vazios
         - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
+        - WAIT          → aguarda carregamento; "value" = tempo em ms (ex: "2000"). Use após OPEN_APP se o app for lento.
 
         Regras imutáveis:
         - MACROS CONFIRMADOS: se houver macros de referência com meta similar, siga a mesma sequência de tipos de ação, ajustando o "target" para o texto exato visível. Não invente abordagem diferente quando sequência confirmada existe.

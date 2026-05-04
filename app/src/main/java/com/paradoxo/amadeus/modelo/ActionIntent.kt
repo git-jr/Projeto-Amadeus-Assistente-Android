@@ -12,7 +12,8 @@ enum class ActionType {
     HOME,
     RECENTS,
     NOTIFICATIONS,
-    QUICK_SETTINGS
+    QUICK_SETTINGS,
+    WAIT
 }
 
 data class ActionIntent(

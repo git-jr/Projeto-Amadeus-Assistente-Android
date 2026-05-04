@@ -49,10 +49,14 @@ class AmadeusAccessibilityService : AccessibilityService() {
     ) {
         actionHandler.removeCallbacksAndMessages(null)
         val handler = actionHandler
-        val initialDelay = 500L
-        val delayPerAction = 1400L
+        var cumulativeDelay = 500L
 
         actions.forEachIndexed { index, action ->
+            val thisDelay = cumulativeDelay
+            cumulativeDelay += when (action.type) {
+                ActionType.WAIT -> action.value.toLongOrNull() ?: 1000L
+                else -> 1400L
+            }
             handler.postDelayed({
                 when (action.type) {
                     ActionType.CLICK -> {
@@ -143,11 +147,16 @@ class AmadeusAccessibilityService : AccessibilityService() {
                         onFeedback("Abrindo configurações rápidas...")
                         performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
                     }
+
+                    ActionType.WAIT -> {
+                        val ms = action.value.toLongOrNull() ?: 1000L
+                        onFeedback("Aguardando ${ms}ms...")
+                    }
                 }
                 if (index == actions.lastIndex) {
                     handler.postDelayed({ onDone() }, 700)
                 }
-            }, initialDelay + index * delayPerAction)
+            }, thisDelay)
         }
     }
 
