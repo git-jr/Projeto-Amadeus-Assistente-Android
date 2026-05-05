@@ -14,10 +14,10 @@ interface AgentMacroDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(macro: AgentMacroEntity): Long
 
-    @Query("SELECT * FROM agent_macro WHERE goalKey = :goalKey AND isConfirmed = 1 LIMIT 1")
+    @Query("SELECT * FROM agent_macro WHERE LOWER(goalKey) = LOWER(:goalKey) AND isConfirmed = 1 LIMIT 1")
     suspend fun findConfirmedByGoalKey(goalKey: String): AgentMacroEntity?
 
-    @Query("SELECT * FROM agent_macro WHERE goalKey = :goalKey LIMIT 1")
+    @Query("SELECT * FROM agent_macro WHERE LOWER(goalKey) = LOWER(:goalKey) LIMIT 1")
     suspend fun findByGoalKey(goalKey: String): AgentMacroEntity?
 
     @Query("UPDATE agent_macro SET executionCount = :count, isConfirmed = :confirmed, lastUsedAt = :ts WHERE id = :id")
