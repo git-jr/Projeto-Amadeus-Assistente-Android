@@ -105,7 +105,7 @@
         <activity
             android:name=".activity.EditarMacroActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent" />
+            android:theme="@style/Theme.Amadeus.Light.NoActionBar" />
 
         <activity
             android:name=".activity.AgentDashboardActivity"

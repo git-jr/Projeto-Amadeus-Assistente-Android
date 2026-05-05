@@ -57,6 +57,12 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <!-- Variante do Transparent com colorPrimary correto para TextInputLayout (stroke/hint focados) -->
+    <style name="Theme.Amadeus.Light.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar.Transparent">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+    </style>
+
     <!-- Tema Material 3 para ConfigPrimariaActivity -->
     <style name="Theme.Amadeus.ConfigPrimaria" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
