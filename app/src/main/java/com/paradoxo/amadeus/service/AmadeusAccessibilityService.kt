@@ -383,7 +383,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.N)
     private fun tapAtCoordinates(x: Float, y: Float) {
         val path = Path().apply { moveTo(x, y); lineTo(x + 1f, y + 1f) }
-        val stroke = GestureDescription.StrokeDescription(path, 0, 500)
+        val stroke = GestureDescription.StrokeDescription(path, 0, 300)
         val gesture = GestureDescription.Builder().addStroke(stroke).build()
         dispatchGesture(gesture, null, null)
     }

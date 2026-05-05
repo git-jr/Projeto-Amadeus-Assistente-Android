@@ -31,6 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:text="@string/cancelar"
+            android:contentDescription="Botão para cancelar do agente, não clicar"
             android:textColor="@color/colorPrimary"
             android:textSize="13sp" />
 

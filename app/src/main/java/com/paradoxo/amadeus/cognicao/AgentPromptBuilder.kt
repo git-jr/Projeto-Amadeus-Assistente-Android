@@ -56,6 +56,7 @@ object AgentPromptBuilder {
         Não use TYPE em campo EDITÁVEL (preenchido:) com conteúdo correto. Não use TYPE + IME_ACTION se resultados relevantes já estão na tela.
         Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão visível na tela (ex: barra de busca do Twitter/X, YouTube).
         Use CLICK_COORDS para elementos do tipo IMAGEM que aparecem na lista com coordenadas — quando não há nó clicável correspondente (ex: banners de imagem na Netflix). O value deve ser EXATAMENTE as coordenadas fornecidas na lista.
+        Ao selecionar um item por nome (contato, conversa, grupo, app), prefira o elemento cujo texto seja correspondência EXATA ou mais próxima ao nome alvo, mesmo que seja do tipo IMAGEM (use CLICK_COORDS). Elementos CLICÁVEL cujo texto contenha o nome mais sufixos descritivos ("imagem do grupo", "foto de perfil", etc.) são candidatos inferiores ao elemento cujo texto seja apenas o nome.
         Use BACK para cancelar, fechar diálogos ou navegar para a tela anterior.
         Use HOME quando precisar sair de qualquer app e retornar à tela inicial.
 
@@ -102,6 +103,7 @@ object AgentPromptBuilder {
         - Não use TYPE + IME_ACTION se resultados relevantes já são visíveis na tela.
         - Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão de confirmação visível na tela.
         - Use CLICK_COORDS para elementos do tipo IMAGEM com coordenadas na lista. O value deve ser EXATAMENTE as coordenadas fornecidas.
+        - Ao selecionar um item por nome (contato, conversa, grupo, app), prefira o elemento cujo texto seja correspondência EXATA ou mais próxima ao nome alvo — mesmo que seja do tipo IMAGEM (use CLICK_COORDS). Evite elementos cujo texto seja uma descrição composta contendo o nome mais palavras extras como "imagem do grupo", "foto de perfil", "avatar" etc. Exemplo: para abrir "Nozes", prefira [IMAGEM texto:"Nozes"] a [CLICÁVEL texto:"Nozes, imagem do grupo"].
         - Use BACK para fechar diálogos, popups ou navegar à tela anterior.
         - Prefira sequências curtas e diretas — facilita o aprendizado de macros.
         - Se a tela não mudou após um passo, tente uma abordagem diferente em vez de repetir.
