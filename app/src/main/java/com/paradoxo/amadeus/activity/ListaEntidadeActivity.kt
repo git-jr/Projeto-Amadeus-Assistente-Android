@@ -21,6 +21,7 @@ import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,6 +72,7 @@ class ListaEntidadeActivity : AppCompatActivity(), DialogSimples.FragmentDialogI
     }
 
     private fun configurarIterface() {
+        setupToolbar(getString(R.string.entidade))
         configurarToolBarBranca(this)
         configurarRecycler()
         configurarBotaoAdicionar()

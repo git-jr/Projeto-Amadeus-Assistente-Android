@@ -8,8 +8,11 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.paradoxo.amadeus.R
 
 object Util {
     fun aplicarInsets(view: View) {
@@ -72,4 +75,13 @@ object Util {
             Log.e("Teclado", "Não pode ser carregado")
         }
     }
+}
+
+fun AppCompatActivity.setupToolbar(titulo: String? = null) {
+    Util.configurarToolBarBranca(this)
+    val toolbar = findViewById<Toolbar>(R.id.toolbar) ?: return
+    setSupportActionBar(toolbar)
+    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    if (titulo != null) title = titulo
+    toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 }

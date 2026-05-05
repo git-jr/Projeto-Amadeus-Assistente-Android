@@ -17,7 +17,7 @@ import com.paradoxo.amadeus.util.Animacoes
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +28,7 @@ class RetroCompatibilidadeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_retro_compatibilidade)
         aplicarInsets(findViewById(R.id.retroCompatibilidadeLayout))
-        configurarToolBarBranca(this)
+        setupToolbar("Retrocompatibilidade")
         configurarBotaoImportar()
         configurarBotaoNaoImportar()
     }

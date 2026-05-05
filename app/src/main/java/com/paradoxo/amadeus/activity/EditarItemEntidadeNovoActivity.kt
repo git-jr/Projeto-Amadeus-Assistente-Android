@@ -24,8 +24,8 @@ import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -88,12 +88,12 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_editar_item_novo)
-        aplicarInsets(findViewById(R.id.editarItemEntidadeLayout))
+        aplicarInsets(findViewById(R.id.editarItemEntidadeRootLayout))
         configurarInterface()
     }
 
     private fun configurarInterface() {
-        configurarToolBarBranca(this)
+        setupToolbar(getString(R.string.entidade))
         configurarTextInput()
         configuarBotaoLinkStart()
         configurarRecyclerSinonimos()

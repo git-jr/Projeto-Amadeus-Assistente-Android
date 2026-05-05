@@ -11,7 +11,7 @@ import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 
 class VozConfigActivity : AppCompatActivity() {
 
@@ -28,7 +28,7 @@ class VozConfigActivity : AppCompatActivity() {
     }
 
     private fun configurarInterface() {
-        configurarToolBarBranca(this)
+        setupToolbar(getString(R.string.voz))
         configurarToggleButton()
         configurarItensMenu()
     }

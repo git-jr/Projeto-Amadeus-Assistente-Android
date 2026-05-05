@@ -72,4 +72,6 @@
 
     </LinearLayout>
 
+    <include layout="@layout/view_toolbar"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

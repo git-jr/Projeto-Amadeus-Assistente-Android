@@ -19,7 +19,7 @@ import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.MacroRecordingOverlayService
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +34,7 @@ class ListaMacrosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_macros)
         aplicarInsets(findViewById(R.id.listaMacrosLayout))
-        configurarToolBarBranca(this)
+        setupToolbar("Macros")
         configurarInterface()
     }
 

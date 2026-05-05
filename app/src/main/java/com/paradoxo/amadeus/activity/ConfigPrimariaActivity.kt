@@ -21,7 +21,7 @@ import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import com.paradoxo.amadeus.util.canDrawOverlays
 
 class ConfigPrimariaActivity : AppCompatActivity() {
@@ -88,7 +88,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     }
 
     private fun configurarInterface() {
-        configurarToolBarBranca(this)
+        setupToolbar("Configurações")
         configurarTextInput()
         configurarBotaoSalvar()
         configurarToggleButton()

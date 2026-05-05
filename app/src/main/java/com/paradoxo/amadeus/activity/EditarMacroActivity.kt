@@ -21,7 +21,7 @@ import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +37,7 @@ class EditarMacroActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_editar_macro)
         aplicarInsets(findViewById(R.id.editarMacroLayout))
-        configurarToolBarBranca(this)
+        setupToolbar("Nova macro")
 
         val macroId = intent.getIntExtra("macroId", -1)
         val recordedJson = intent.getStringExtra(EXTRA_RECORDED_ACTIONS_JSON)
@@ -61,6 +61,7 @@ class EditarMacroActivity : AppCompatActivity() {
                     finish(); return@launch
                 }
                 macro = encontrado
+                title = "Editar macro"
                 configurarInterface(encontrado)
             }
         }

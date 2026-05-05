@@ -17,7 +17,7 @@ import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.toModel
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Util.aplicarInsets
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,7 +68,7 @@ class ListaSentencaActivity : AppCompatActivity() {
     }
 
     private fun configurarIterface() {
-        configurarToolBarBranca(this)
+        setupToolbar(getString(R.string.sentencas))
         configurarRecycler()
         configurarBotaoAdicionar()
         configurarBotaoBusca()

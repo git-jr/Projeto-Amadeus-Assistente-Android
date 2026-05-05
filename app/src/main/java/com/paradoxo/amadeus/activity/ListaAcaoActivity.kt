@@ -17,6 +17,7 @@ import com.paradoxo.amadeus.enums.AcaoEnum
 import com.paradoxo.amadeus.modelo.Sentenca
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.setupToolbar
 
 class ListaAcaoActivity : AppCompatActivity() {
 
@@ -78,6 +79,7 @@ class ListaAcaoActivity : AppCompatActivity() {
     }
 
     private fun configurarIterface() {
+        setupToolbar(getString(R.string.acoes))
         configurarToolBarBranca(this)
         configurarRecycler()
         configurarBotaoAdicionar()

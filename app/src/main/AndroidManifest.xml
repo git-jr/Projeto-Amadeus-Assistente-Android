@@ -99,11 +99,13 @@
 
         <activity
             android:name=".activity.ListaMacrosActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent" />
 
         <activity
             android:name=".activity.EditarMacroActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent" />
 
         <activity
             android:name=".activity.AgentDashboardActivity"
