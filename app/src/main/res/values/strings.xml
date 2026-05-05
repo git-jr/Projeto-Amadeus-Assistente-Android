@@ -188,4 +188,17 @@
     <string name="loading">Carregando…</string>
     <string name="iniciar">Iniciar</string>
     <string name="parar">Parar</string>
+    <string name="action_type_click">Clicar em elemento</string>
+    <string name="action_type_click_coords">Clicar em coordenadas</string>
+    <string name="action_type_type">Digitar texto</string>
+    <string name="action_type_open_app">Abrir app</string>
+    <string name="action_type_scroll">Rolar tela</string>
+    <string name="action_type_scroll_horizontal">Rolar horizontalmente</string>
+    <string name="action_type_ime_action">Ação do teclado</string>
+    <string name="action_type_back">Voltar</string>
+    <string name="action_type_home">Tela inicial</string>
+    <string name="action_type_recents">Recentes</string>
+    <string name="action_type_notifications">Notificações</string>
+    <string name="action_type_quick_settings">Configurações rápidas</string>
+    <string name="action_type_wait">Aguardar</string>
 </resources>

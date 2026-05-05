@@ -187,4 +187,17 @@
     <string name="loading">Loading…</string>
     <string name="iniciar">Start</string>
     <string name="parar">Stop</string>
+    <string name="action_type_click">Click on element</string>
+    <string name="action_type_click_coords">Click on coordinates</string>
+    <string name="action_type_type">Type text</string>
+    <string name="action_type_open_app">Open app</string>
+    <string name="action_type_scroll">Scroll screen</string>
+    <string name="action_type_scroll_horizontal">Scroll horizontally</string>
+    <string name="action_type_ime_action">Keyboard action</string>
+    <string name="action_type_back">Back</string>
+    <string name="action_type_home">Home screen</string>
+    <string name="action_type_recents">Recents</string>
+    <string name="action_type_notifications">Notifications</string>
+    <string name="action_type_quick_settings">Quick settings</string>
+    <string name="action_type_wait">Wait</string>
 </resources>

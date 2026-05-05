@@ -22,7 +22,22 @@ class AdapterAcoes(
     private val onPickReference: (onPicked: (String) -> Unit) -> Unit
 ) : RecyclerView.Adapter<AdapterAcoes.ViewHolder>() {
 
-    private val actionTypeNames = ActionType.values().map { it.name }
+    private val ActionType.labelRes: Int
+        get() = when (this) {
+            ActionType.CLICK -> R.string.action_type_click
+            ActionType.CLICK_COORDS -> R.string.action_type_click_coords
+            ActionType.TYPE -> R.string.action_type_type
+            ActionType.OPEN_APP -> R.string.action_type_open_app
+            ActionType.SCROLL -> R.string.action_type_scroll
+            ActionType.SCROLL_HORIZONTAL -> R.string.action_type_scroll_horizontal
+            ActionType.IME_ACTION -> R.string.action_type_ime_action
+            ActionType.BACK -> R.string.action_type_back
+            ActionType.HOME -> R.string.action_type_home
+            ActionType.RECENTS -> R.string.action_type_recents
+            ActionType.NOTIFICATIONS -> R.string.action_type_notifications
+            ActionType.QUICK_SETTINGS -> R.string.action_type_quick_settings
+            ActionType.WAIT -> R.string.action_type_wait
+        }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val stepNumber: android.widget.TextView = view.findViewById(R.id.stepNumberTextView)
@@ -44,10 +59,11 @@ class AdapterAcoes(
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_acao_macro, parent, false)
         val holder = ViewHolder(view)
 
+        val labels = ActionType.values().map { parent.context.getString(it.labelRes) }
         val spinnerAdapter = ArrayAdapter(
             parent.context,
             android.R.layout.simple_spinner_item,
-            actionTypeNames
+            labels
         ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         holder.spinner.adapter = spinnerAdapter
 
