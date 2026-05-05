@@ -109,6 +109,7 @@
     <string name="acessibilidade_texto_nao_encontrado">Texto \"%s\" não encontrado na tela</string>
     <string name="acessibilidade_elemento_nao_clicavel">Elemento \"%s\" encontrado mas não é clicável</string>
     <string name="tirar_print">Tirar print</string>
+    <string name="tooltip_permissoes_ausentes">Permissões ausentes, o agente pode não funcionar direito</string>
     <string name="ouvir">Ouvir</string>
     <string name="ouvir_dica">Peça Amadeus para fazer algo</string>
     <string name="print_salvo">Print salvo na galeria</string>

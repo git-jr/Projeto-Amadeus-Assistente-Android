@@ -24,6 +24,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -96,6 +97,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarServicosSegundoPlano()
         configurarIterface()
         processarAcoesDeIntent(intent)
+        verificarEMostrarAviso()
 
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
@@ -103,7 +105,6 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
 //        if (Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, this, false)) {
 //            iniciarBotaoFlutuante()
 //        }
-//        startActivity(Intent(this, ConfigPrimariaActivity::class.java))
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -257,20 +258,6 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             if (codErro != SpeechRecognizer.ERROR_SPEECH_TIMEOUT && codErro != SpeechRecognizer.ERROR_NO_MATCH) {
                 meuToast(eventoMensagem.nomeErro ?: "", applicationContext)
             }
-        }
-    }
-
-    private fun iniciarBotaoFlutuante() {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this) -> {
-                solicitarPermissaoOverlayComRationale()
-            }
-
-            !AmadeusAccessibilityService.isActive(this) -> {
-                abrirConfiguracaoPrimariaParaAcessibilidade()
-            }
-
-            else -> startService(Intent(this, FloatingButtonAmadeusService::class.java))
         }
     }
 
@@ -569,6 +556,28 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             menuSlidingPaneLayout.closePane()
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    private fun verificarEMostrarAviso() {
+        val overlayOk = Settings.canDrawOverlays(this)
+        val accessibilityOk = AmadeusAccessibilityService.isActive(this)
+        if (!overlayOk || !accessibilityOk) {
+            val snackbar = Snackbar.make(
+                findViewById(android.R.id.content),
+                getString(R.string.tooltip_permissoes_ausentes),
+                3000
+            ).setAnchorView(R.id.layoutEscrevendo)
+                .setAction("Configurar") {
+                    startActivity(Intent(this, AgentDashboardActivity::class.java))
+                }
+                .setActionTextColor(resources.getColor(R.color.yellow, theme))
+            snackbar.view.translationY = -(resources.displayMetrics.density * 100)
+            snackbar.show()
         }
     }
 
