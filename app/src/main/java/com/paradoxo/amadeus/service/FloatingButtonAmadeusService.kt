@@ -89,7 +89,7 @@ class FloatingButtonAmadeusService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_ENABLE_WAKE_WORD -> wakeWordManager.startDetection()
+            ACTION_ENABLE_WAKE_WORD -> wakeWordManager.initialize()
             ACTION_DISABLE_WAKE_WORD -> wakeWordManager.stopDetection()
             ACTION_START_LISTENING -> {
                 Handler(Looper.getMainLooper()).postDelayed({ startListening() }, 400)

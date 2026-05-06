@@ -44,6 +44,10 @@ class WakeWordManager(
 
     /** Descompacta o modelo (apenas na 1ª execução) e inicia a detecção. */
     fun initialize() {
+        if (model != null) {
+            startDetection()
+            return
+        }
         scope.launch {
             try {
                 val modelDir = File(context.filesDir, MODEL_DIR)
