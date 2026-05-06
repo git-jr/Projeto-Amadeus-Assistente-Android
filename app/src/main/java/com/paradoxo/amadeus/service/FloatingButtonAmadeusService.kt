@@ -542,8 +542,7 @@ class FloatingButtonAmadeusService : Service() {
                 processCommand(text)
             } else {
                 // só para testes
-//                processCommand("Abrir YouTube e pesquisar por one piece")
-                processCommand("Abra o WhatsApp e mande uma mensagem de teste para o grupo Nozes")
+//                processCommand("Abre o YouTube e pesquisa Projeto Amadeus IA")
                 closeVoiceOverlay()
             }
         }

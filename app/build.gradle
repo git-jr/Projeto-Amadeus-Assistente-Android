@@ -26,7 +26,7 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 23
         targetSdk 36
-        versionCode 32
+        versionCode 35
         versionName "3.0.0 | Agent Alpha 2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "GEMINI_API_KEY", "\"${localProperties.getProperty('GEMINI_API_KEY', '')}\""
@@ -105,10 +105,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-analytics'
 
-    // Gemini AI
+    // GeN AI
     implementation 'com.google.ai.client.generativeai:generativeai:0.9.0'
-    implementation 'com.aallam.openai:openai-client:3.8.2'
-    implementation 'io.ktor:ktor-client-okhttp:2.3.12'
+    implementation 'com.aallam.openai:openai-client:4.1.0'
+    implementation 'io.ktor:ktor-client-okhttp:3.4.3'
 
     // Vosk (wake word detection, offline)
     implementation 'com.alphacephei:vosk-android:0.3.75'

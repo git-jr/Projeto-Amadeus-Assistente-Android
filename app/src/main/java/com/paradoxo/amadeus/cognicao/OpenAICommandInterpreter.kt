@@ -71,7 +71,7 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
             val response = withRetry(onRetry = onRetry) {
                 client.chatCompletion(
                     ChatCompletionRequest(
-                        model = ModelId("gpt-4.1-mini"),
+                        model = ModelId("gpt-5.4-nano"),
                         messages = listOf(
                             ChatMessage(
                                 role = ChatRole.System,
