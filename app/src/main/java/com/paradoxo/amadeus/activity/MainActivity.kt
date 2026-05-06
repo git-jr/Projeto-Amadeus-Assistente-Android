@@ -235,12 +235,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             250
         )
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            val id = AmadeusDatabase.getInstance(this@MainActivity)
-                .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
-            withContext(Dispatchers.Main) {
-                idUltimoHistoricoGravado = id
-                sentenca.id = id.toString()
+        if (sentenca.salvarNoBanco) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val id = AmadeusDatabase.getInstance(this@MainActivity)
+                    .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
+                withContext(Dispatchers.Main) {
+                    idUltimoHistoricoGravado = id
+                    sentenca.id = id.toString()
+                }
             }
         }
     }

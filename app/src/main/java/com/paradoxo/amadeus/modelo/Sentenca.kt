@@ -9,6 +9,7 @@ class Sentenca {
     var tipo_item: Int = 0
     var idBanco: String? = null
     var respostas: MutableList<String> = mutableListOf()
+    var salvarNoBanco: Boolean = true
 
     constructor()
 

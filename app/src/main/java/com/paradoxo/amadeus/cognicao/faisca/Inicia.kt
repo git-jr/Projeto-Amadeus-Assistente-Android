@@ -90,6 +90,8 @@ class Inicia(private val context: Context) {
     }
 
     private fun notificarOutput(mensagem: String) {
-        EventBus.getDefault().post(Sentenca(mensagem))
+        val sentenca = Sentenca(mensagem)
+        sentenca.salvarNoBanco = false
+        EventBus.getDefault().post(sentenca)
     }
 }
