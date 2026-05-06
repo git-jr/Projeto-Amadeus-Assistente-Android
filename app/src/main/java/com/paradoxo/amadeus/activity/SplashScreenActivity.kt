@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.lifecycleScope
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.cognicao.RemoteConfigManager
 import com.paradoxo.amadeus.onboarding.OnboardingActivity
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.DefaultMacroSeeder
@@ -41,6 +42,9 @@ class SplashScreenActivity : AppCompatActivity() {
 
     private fun iniciar() {
         lifecycleScope.launch {
+            // ── Etapa 0: buscar configurações remotas (prompts, modelo, provider) ─
+            RemoteConfigManager.fetchAndActivate()
+
             // ── Etapa 1: dados legados (tabela mensagem) ────────────────────
             val bancoAntigoExiste = withContext(Dispatchers.IO) {
                 AmadeusDatabase.getInstance(this@SplashScreenActivity)

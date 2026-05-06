@@ -34,7 +34,7 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
             val response = withRetry {
                 client.chatCompletion(
                     ChatCompletionRequest(
-                        model = ModelId("gpt-4o-mini"),
+                        model = ModelId(RemoteConfigManager.openaiModelSingleShot),
                         messages = listOf(ChatMessage(role = ChatRole.User, content = prompt)),
                         maxTokens = 1028
                     )
@@ -71,7 +71,7 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
             val response = withRetry(onRetry = onRetry) {
                 client.chatCompletion(
                     ChatCompletionRequest(
-                        model = ModelId("gpt-5.4-nano"),
+                        model = ModelId(RemoteConfigManager.openaiModelAgent),
                         messages = listOf(
                             ChatMessage(
                                 role = ChatRole.System,

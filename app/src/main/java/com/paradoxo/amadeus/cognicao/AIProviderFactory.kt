@@ -1,14 +1,20 @@
 package com.paradoxo.amadeus.cognicao
 
+import android.util.Log
 import com.paradoxo.amadeus.BuildConfig
 
 object AIProviderFactory {
 
-    // Altere esta constante para trocar o provedor de IA
-    private val CURRENT: AIProvider = AIProvider.OPENAI
-
-    fun create(): AgentInterpreter = when (CURRENT) {
-        AIProvider.GEMINI -> GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
-        AIProvider.OPENAI -> OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+    fun create(): AgentInterpreter {
+        val providerName = RemoteConfigManager.aiProvider
+        val provider = runCatching { AIProvider.valueOf(providerName.uppercase()) }
+            .getOrElse {
+                Log.w("AIProviderFactory", "Provider desconhecido '$providerName', usando OPENAI")
+                AIProvider.OPENAI
+            }
+        return when (provider) {
+            AIProvider.GEMINI -> GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
+            AIProvider.OPENAI -> OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+        }
     }
 }

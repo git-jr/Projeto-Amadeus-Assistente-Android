@@ -15,7 +15,7 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
 
     private val model by lazy {
         GenerativeModel(
-            modelName = "gemini-3.1-flash-lite-preview",
+            modelName = RemoteConfigManager.geminiModel,
             apiKey = apiKey,
             generationConfig = generationConfig {
                 temperature = 0.1f
