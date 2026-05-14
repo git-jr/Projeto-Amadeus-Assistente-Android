@@ -72,6 +72,7 @@
                 android:hint="@string/ouvir_dica"
                 android:imeOptions="actionSend"
                 android:padding="8dp"
+                android:maxLength="500"
                 android:textColor="#1A1A1A"
                 android:textColorHint="#9E9E9E"
                 android:textSize="15sp" />

@@ -13,6 +13,35 @@ object DefaultMacroSeeder {
 
     private val macros = listOf(
         MacroSeed(
+            goalKey = "Busca Paradoxo No Youtube",
+            actions = listOf(
+                ActionIntent(ActionType.OPEN_APP, target = "YouTube"),
+                ActionIntent(ActionType.WAIT, target = "YouTube", value = "1500"),
+                ActionIntent(ActionType.CLICK, target = "Pesquisar"),
+                ActionIntent(ActionType.TYPE, value = "Paradoxo"),
+                ActionIntent(ActionType.IME_ACTION)
+            )
+        ),
+        MacroSeed(
+            goalKey = "Conversa no Whatsapp com a Meta AI",
+            actions = listOf(
+                ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
+                ActionIntent(ActionType.WAIT, value = "300"),
+                ActionIntent(ActionType.CLICK, target = "Pergunte à Meta AI ou pesquise"),
+                ActionIntent(ActionType.WAIT, value = "500"),
+                ActionIntent(ActionType.TYPE, value = "Meta AI"),
+                ActionIntent(ActionType.WAIT, value = "300"),
+                ActionIntent(ActionType.CLICK, target = "Meta AI"),
+                ActionIntent(ActionType.WAIT, value = "300"),
+                ActionIntent(ActionType.TYPE, value = "Conte uma piada"),
+                ActionIntent(ActionType.CLICK, target = "Enviar"),
+                ActionIntent(ActionType.BACK)
+            )
+        )
+    )
+
+    private val macrosOldList = listOf(
+        MacroSeed(
             goalKey = "Manda mensagem no WhatsApp para a Maria",
             actions = listOf(
                 ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
