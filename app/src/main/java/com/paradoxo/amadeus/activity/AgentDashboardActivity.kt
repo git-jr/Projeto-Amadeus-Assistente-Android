@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -29,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Category
@@ -65,7 +67,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -242,6 +253,18 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                 )
                 Divider()
                 ToggleRow(
+                    icon = Icons.Rounded.Psychology,
+                    label = "Usar aprendizado",
+                    descricao = "Macros gravadas serão usadas para deixar o app mais inteligente",
+                    checked = reusarMacrosAtivo,
+                    enabled = true,
+                    onToggle = { enabled ->
+                        Preferencias.setPrefBool(ConfigPrimariaActivity.PREF_REUSAR_MACROS_PROMPT_GEMINI, enabled, context)
+                        refreshState()
+                    }
+                )
+                Divider()
+                ToggleRow(
                     icon = Icons.Rounded.RecordVoiceOver,
                     label = "Palavra de Ativação",
                     descricao = "Acorda o agente por voz",
@@ -257,35 +280,40 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                         refreshState()
                     }
                 )
-                Divider()
-                ToggleRow(
-                    icon = Icons.Rounded.Psychology,
-                    label = "Reusar Macros no Prompt",
-                    descricao = "Passa ações anteriores ao Gemini",
-                    checked = reusarMacrosAtivo,
-                    enabled = true,
-                    onToggle = { enabled ->
-                        Preferencias.setPrefBool(ConfigPrimariaActivity.PREF_REUSAR_MACROS_PROMPT_GEMINI, enabled, context)
-                        refreshState()
-                    }
-                )
+
             }
 
             SectionHeader("Atalhos")
 
             ShortcutCard {
                 ShortcutRow(
+                    icon = Icons.Rounded.Bookmarks,
+                    label = "Macros aprendidas",
+                    descricao = "Sequências de ações aprendidas e criadas",
+                    onClick = { context.startActivity(Intent(context, ListaMacrosActivity::class.java)) }
+                )
+                Divider()
+                ShortcutRow(
+                    icon = Icons.Rounded.Android,
+                    label = stringResource(R.string.definir_assistente_voz),
+                    descricao = stringResource(R.string.definir_assistente_voz_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            })
+                        } catch (e: Exception) {
+                            context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                            Log.e("AgentDashboard", "Não foi possível abrir as configurações de assistente de voz, abrindo configurações gerais. Erro: ${e.message}")
+                        }
+                    }
+                )
+                Divider()
+                ShortcutRow(
                     icon = Icons.Rounded.Category,
                     label = "Entidades",
                     descricao = "Variáveis usadas pelo agente",
                     onClick = { context.startActivity(Intent(context, ListaEntidadeActivity::class.java)) }
-                )
-                Divider()
-                ShortcutRow(
-                    icon = Icons.Rounded.Bookmarks,
-                    label = "Macros",
-                    descricao = "Sequências de ações aprendidas",
-                    onClick = { context.startActivity(Intent(context, ListaMacrosActivity::class.java)) }
                 )
                 Divider()
                 ShortcutRow(
@@ -342,6 +370,28 @@ private fun AgentStatusCard(isRunning: Boolean) {
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
+            Spacer(Modifier.height(10.dp))
+            val linkText = buildAnnotatedString {
+                withStyle(SpanStyle(color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)) {
+                    append("Dúvidas sobre como usar o app? ")
+                }
+                withLink(
+                    LinkAnnotation.Url(
+                        url = "https://amadeusai.app/",
+                        styles = TextLinkStyles(
+                            style = SpanStyle(
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        )
+                    )
+                ) {
+                    append("Acesse o site ou os vídeos")
+                }
+            }
+            Text(text = linkText, style = TextStyle(lineHeight = 18.sp))
         }
     }
 }
@@ -399,6 +449,9 @@ private fun PermissionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable {
+                onFix()
+            }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -406,7 +459,11 @@ private fun PermissionRow(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(if (granted) ColorSuccess.copy(alpha = 0.12f) else ColorPrimary.copy(alpha = 0.10f)),
+                .background(
+                    if (granted) ColorSuccess.copy(alpha = 0.12f) else ColorPrimary.copy(
+                        alpha = 0.10f
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
