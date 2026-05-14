@@ -42,6 +42,7 @@ import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,6 +89,8 @@ import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.canDrawOverlays
 
+private enum class PermissaoDialog { ACESSIBILIDADE, OVERLAY, MICROFONE }
+
 private val ColorPrimary = Color(0xFFF50057)
 private val ColorDarkPurple = Color(0xFF290f3e)
 private val ColorSuccess = Color(0xFF4CAF50)
@@ -126,6 +129,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
     // Sinaliza que o usuário saiu desta tela para conceder uma permissão necessária ao agente.
     // Quando voltar com todas as permissões satisfeitas, o botão flutuante é iniciado automaticamente.
     var pendingActivation by remember { mutableStateOf(false) }
+    var dialogAberto by remember { mutableStateOf<PermissaoDialog?>(null) }
 
     fun refreshState() {
         acessibilidadeAtiva = AmadeusAccessibilityService.isActive(context)
@@ -199,10 +203,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Acessibilidade",
                     descricao = "Necessária para controlar a tela",
                     granted = acessibilidadeAtiva,
-                    onFix = {
-                        pendingActivation = true
-                        AmadeusAccessibilityService.openSettings(context)
-                    }
+                    onFix = { dialogAberto = PermissaoDialog.ACESSIBILIDADE }
                 )
                 Divider()
                 PermissionRow(
@@ -210,15 +211,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Sobreposição",
                     descricao = "Exibe o botão flutuante sobre apps",
                     granted = overlayAtivo,
-                    onFix = {
-                        pendingActivation = true
-                        overlayLauncher.launch(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                android.net.Uri.parse("package:${context.packageName}")
-                            )
-                        )
-                    }
+                    onFix = { dialogAberto = PermissaoDialog.OVERLAY }
                 )
                 Divider()
                 PermissionRow(
@@ -226,7 +219,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Microfone",
                     descricao = "Ativa comandos por voz",
                     granted = microfoneAtivo,
-                    onFix = { micLauncher.launch(Manifest.permission.RECORD_AUDIO) }
+                    onFix = { dialogAberto = PermissaoDialog.MICROFONE }
                 )
             }
 
@@ -325,6 +318,65 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
             }
 
             Spacer(Modifier.height(16.dp))
+        }
+
+        when (dialogAberto) {
+            PermissaoDialog.ACESSIBILIDADE -> AlertDialog(
+                onDismissRequest = { dialogAberto = null },
+                title = { Text(stringResource(R.string.acessibilidade_rationale_titulo), fontWeight = FontWeight.SemiBold) },
+                text = { Text(stringResource(R.string.acessibilidade_rationale_mensagem)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        dialogAberto = null
+                        pendingActivation = true
+                        AmadeusAccessibilityService.openSettings(context)
+                    }) { Text(stringResource(R.string.ir_para_configuracoes), color = ColorPrimary) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { dialogAberto = null }) {
+                        Text(stringResource(R.string.agora_nao))
+                    }
+                }
+            )
+            PermissaoDialog.OVERLAY -> AlertDialog(
+                onDismissRequest = { dialogAberto = null },
+                title = { Text(stringResource(R.string.permissao_overlay_rationale_titulo), fontWeight = FontWeight.SemiBold) },
+                text = { Text(stringResource(R.string.permissao_overlay_rationale_mensagem)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        dialogAberto = null
+                        pendingActivation = true
+                        overlayLauncher.launch(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                android.net.Uri.parse("package:${context.packageName}")
+                            )
+                        )
+                    }) { Text(stringResource(R.string.ir_para_configuracoes), color = ColorPrimary) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { dialogAberto = null }) {
+                        Text(stringResource(R.string.agora_nao))
+                    }
+                }
+            )
+            PermissaoDialog.MICROFONE -> AlertDialog(
+                onDismissRequest = { dialogAberto = null },
+                title = { Text(stringResource(R.string.permissao_microfone_rationale_titulo), fontWeight = FontWeight.SemiBold) },
+                text = { Text(stringResource(R.string.permissao_microfone_rationale_mensagem)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        dialogAberto = null
+                        micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }) { Text("Permitir", color = ColorPrimary) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { dialogAberto = null }) {
+                        Text(stringResource(R.string.agora_nao))
+                    }
+                }
+            )
+            null -> {}
         }
     }
 }
