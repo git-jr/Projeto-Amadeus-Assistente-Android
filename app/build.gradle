@@ -26,8 +26,8 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 23
         targetSdk 36
-        versionCode 35
-        versionName "3.0.0 | Agent Alpha 2"
+        versionCode 36
+        versionName "3.0.0 | Agent Alpha 1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "GEMINI_API_KEY", "\"${localProperties.getProperty('GEMINI_API_KEY', '')}\""
         buildConfigField "String", "OPENAI_API_KEY", "\"${localProperties.getProperty('OPENAI_API_KEY', '')}\""
