@@ -56,6 +56,7 @@
 -keep class com.paradoxo.amadeus.cognicao.** { *; }
 -keep class com.paradoxo.amadeus.dao.** { *; }
 -keep class com.paradoxo.amadeus.modelo.** { *; }
+-keep enum com.paradoxo.amadeus.enums.** { *; }
 
 # ── JNA (used by Vosk) ────────────────────────────────────────────────────────
 # JNA's native initIDs() looks up fields by name via JNI — R8 must not rename them
