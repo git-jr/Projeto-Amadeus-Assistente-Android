@@ -5,12 +5,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'com.google.gms.google-services'
     id 'com.google.android.gms.oss-licenses-plugin'
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader -> localProperties.load(reader) }
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -29,8 +24,6 @@ android {
         versionCode 36
         versionName "3.0.0 | Agent Alpha 1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField "String", "GEMINI_API_KEY", "\"${localProperties.getProperty('GEMINI_API_KEY', '')}\""
-        buildConfigField "String", "OPENAI_API_KEY", "\"${localProperties.getProperty('OPENAI_API_KEY', '')}\""
     }
 
     buildTypes {
@@ -129,4 +122,10 @@ dependencies {
 
     implementation 'androidx.activity:activity-compose:1.13.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0'
+}
+
+secrets {
+    propertiesFileName = 'local.properties'
+    defaultPropertiesFileName = 'secrets.defaults.properties'
+    ignoreList.add("sdk.dir")
 }
