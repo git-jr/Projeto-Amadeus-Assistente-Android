@@ -33,9 +33,8 @@
 -keep class org.vosk.** { *; }
 -keepclassmembers class org.vosk.** { *; }
 
-# ── Gemini / Google AI SDK ────────────────────────────────────────────────────
--keep class com.google.ai.client.** { *; }
--keep class com.google.generativeai.** { *; }
+# ── Firebase AI Logic (covered by com.google.firebase.** rule above) ─────────
+-keep class com.google.firebase.ai.** { *; }
 
 # ── Joda-Time ─────────────────────────────────────────────────────────────────
 # joda-convert is an optional compile-time dependency of joda-time; not shipped at runtime

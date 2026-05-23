@@ -2,21 +2,22 @@ package com.paradoxo.amadeus.cognicao
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
-import com.google.ai.client.generativeai.type.generationConfig
+import com.google.firebase.Firebase
+import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.GenerativeBackend
+import com.google.firebase.ai.type.content
+import com.google.firebase.ai.type.generationConfig
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.AgentStepResult
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
 import kotlinx.coroutines.delay
 
-class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
+class GeminiCommandInterpreter : AgentInterpreter {
 
     private val model by lazy {
-        GenerativeModel(
+        Firebase.ai(backend = GenerativeBackend.vertexAI()).generativeModel(
             modelName = RemoteConfigManager.geminiModel,
-            apiKey = apiKey,
             generationConfig = generationConfig {
                 temperature = 0.1f
                 maxOutputTokens = 512
@@ -28,8 +29,6 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
     // ── Single-shot (mantido como fallback rápido) ────────────────────────────
 
     override suspend fun interpret(command: String, elements: List<UiElement>): List<ActionIntent> {
-        if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return emptyList()
-
         val elementsList = AgentPromptBuilder.buildElementsList(elements)
         if (elementsList.isBlank()) return emptyList()
 
@@ -52,8 +51,6 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
         fewShotExamples: List<MacroExample>,
         onRetry: (suspend (attempt: Int, waitMs: Long) -> Unit)?
     ): AgentStepResult {
-        if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return AgentStepResult(done = true, reason = "API key não configurada")
-
         val elementsList = AgentPromptBuilder.buildElementsList(elements)
             .ifEmpty { "Nenhum elemento interativo encontrado" }
 
@@ -80,7 +77,7 @@ class GeminiCommandInterpreter(private val apiKey: String) : AgentInterpreter {
         }
     }
 
-    // ── Retry (Gemini-específico: 503 / MissingFieldException) ───────────────
+    // ── Retry (503 / MissingFieldException) ──────────────────────────────────
 
     private fun isRetryable(e: Exception): Boolean {
         val msg = e.message ?: e.cause?.message ?: ""

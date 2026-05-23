@@ -13,7 +13,7 @@ object AIProviderFactory {
                 AIProvider.OPENAI
             }
         return when (provider) {
-            AIProvider.GEMINI -> GeminiCommandInterpreter(BuildConfig.GEMINI_API_KEY)
+            AIProvider.GEMINI -> GeminiCommandInterpreter()
             AIProvider.OPENAI -> OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
         }
     }
