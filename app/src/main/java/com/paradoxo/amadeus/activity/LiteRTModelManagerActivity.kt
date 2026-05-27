@@ -187,7 +187,7 @@ private fun ModelManagerScreen(onBack: () -> Unit) {
             TopAppBar(
                 title = {
                     Text(
-                        "Modelos Locais",
+                        "Modelos Locais (Beta)",
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
