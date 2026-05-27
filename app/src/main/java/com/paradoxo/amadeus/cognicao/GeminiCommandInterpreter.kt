@@ -16,11 +16,11 @@ import kotlinx.coroutines.delay
 class GeminiCommandInterpreter : AgentInterpreter {
 
     private val model by lazy {
-        Firebase.ai(backend = GenerativeBackend.vertexAI()).generativeModel(
+        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
             modelName = RemoteConfigManager.geminiModel,
             generationConfig = generationConfig {
                 temperature = 0.1f
-                maxOutputTokens = 512
+                maxOutputTokens = 1000
             },
             systemInstruction = content { text(AgentPromptBuilder.buildSystemPrompt()) }
         )
