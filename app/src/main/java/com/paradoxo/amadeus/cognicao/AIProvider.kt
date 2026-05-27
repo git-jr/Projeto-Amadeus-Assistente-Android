@@ -1,3 +1,3 @@
 package com.paradoxo.amadeus.cognicao
 
-enum class AIProvider { GEMINI, OPENAI }
+enum class AIProvider { GEMINI, OPENAI, LOCAL }

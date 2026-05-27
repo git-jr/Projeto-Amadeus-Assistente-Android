@@ -35,14 +35,19 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,6 +89,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.cognicao.AIProvider
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Preferencias
@@ -126,6 +132,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
     var botaoFlutuanteAtivo by remember { mutableStateOf(false) }
     var wakeWordAtivo by remember { mutableStateOf(false) }
     var reusarMacrosAtivo by remember { mutableStateOf(false) }
+    var currentProvider by remember { mutableStateOf(AIProvider.OPENAI) }
     // Sinaliza que o usuário saiu desta tela para conceder uma permissão necessária ao agente.
     // Quando voltar com todas as permissões satisfeitas, o botão flutuante é iniciado automaticamente.
     var pendingActivation by remember { mutableStateOf(false) }
@@ -147,6 +154,9 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
         botaoFlutuanteAtivo = allPermsOk && prefAtivo
         wakeWordAtivo = botaoFlutuanteAtivo && Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_WAKE_WORD_ATIVO, context, false)
         reusarMacrosAtivo = Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_REUSAR_MACROS_PROMPT_GEMINI, context, false)
+        val savedProvider = Preferencias.getPrefString(Preferencias.PREF_AI_PROVIDER, context)
+        currentProvider = runCatching { AIProvider.valueOf(savedProvider.uppercase()) }
+            .getOrElse { AIProvider.OPENAI }
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -314,6 +324,29 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Configurações Gerais",
                     descricao = "Nomes, voz, dados e mais",
                     onClick = { context.startActivity(Intent(context, ConfigPrimariaActivity::class.java)) }
+                )
+            }
+
+            SectionHeader("Modelo de IA")
+
+            ShortcutCard {
+                ProviderSelectorRow(
+                    currentProvider = currentProvider,
+                    onProviderSelected = { provider ->
+                        Preferencias.setPrefString(provider.name, Preferencias.PREF_AI_PROVIDER, context)
+                        currentProvider = provider
+                        if (botaoFlutuanteAtivo) {
+                            context.stopService(Intent(context, FloatingButtonAmadeusService::class.java))
+                            context.startService(Intent(context, FloatingButtonAmadeusService::class.java))
+                        }
+                    }
+                )
+                Divider()
+                ShortcutRow(
+                    icon = Icons.Rounded.SmartToy,
+                    label = "Modelos Locais",
+                    descricao = "Baixar e gerenciar modelos offline",
+                    onClick = { context.startActivity(Intent(context, LiteRTModelManagerActivity::class.java)) }
                 )
             }
 
@@ -655,4 +688,72 @@ private fun Divider() {
             .height(0.5.dp)
             .background(Color(0x1F000000))
     )
+}
+
+@Composable
+private fun ProviderSelectorRow(
+    currentProvider: AIProvider,
+    onProviderSelected: (AIProvider) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val (icon, descricao) = when (currentProvider) {
+        AIProvider.GEMINI -> Icons.Rounded.Hub to "Google Gemini (Firebase AI)"
+        AIProvider.OPENAI -> Icons.Rounded.AutoAwesome to "OpenAI"
+        AIProvider.LOCAL  -> Icons.Rounded.CloudOff to "Modelo local (offline)"
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(ColorDarkPurple.copy(alpha = 0.08f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = ColorDarkPurple,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                "Provedor de IA",
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                color = Color(0xFF212121)
+            )
+            Text(descricao, fontSize = 12.sp, color = Color(0xFF757575), lineHeight = 16.sp)
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+            contentDescription = null,
+            tint = Color(0xFFBDBDBD),
+            modifier = Modifier.size(14.dp)
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Google Gemini") },
+                leadingIcon = { Icon(Icons.Rounded.Hub, contentDescription = null) },
+                onClick = { expanded = false; onProviderSelected(AIProvider.GEMINI) }
+            )
+            DropdownMenuItem(
+                text = { Text("OpenAI") },
+                leadingIcon = { Icon(Icons.Rounded.AutoAwesome, contentDescription = null) },
+                onClick = { expanded = false; onProviderSelected(AIProvider.OPENAI) }
+            )
+            DropdownMenuItem(
+                text = { Text("Local (offline)") },
+                leadingIcon = { Icon(Icons.Rounded.CloudOff, contentDescription = null) },
+                onClick = { expanded = false; onProviderSelected(AIProvider.LOCAL) }
+            )
+        }
+    }
 }

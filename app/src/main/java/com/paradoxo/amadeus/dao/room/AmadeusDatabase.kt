@@ -8,6 +8,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.paradoxo.amadeus.dao.room.entities.*
+import com.paradoxo.amadeus.dao.room.entities.LocalModelEntity
 
 @Database(
     entities = [
@@ -16,9 +17,10 @@ import com.paradoxo.amadeus.dao.room.entities.*
         SentencaEntity::class,
         HistoricoSentencaEntity::class,
         EntidadeEntity::class,
-        AgentMacroEntity::class
+        AgentMacroEntity::class,
+        LocalModelEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -29,6 +31,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
     abstract fun sentencaDAO(): SentencaRoomDAO
     abstract fun entidadeDAO(): EntidadeRoomDAO
     abstract fun agentMacroDAO(): AgentMacroDAO
+    abstract fun localModelDAO(): LocalModelDAO
 
     companion object {
         @Volatile
@@ -193,6 +196,28 @@ abstract class AmadeusDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `local_model` (
+                        `id`                INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `modelId`           TEXT NOT NULL,
+                        `displayName`       TEXT NOT NULL,
+                        `description`       TEXT NOT NULL,
+                        `sizeBytes`         INTEGER NOT NULL,
+                        `downloadedBytes`   INTEGER NOT NULL DEFAULT 0,
+                        `status`            TEXT NOT NULL DEFAULT 'NOT_DOWNLOADED',
+                        `isActive`          INTEGER NOT NULL DEFAULT 0,
+                        `filePath`          TEXT,
+                        `downloadManagerId` INTEGER NOT NULL DEFAULT -1
+                    )
+                """.trimIndent())
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_local_model_modelId` ON `local_model` (`modelId`)"
+                )
+            }
+        }
+
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("""
@@ -218,7 +243,7 @@ abstract class AmadeusDatabase : RoomDatabase() {
                     AmadeusDatabase::class.java,
                     "Amadeus.db"
                 )
-                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     // Versões 1, 2, 3 eram esquemas muito antigos já cobertos pelo
                     // onUpgrade do SQLiteOpenHelper. Na prática todos os usuários
                     // chegam na v4, mas caso alguém nunca tenha aberto o app o banco

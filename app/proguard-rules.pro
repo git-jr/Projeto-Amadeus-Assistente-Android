@@ -62,3 +62,9 @@
 -keep class com.sun.jna.** { *; }
 -keepclassmembers class com.sun.jna.** { *; }
 -dontwarn com.sun.jna.**
+
+# ── LiteRT-LM (on-device LLM, JNI native bindings) ───────────────────────────
+-keep class com.google.ai.edge.litertlm.** { *; }
+-keepclassmembers class com.google.ai.edge.litertlm.** { *; }
+-dontwarn com.google.ai.edge.litertlm.**
+-keep enum com.paradoxo.amadeus.dao.room.entities.ModelStatus { *; }

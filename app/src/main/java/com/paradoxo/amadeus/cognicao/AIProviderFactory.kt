@@ -1,12 +1,17 @@
 package com.paradoxo.amadeus.cognicao
 
+import android.content.Context
 import android.util.Log
 import com.paradoxo.amadeus.BuildConfig
+import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.util.Preferencias
+import kotlinx.coroutines.runBlocking
 
 object AIProviderFactory {
 
-    fun create(): AgentInterpreter {
-        val providerName = RemoteConfigManager.aiProvider
+    fun create(context: Context): AgentInterpreter {
+        val pref = Preferencias.getPrefString(Preferencias.PREF_AI_PROVIDER, context)
+        val providerName = pref.ifBlank { RemoteConfigManager.aiProvider }
         val provider = runCatching { AIProvider.valueOf(providerName.uppercase()) }
             .getOrElse {
                 Log.w("AIProviderFactory", "Provider desconhecido '$providerName', usando OPENAI")
@@ -15,6 +20,17 @@ object AIProviderFactory {
         return when (provider) {
             AIProvider.GEMINI -> GeminiCommandInterpreter()
             AIProvider.OPENAI -> OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+            AIProvider.LOCAL -> {
+                val active = runBlocking {
+                    AmadeusDatabase.getInstance(context).localModelDAO().getActive()
+                }
+                if (active?.filePath != null) {
+                    LiteRTCommandInterpreter(context, active.filePath)
+                } else {
+                    Log.w("AIProviderFactory", "LOCAL selecionado mas nenhum modelo ativo. Fallback OPENAI.")
+                    OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+                }
+            }
         }
     }
 }

@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+
+        <!-- LiteRT-LM GPU backend (optional — device-specific) -->
+        <uses-native-library android:name="libvndksupport.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+
         <activity
             android:name=".activity.ConfigPrimariaActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -109,6 +114,10 @@
 
         <activity
             android:name=".activity.AgentDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.LiteRTModelManagerActivity"
             android:exported="false" />
 
         <meta-data

@@ -15,6 +15,7 @@ import com.paradoxo.amadeus.cognicao.RemoteConfigManager
 import com.paradoxo.amadeus.onboarding.OnboardingActivity
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.DefaultMacroSeeder
+import com.paradoxo.amadeus.dao.room.LocalModelSeeder
 import com.paradoxo.amadeus.dao.room.JsonAssetLoader
 import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.dao.room.toHistoricoEntity
@@ -57,9 +58,11 @@ class SplashScreenActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // ── Etapa 2: seed de macros padrão (só insere se não existir) ──
+            // ── Etapa 2: seed de macros padrão e modelos locais (idempotente) ──
             withContext(Dispatchers.IO) {
-                DefaultMacroSeeder.seed(AmadeusDatabase.getInstance(this@SplashScreenActivity))
+                val db = AmadeusDatabase.getInstance(this@SplashScreenActivity)
+                DefaultMacroSeeder.seed(db)
+                LocalModelSeeder.seed(db)
             }
 
             // ── Etapa 3: carga inicial de assets ───────────────────────────

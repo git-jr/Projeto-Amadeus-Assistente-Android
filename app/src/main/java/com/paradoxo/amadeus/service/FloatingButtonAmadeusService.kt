@@ -39,6 +39,7 @@ import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.cognicao.AIProviderFactory
 import com.paradoxo.amadeus.cognicao.AgentInterpreter
+import com.paradoxo.amadeus.cognicao.LiteRTCommandInterpreter
 import com.paradoxo.amadeus.cognicao.AgentMemoryManager
 import com.paradoxo.amadeus.cognicao.CommandInterpreter
 import com.paradoxo.amadeus.cognicao.ScreenMapGenerator
@@ -78,7 +79,7 @@ class FloatingButtonAmadeusService : Service() {
     }
 
     private val interpreter = CommandInterpreter()
-    private val geminiInterpreter: AgentInterpreter = AIProviderFactory.create()
+    private val geminiInterpreter: AgentInterpreter by lazy { AIProviderFactory.create(this) }
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
     private val memoryManager by lazy { AgentMemoryManager(this) }
     private val goalAnalyticsTracker by lazy { GoalAnalyticsTracker(applicationContext) }
@@ -904,6 +905,7 @@ class FloatingButtonAmadeusService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         loopJob?.cancel()
+        (geminiInterpreter as? LiteRTCommandInterpreter)?.release()
         wakeWordManager.release()
         speechRecognizer?.destroy()
         speechRecognizer = null
