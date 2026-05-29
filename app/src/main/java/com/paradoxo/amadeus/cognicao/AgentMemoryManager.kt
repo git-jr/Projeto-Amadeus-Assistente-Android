@@ -50,8 +50,12 @@ class AgentMemoryManager(context: Context) {
     }
 
     suspend fun recallMacro(goal: String): AgentMacroEntity? {
+        var entity = dao.findConfirmedByGoalKey(goal)
+
+        if (entity != null) return entity
+
         val keyNormalized = normalizeGoal(goal)
-        val entity = dao.findConfirmedByGoalKey(keyNormalized)
+        entity = dao.findConfirmedByGoalKey(keyNormalized)
 
         if (entity != null) return entity
 
