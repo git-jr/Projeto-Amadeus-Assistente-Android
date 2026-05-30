@@ -55,6 +55,7 @@ import com.paradoxo.amadeus.view.ScreenHighlightView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -561,6 +562,10 @@ class FloatingButtonAmadeusService : Service() {
             } else false
         }
 
+
+        // simular digitação para mostrar a animação da View e depois preencher o campo de comando
+        simulateTyping()
+
         // Primeiro frame: flags passivas + alpha 0 no nível de janela.
         // FLAG_NOT_TOUCH_MODAL sem FLAG_NOT_FOCUSABLE força o WM a recalcular
         // regiões de toque em todas as janelas, causando repaint na nav bar.
@@ -601,6 +606,24 @@ class FloatingButtonAmadeusService : Service() {
             ?.setDuration(500)
             ?.setInterpolator(android.view.animation.OvershootInterpolator(3f))
             ?.start()
+    }
+
+    private fun simulateTyping() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val listPhrase = listOf<String>(
+                "Dá",
+                "Dá uma",
+                "Dá uma volta",
+                "Dá uma volta no",
+                "Dá uma volta no insta",
+            )
+            delay(800)
+            listPhrase.forEach {
+                updateRecognizedText(it)
+                delay(350)
+            }
+            fillFieldAndSend("Dá uma volta no insta")
+        }
     }
 
     private fun startSpeechRecognition() {
