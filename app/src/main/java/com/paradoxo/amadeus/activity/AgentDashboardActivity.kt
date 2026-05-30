@@ -36,12 +36,12 @@ import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CloudOff
-import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Visibility
@@ -347,6 +347,17 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Modelos Locais",
                     descricao = "Baixar e gerenciar modelos offline",
                     onClick = { context.startActivity(Intent(context, LiteRTModelManagerActivity::class.java)) }
+                )
+            }
+
+            SectionHeader("Extras")
+
+            ShortcutCard {
+                ShortcutRow(
+                    icon = Icons.Rounded.PlayArrow,
+                    label = "Demo Ações",
+                    descricao = "Demonstrar cada ação que o agente pode executar",
+                    onClick = { context.startActivity(Intent(context, DemoActionsActivity::class.java)) }
                 )
             }
 

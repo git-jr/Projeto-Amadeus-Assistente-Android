@@ -564,7 +564,7 @@ class FloatingButtonAmadeusService : Service() {
 
 
         // simular digitação para mostrar a animação da View e depois preencher o campo de comando
-        simulateTyping()
+//        simulateTyping()
 
         // Primeiro frame: flags passivas + alpha 0 no nível de janela.
         // FLAG_NOT_TOUCH_MODAL sem FLAG_NOT_FOCUSABLE força o WM a recalcular
