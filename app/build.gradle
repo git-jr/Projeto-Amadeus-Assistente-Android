@@ -135,3 +135,20 @@ secrets {
     defaultPropertiesFileName = 'secrets.defaults.properties'
     ignoreList.add("sdk.dir")
 }
+
+// Grant accessibility permission via ADB for debug builds
+tasks.register('grantAccessibility', Exec) {
+    group = 'development'
+    description = 'Grant accessibility permission via ADB (debug only)'
+    def pkg = 'com.paradoxo.amadeus'
+    def svc = "${pkg}/${pkg}.service.AmadeusAccessibilityService"
+    commandLine 'sh', '-c',
+        "adb shell settings put secure enabled_accessibility_services \"$svc\" && " +
+        "adb shell settings put secure accessibility_enabled 1"
+}
+
+tasks.configureEach { task ->
+    if (task.name == 'installDebug') {
+        task.finalizedBy 'grantAccessibility'
+    }
+}
