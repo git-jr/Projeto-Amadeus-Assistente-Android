@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -32,10 +33,13 @@ class TouchFeedbackView(context: Context) : View(context) {
     private val colorClick       = "#ff002b".toColorInt()
     private val colorType        = "#29B6F6".toColorInt()
     private val colorScroll      = "#EEEEEE".toColorInt()
-    private val colorBack        = Color.WHITE
     private val colorBackHalo    = Color.RED
-    private val colorHome        = Color.WHITE
-    private val colorRecents     = Color.WHITE
+
+    private val colorGlobalIcon: Int get() = Color.WHITE
+
+    private val colorGlobalHalo: Int = "#55888888".toColorInt()
+
+    private val colorBack: Int get() = colorGlobalIcon
 
     // ── Alfas (0–255) ──────────────────────────────────────────────────────────
 
@@ -289,12 +293,17 @@ class TouchFeedbackView(context: Context) : View(context) {
         val dW = s * 0.35f;      val dH = s * 0.5f
         val dL = cx - dW / 2f;   val dT = bB - dH
 
-        paintFill.color = colorHome
+        // halo de fundo garante visibilidade em modo claro e escuro
+        paintFill.color = colorGlobalHalo
+        paintFill.alpha = (alpha * 0.9f).toInt().coerceIn(0, 255)
+        canvas.drawCircle(cx, cy, s * 1.5f, paintFill)
+
+        paintFill.color = colorGlobalIcon
         paintFill.alpha = (alpha * alphaHomeFill).toInt()
         canvas.drawPath(roofPath, paintFill)
         canvas.drawRect(bL, bT, bR, bB, paintFill)
 
-        paintArrow.color = colorHome
+        paintArrow.color = colorGlobalIcon
         paintArrow.alpha = alpha
         paintArrow.strokeWidth = dp * 4f
         canvas.drawPath(roofPath, paintArrow)
@@ -330,8 +339,17 @@ class TouchFeedbackView(context: Context) : View(context) {
         val c1L = cx - cardW / 2f + spread * 0.4f
         val c1T = cy - cardH / 2f + spread * 0.3f
 
-        paintFill.color = colorRecents
-        paintRing.color = colorRecents
+        // halo de fundo garante visibilidade em ambos os modos
+        paintFill.color = colorGlobalHalo
+        paintFill.alpha = (alpha * 0.9f).toInt().coerceIn(0, 255)
+        canvas.drawRoundRect(
+            cx - cardW * 0.9f, cy - cardH * 0.9f,
+            cx + cardW * 0.9f, cy + cardH * 0.9f,
+            cornerR * 1.5f, cornerR * 1.5f, paintFill
+        )
+
+        paintFill.color = colorGlobalIcon
+        paintRing.color = colorGlobalIcon
 
         // Card de trás
         paintFill.alpha = (alpha * alphaCardBack).toInt()
