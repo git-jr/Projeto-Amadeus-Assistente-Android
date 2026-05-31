@@ -79,12 +79,16 @@ private val DEMOS = listOf(
     DemoScenario(
         id = "open_app",
         title = "Abrir apps",
-        description = "Abre WhatsApp por comando, volta para home",
+        description = "Abre YouTube por comando, volta Amadeus",
         icon = Icons.Rounded.Android,
         color = Color(0xFF4CAF50),
         actions = listOf(
-            ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
-            ActionIntent(ActionType.WAIT, value = "3000"),
+            ActionIntent(ActionType.OPEN_APP, target = "YouTube"),
+            ActionIntent(ActionType.WAIT, value = "2000"),
+            ActionIntent(ActionType.RECENTS),
+            ActionIntent(ActionType.WAIT, value = "500"),
+            ActionIntent(ActionType.OPEN_APP, target = "Amadeus"),
+            ActionIntent(ActionType.WAIT, value = "5 00"),
             ActionIntent(ActionType.HOME),
         )
     ),
@@ -100,15 +104,15 @@ private val DEMOS = listOf(
     DemoScenario(
         id = "tap",
         title = "Executar toques",
-        description = "Abre Configurações e toca em um elemento por texto",
+        description = "Abre YouTube e clica em alguns elementos da tela",
         icon = Icons.Rounded.TouchApp,
         color = Color(0xFFFF9800),
         actions = listOf(
-            ActionIntent(ActionType.OPEN_APP, target = "Configurações"),
-            ActionIntent(ActionType.WAIT, value = "1500"),
-            ActionIntent(ActionType.CLICK, target = "Aplicativos"),
-            ActionIntent(ActionType.WAIT, value = "2000"),
-            ActionIntent(ActionType.HOME),
+            ActionIntent(ActionType.OPEN_APP, target = "YouTube"),
+            ActionIntent(ActionType.WAIT, value = "200"),
+            ActionIntent(ActionType.CLICK, target = "Novidades para você"),
+            ActionIntent(ActionType.CLICK, target = "Música"),
+            ActionIntent(ActionType.CLICK, target = "Tudo"),
         )
     ),
     DemoScenario(
@@ -119,9 +123,10 @@ private val DEMOS = listOf(
         color = Color(0xFF9C27B0),
         actions = listOf(
             ActionIntent(ActionType.OPEN_APP, target = "Google"),
-            ActionIntent(ActionType.WAIT, value = "2000"),
+            ActionIntent(ActionType.WAIT, value = "1000"),
+            ActionIntent(ActionType.CLICK_COORDS, value = "500,580"), // clicar na barra de pesquisa
             ActionIntent(ActionType.TYPE, value = "Olá, eu sou Amadeus"),
-            ActionIntent(ActionType.WAIT, value = "2500"),
+            ActionIntent(ActionType.WAIT, value = "1000"),
             ActionIntent(ActionType.HOME),
         )
     ),
@@ -132,7 +137,7 @@ private val DEMOS = listOf(
         icon = Icons.Rounded.SwipeVertical,
         color = Color(0xFF00BCD4),
         actions = listOf(
-            ActionIntent(ActionType.OPEN_APP, target = "Configurações"),
+            ActionIntent(ActionType.OPEN_APP, target = "config."),
             ActionIntent(ActionType.WAIT, value = "1500"),
             ActionIntent(ActionType.SCROLL, value = "down"),
             ActionIntent(ActionType.SCROLL, value = "down"),
@@ -146,17 +151,19 @@ private val DEMOS = listOf(
     DemoScenario(
         id = "navigation",
         title = "Ações de navegação",
-        description = "Abre app, volta, abre recentes, vai para home",
+        description = "Abre app Play Store, volta, abre recentes, vai para home",
         icon = Icons.Rounded.Navigation,
         color = Color(0xFFF44336),
         actions = listOf(
-            ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
-            ActionIntent(ActionType.WAIT, value = "2000"),
+            ActionIntent(ActionType.OPEN_APP, target = "Play Store"),
+            ActionIntent(ActionType.WAIT, value = "1000"),
             ActionIntent(ActionType.BACK),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            ActionIntent(ActionType.RECENTS),
-            ActionIntent(ActionType.WAIT, value = "2000"),
             ActionIntent(ActionType.HOME),
+            ActionIntent(ActionType.WAIT, value = "1000"),
+            ActionIntent(ActionType.RECENTS),
+            ActionIntent(ActionType.WAIT, value = "500"),
+            ActionIntent(ActionType.OPEN_APP, target = "Amadeus"),
         )
     ),
     DemoScenario(
@@ -245,8 +252,19 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
 
             if (demo.isReadScreen) {
                 val elements = AmadeusAccessibilityService.getVisibleElements()
-                val preview = elements.take(5).joinToString("\n") { e ->
-                    "• ${e.text?.take(40) ?: e.contentDescription?.take(40) ?: "(sem texto)"}"
+
+                // ordenar pelos que têm texto, depois contentDescription, depois labelLegivel, e por último os sem texto
+                val sorted = elements.sortedByDescending { e ->
+                    when {
+                        !e.text.isNullOrBlank() -> 3
+                        !e.contentDescription.isNullOrBlank() -> 2
+                        !e.labelLegivel.isNullOrBlank() -> 1
+                        else -> 0
+                    }
+                }
+
+                val preview = sorted.take(5).joinToString("\n") { e ->
+                    "• ${e.text?.take(40) ?: e.contentDescription?.take(40) ?: e.labelLegivel.take(40) ?: "(sem texto)"}"
                 }
                 readResult = "${elements.size} elementos encontrados:\n$preview"
                 delay(4000)
@@ -277,7 +295,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Demo Script", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Demo Ações", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Voltar")
@@ -322,12 +340,24 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                         .padding(vertical = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "$countdown",
-                        fontSize = 64.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text(
+                            text = "Executando em:",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "$countdown",
+                            fontSize = 64.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
@@ -438,7 +468,7 @@ private fun DemoCard(
                     disabledContainerColor = Color(0xFFE0E0E0)
                 ),
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.size(width = 80.dp, height = 36.dp)
+                modifier = Modifier.size(width = 70.dp, height = 50.dp)
             ) {
                 if (isRunning) {
                     Text("...", fontSize = 12.sp)
