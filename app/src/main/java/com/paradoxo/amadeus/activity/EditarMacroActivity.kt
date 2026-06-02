@@ -71,9 +71,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
@@ -511,13 +509,6 @@ private fun MacroActionCard(
     onDelete: () -> Unit,
     onPickReference: () -> Unit,
 ) {
-    var localValue by remember(action.value) {
-        mutableStateOf(TextFieldValue(action.value, TextRange(action.value.length)))
-    }
-    var localTarget by remember(action.target) {
-        mutableStateOf(TextFieldValue(action.target, TextRange(action.target.length)))
-    }
-
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -580,11 +571,8 @@ private fun MacroActionCard(
             val fields = visibleFields(action.type)
             if (fields.showTarget) {
                 OutlinedTextField(
-                    value = localTarget,
-                    onValueChange = {
-                        localTarget = it
-                        onActionChange(action.copy(target = it.text))
-                    },
+                    value = action.target,
+                    onValueChange = { onActionChange(action.copy(target = it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Elemento / App") },
                     singleLine = true
@@ -593,11 +581,8 @@ private fun MacroActionCard(
 
             if (fields.showValue) {
                 OutlinedTextField(
-                    value = localValue,
-                    onValueChange = {
-                        localValue = it
-                        onActionChange(action.copy(value = it.text))
-                    },
+                    value = action.value,
+                    onValueChange = { onActionChange(action.copy(value = it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(valueLabel(action.type)) },
                     singleLine = true
