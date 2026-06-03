@@ -1,10 +1,16 @@
 package com.paradoxo.amadeus.activity
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -70,6 +76,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -86,6 +94,13 @@ import com.paradoxo.amadeus.util.Toasts.meuToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.graphics.createBitmap
+
+private data class InstalledAppOption(
+    val label: String,
+    val packageName: String,
+    val icon: ImageBitmap,
+)
 
 class EditarMacroActivity : AppCompatActivity() {
 
@@ -107,10 +122,21 @@ class EditarMacroActivity : AppCompatActivity() {
                 var title by rememberSaveable { mutableStateOf("Nova macro") }
                 var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
                 var showReferenceDialog by rememberSaveable { mutableStateOf(false) }
+                var showAppDialog by rememberSaveable { mutableStateOf(false) }
                 var referenceOptions by remember { mutableStateOf<List<String>>(emptyList()) }
+                var appOptions by remember { mutableStateOf<List<InstalledAppOption>>(emptyList()) }
+                var appOptionsLoaded by remember { mutableStateOf(false) }
                 var pendingReferenceActionIndex by remember { mutableStateOf<Int?>(null) }
+                var pendingAppActionIndex by remember { mutableStateOf<Int?>(null) }
                 var nameError by rememberSaveable { mutableStateOf(false) }
                 val nameFocusRequester = remember { FocusRequester() }
+
+                LaunchedEffect(Unit) {
+                    appOptions = withContext(Dispatchers.IO) {
+                        getVisibleApps()
+                    }
+                    appOptionsLoaded = true
+                }
 
                 LaunchedEffect(macroId, recordedJson) {
                     if (macroId == -1) {
@@ -170,6 +196,24 @@ class EditarMacroActivity : AppCompatActivity() {
                     )
                 }
 
+                if (showAppDialog) {
+                    AppPickerDialog(
+                        apps = appOptions,
+                        onDismiss = {
+                            showAppDialog = false
+                            pendingAppActionIndex = null
+                        },
+                        onPick = { app ->
+                            val index = pendingAppActionIndex
+                            if (index != null && index in actions.indices) {
+                                actions[index] = actions[index].copy(target = app.label)
+                            }
+                            showAppDialog = false
+                            pendingAppActionIndex = null
+                        }
+                    )
+                }
+
                 EditarMacroScreen(
                     title = title,
                     loading = loading,
@@ -218,6 +262,20 @@ class EditarMacroActivity : AppCompatActivity() {
                                 pendingReferenceActionIndex = index
                                 referenceOptions = nomes
                                 showReferenceDialog = true
+                            }
+                        }
+                    },
+                    onPickApp = { index ->
+                        when {
+                            !appOptionsLoaded -> {
+                                meuToast("Carregando lista de apps.", this@EditarMacroActivity)
+                            }
+                            appOptions.isEmpty() -> {
+                                meuToast("Nenhum app instalado encontrado.", this@EditarMacroActivity)
+                            }
+                            else -> {
+                                pendingAppActionIndex = index
+                                showAppDialog = true
                             }
                         }
                     },
@@ -307,6 +365,35 @@ class EditarMacroActivity : AppCompatActivity() {
         }
     }
 
+    private fun getVisibleApps(): List<InstalledAppOption> {
+        val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+        val packageManager = packageManager
+        val iconSizePx = (48 * resources.displayMetrics.density).toInt().coerceAtLeast(48)
+        val appsList = packageManager
+            .queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL)
+
+        val temp = appsList.map {
+            it.activityInfo?.packageName.toString()
+            val label = it.loadLabel(packageManager).toString().trim()
+            label
+        }
+        return appsList
+            .mapNotNull { resolveInfo ->
+                val packageName = resolveInfo.activityInfo?.packageName ?: return@mapNotNull null
+                val label = resolveInfo.loadLabel(packageManager).toString().trim()
+                if (label.isBlank()) return@mapNotNull null
+                InstalledAppOption(
+                    label = label,
+                    packageName = packageName,
+                    icon = resolveInfo.loadIcon(packageManager).toImageBitmap(iconSizePx)
+                )
+            }
+            .distinctBy { it.packageName }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
+    }
+
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -331,6 +418,7 @@ private fun EditarMacroScreen(
     onMoveDown: (Int) -> Unit,
     onDeleteAction: (Int) -> Unit,
     onPickReference: (Int) -> Unit,
+    onPickApp: (Int) -> Unit,
     onTest: () -> Unit,
     onSave: () -> Unit,
     onDeleteMacro: () -> Unit,
@@ -413,7 +501,8 @@ private fun EditarMacroScreen(
                     onMoveUp = { onMoveUp(index) },
                     onMoveDown = { onMoveDown(index) },
                     onDelete = { onDeleteAction(index) },
-                    onPickReference = { onPickReference(index) }
+                    onPickReference = { onPickReference(index) },
+                    onPickApp = { onPickApp(index) }
                 )
             }
         }
@@ -508,6 +597,7 @@ private fun MacroActionCard(
     onMoveDown: () -> Unit,
     onDelete: () -> Unit,
     onPickReference: () -> Unit,
+    onPickApp: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -596,6 +686,21 @@ private fun MacroActionCard(
                 ) {
                     Text(
                         text = "@ INSERIR REFERÊNCIA DO BANCO",
+                        color = AmadeusPink,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    )
+                }
+            }
+
+            if (action.type == ActionType.OPEN_APP) {
+                TextButton(
+                    onClick = onPickApp,
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        text = "SELECIONAR APP INSTALADO",
                         color = AmadeusPink,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -807,6 +912,55 @@ private fun ReferenceDialog(
     )
 }
 
+@Composable
+private fun AppPickerDialog(
+    apps: List<InstalledAppOption>,
+    onDismiss: () -> Unit,
+    onPick: (InstalledAppOption) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Selecionar app") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 600.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                itemsIndexed(apps) { index, app ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onPick(app) }
+                            .padding(horizontal = 4.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Image(
+                            bitmap = app.icon,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                        Text(
+                            text = app.label,
+                            modifier = Modifier.weight(1f),
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = { },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
 private data class VisibleFields(
     val showTarget: Boolean,
     val showValue: Boolean,
@@ -848,6 +1002,14 @@ private fun valueLabel(type: ActionType): String = when (type) {
 private fun insertReference(action: ActionIntent, entityName: String): ActionIntent {
     val token = "{{$entityName}}"
     return action.copy(value = action.value + token)
+}
+
+private fun Drawable.toImageBitmap(sizePx: Int): ImageBitmap {
+    val bitmap = createBitmap(sizePx, sizePx)
+    val canvas = Canvas(bitmap)
+    setBounds(0, 0, canvas.width, canvas.height)
+    draw(canvas)
+    return bitmap.asImageBitmap()
 }
 
 private fun ActionType.actionLabel(): String = when (this) {
