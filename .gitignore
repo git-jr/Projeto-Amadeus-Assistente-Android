@@ -11,3 +11,11 @@
 /app/google-services.json
 /.idea/
 /app/release
+
+# Signing credentials
+*.jks
+*.keystore
+*Chaves de assinatura*.rar
+
+# OAuth server credentials
+**/client_secret_*.json

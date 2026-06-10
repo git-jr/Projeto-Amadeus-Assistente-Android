@@ -5,12 +5,14 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.auth.AuthManager
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.DialogPermissao
@@ -33,6 +35,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
     private lateinit var reusarMacrosPromptToggle: MaterialSwitch
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
+    private lateinit var authManager: AuthManager
     private var sincronizandoToggles = false
     private var solicitarDialogAcessibilidadeAoEntrar = false
     private var aguardandoRetornoConfiguracaoAcessibilidade = false
@@ -71,6 +74,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_config_primaria)
         aplicarInsets(findViewById(R.id.configPrimariaLayout))
+        authManager = AuthManager.getInstance(this)
         processarIntent(intent)
         configurarInterface()
     }
@@ -83,6 +87,7 @@ class ConfigPrimariaActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        atualizarConta()
         sincronizarEstadoBotaoFlutuante()
         processarSolicitacoesPendentes()
     }
@@ -92,8 +97,49 @@ class ConfigPrimariaActivity : AppCompatActivity() {
         configurarTextInput()
         configurarBotaoSalvar()
         configurarToggleButton()
+        configurarConta()
         configurarBotaoAssistente()
         configurarBotaoMacros()
+    }
+
+    private fun configurarConta() {
+        findViewById<android.view.View>(R.id.googleSignInButton).setOnClickListener {
+            authManager.signInWithGoogleAsync(this) { success ->
+                atualizarConta()
+                if (success) {
+                    meuToast(getString(R.string.conta_conectada), applicationContext)
+                } else {
+                    authManager.state.value.errorMessage?.let { mensagem ->
+                        meuToast(mensagem, applicationContext)
+                    }
+                }
+            }
+        }
+        findViewById<android.view.View>(R.id.signOutButton).setOnClickListener {
+            authManager.signOut()
+            atualizarConta()
+        }
+        atualizarConta()
+    }
+
+    private fun atualizarConta() {
+        val state = authManager.state.value
+        val statusTextView = findViewById<TextView>(R.id.contaStatusTextView)
+        val descTextView = findViewById<TextView>(R.id.contaDescricaoTextView)
+        val signInButton = findViewById<android.view.View>(R.id.googleSignInButton)
+        val signOutButton = findViewById<android.view.View>(R.id.signOutButton)
+
+        if (state.isGoogleSignedIn) {
+            statusTextView.text = state.email ?: state.displayName ?: getString(R.string.conta_conectada)
+            descTextView.text = getString(R.string.login_google_compra_desc)
+            signInButton.visibility = android.view.View.GONE
+            signOutButton.visibility = android.view.View.VISIBLE
+        } else {
+            statusTextView.setText(R.string.conta_nao_conectada)
+            descTextView.setText(R.string.login_google_opcional_desc)
+            signInButton.visibility = android.view.View.VISIBLE
+            signOutButton.visibility = android.view.View.GONE
+        }
     }
 
     private fun configurarToggleButton() {

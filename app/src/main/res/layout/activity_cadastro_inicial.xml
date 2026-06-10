@@ -94,6 +94,16 @@
             app:backgroundTint="@color/colorPrimary"
             app:cornerRadius="12dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/googleSignInButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/entrar_com_google"
+            android:textAppearance="?attr/textAppearanceButton"
+            app:cornerRadius="12dp" />
+
         <TextView
             android:id="@+id/termosTextView"
             android:layout_width="wrap_content"

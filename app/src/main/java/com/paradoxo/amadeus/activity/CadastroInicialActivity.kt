@@ -17,6 +17,8 @@ import com.google.android.material.textfield.TextInputLayout
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity.Companion.PREF_NOME_IA
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity.Companion.PREF_NOME_USU
+import com.paradoxo.amadeus.auth.AuthManager
+import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
@@ -25,12 +27,14 @@ class CadastroInicialActivity : AppCompatActivity() {
 
     private lateinit var nomeUsuarioEditText: TextInputEditText
     private lateinit var nomeIaEditText: TextInputEditText
+    private lateinit var authManager: AuthManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cadastro_inicial)
         aplicarInsets(findViewById(R.id.cadastroInicialLayout))
         configurarToolBarBranca(this)
+        authManager = AuthManager.getInstance(this)
 
         nomeUsuarioEditText = findViewById(R.id.nomeUsuarioEditText)
         nomeIaEditText = findViewById(R.id.nomeIaEditText)
@@ -45,6 +49,20 @@ class CadastroInicialActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.okButton).setOnClickListener { verificarNomes() }
+        findViewById<View>(R.id.googleSignInButton).setOnClickListener {
+            authManager.signInWithGoogleAsync(this) { success ->
+                if (success) {
+                    authManager.state.value.displayName?.let { nome ->
+                        if (nomeUsuarioEditText.text.isNullOrBlank()) {
+                            nomeUsuarioEditText.setText(nome)
+                        }
+                    }
+                    meuToast(getString(R.string.conta_conectada), this)
+                } else {
+                    authManager.state.value.errorMessage?.let { meuToast(it, this) }
+                }
+            }
+        }
         configurarTextoTermos()
 
 //        nomeUsuarioEditText.setText("Paradoxo")

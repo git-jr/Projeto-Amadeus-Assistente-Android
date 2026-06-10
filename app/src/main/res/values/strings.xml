@@ -29,6 +29,13 @@
     <string name="ao_continuar_termos">Ao continuar, você concorda com nossos termos e política de privacidade</string>
     <string name="termos_e_politica">termos e política de privacidade</string>
     <string name="configuracao_inicial">Configuração inicial</string>
+    <string name="conta">Conta</string>
+    <string name="entrar_com_google">Entrar com Google</string>
+    <string name="sair_da_conta">Sair da conta</string>
+    <string name="conta_conectada">Conta conectada</string>
+    <string name="conta_nao_conectada">Nenhuma conta conectada</string>
+    <string name="login_google_compra_desc">Use sua Conta Google para assinar e recuperar seu acesso.</string>
+    <string name="login_google_opcional_desc">Opcional. O app continua funcionando sem login.</string>
     <string name="modo_fala">Voz da IA</string>
     <string name="configs_podem_ser_alteradas_depois">As configurações podem ser\nalteradas mais tarde</string>
 

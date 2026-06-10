@@ -68,7 +68,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -444,16 +443,27 @@ private fun ModelCard(
                     }
                 }
                 ModelStatus.DOWNLOADED -> {
-                    IconButton(
-                        onClick = { showDeleteDialog = true },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            Icons.Rounded.Delete,
-                            contentDescription = "Excluir",
-                            tint = Color(0xFF9E9E9E),
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!model.isActive) {
+                            Button(
+                                onClick = onSetActive,
+                                colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text("Ativar", fontSize = 13.sp)
+                            }
+                        }
+                        IconButton(
+                            onClick = { showDeleteDialog = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = "Excluir",
+                                tint = Color(0xFF9E9E9E),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
