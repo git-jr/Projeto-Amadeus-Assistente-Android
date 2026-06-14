@@ -45,6 +45,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -227,6 +228,12 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             AgentStatusCard(isRunning = botaoFlutuanteAtivo)
+
+            if (!entitlementState.isPremium) {
+                AmadeusProPromoCard(
+                    onClick = { context.startActivity(Intent(context, AmadeusProActivity::class.java)) }
+                )
+            }
 
             SectionHeader("Permissões")
 
@@ -540,6 +547,50 @@ private fun AgentStatusCard(isRunning: Boolean) {
             }
             Text(text = linkText, style = TextStyle(lineHeight = 18.sp))
         }
+    }
+}
+
+@Composable
+private fun AmadeusProPromoCard(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.horizontalGradient(listOf(ColorPrimary, Color(0xFFD50000))))
+            .clickable(onClick = onClick)
+            .padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.WorkspacePremium,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Amadeus Pro", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(
+                "Ações ilimitadas, memória entre sessões e mais",
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 12.sp,
+                lineHeight = 16.sp
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.85f),
+            modifier = Modifier.size(14.dp)
+        )
     }
 }
 

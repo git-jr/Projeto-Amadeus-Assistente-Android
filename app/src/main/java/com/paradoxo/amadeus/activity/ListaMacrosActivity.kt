@@ -77,7 +77,7 @@ class ListaMacrosActivity : AppCompatActivity() {
 
         findViewById<FloatingActionButton>(R.id.fabGravarMacro).setOnClickListener {
             if (!AmadeusAccessibilityService.isActive(this)) {
-                meuToast("Habilite o serviço de acessibilidade do Amadeus", this)
+                meuToast("Habilite o serviço de acessibilidade da Amadeus", this)
                 AmadeusAccessibilityService.openSettings(this)
                 return@setOnClickListener
             }

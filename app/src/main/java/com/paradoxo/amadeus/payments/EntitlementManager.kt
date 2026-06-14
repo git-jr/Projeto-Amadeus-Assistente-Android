@@ -59,6 +59,19 @@ class EntitlementManager private constructor(private val context: Context) {
         }
     }
 
+    suspend fun fetchPremiumPriceLabel(): String? = withContext(Dispatchers.IO) {
+        runCatching {
+            billingRepository.queryPremiumProduct()
+                ?.subscriptionOfferDetails
+                ?.firstOrNull()
+                ?.pricingPhases
+                ?.pricingPhaseList
+                ?.firstOrNull()
+                ?.formattedPrice
+                ?.let { "$it / mês" }
+        }.getOrNull()
+    }
+
     fun purchasePremium(activity: Activity) {
         scope.launch {
             _state.update { it.copy(purchasing = true, errorMessage = null) }
