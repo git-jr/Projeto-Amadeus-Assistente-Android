@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class EntitlementManager private constructor(private val context: Context) {
 
@@ -58,6 +61,30 @@ class EntitlementManager private constructor(private val context: Context) {
             }
         }
     }
+
+    fun canUseAgent(): Boolean {
+        if (state.value.isPremium) return true
+        return dailyAgentUsageCount() < DAILY_FREE_AGENT_LIMIT
+    }
+
+    fun recordAgentUsage() {
+        if (state.value.isPremium) return
+        val today = currentDayKey()
+        val count = if (Preferencias.getPrefString(PREF_AGENT_USAGE_DATE, context) == today) {
+            Preferencias.getPrefLong(PREF_AGENT_USAGE_COUNT, context)
+        } else 0L
+        Preferencias.setPrefString(today, PREF_AGENT_USAGE_DATE, context)
+        Preferencias.setPrefLong(PREF_AGENT_USAGE_COUNT, count + 1, context)
+    }
+
+    private fun dailyAgentUsageCount(): Long {
+        val today = currentDayKey()
+        return if (Preferencias.getPrefString(PREF_AGENT_USAGE_DATE, context) == today) {
+            Preferencias.getPrefLong(PREF_AGENT_USAGE_COUNT, context)
+        } else 0L
+    }
+
+    private fun currentDayKey(): String = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())
 
     suspend fun fetchPremiumPriceLabel(): String? = withContext(Dispatchers.IO) {
         runCatching {
@@ -224,6 +251,9 @@ class EntitlementManager private constructor(private val context: Context) {
         private const val PREF_SOURCE = "premium_source_cached"
         private const val PREF_FEATURES = "premium_features_cached"
         private const val PREF_EXPIRES_AT = "premium_expires_at_cached"
+        private const val PREF_AGENT_USAGE_COUNT = "agent_usage_count_cached"
+        private const val PREF_AGENT_USAGE_DATE = "agent_usage_date_cached"
+        const val DAILY_FREE_AGENT_LIMIT = 10
 
         @Volatile private var instance: EntitlementManager? = null
 

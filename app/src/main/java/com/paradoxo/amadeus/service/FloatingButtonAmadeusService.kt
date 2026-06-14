@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.AgentDashboardActivity
+import com.paradoxo.amadeus.activity.AmadeusProActivity
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.cognicao.AIProviderFactory
@@ -48,6 +49,7 @@ import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
+import com.paradoxo.amadeus.payments.EntitlementManager
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
 import com.paradoxo.amadeus.view.BorderGlowView
@@ -84,6 +86,7 @@ class FloatingButtonAmadeusService : Service() {
     private val screenMapGenerator by lazy { ScreenMapGenerator(this) }
     private val memoryManager by lazy { AgentMemoryManager(this) }
     private val goalAnalyticsTracker by lazy { GoalAnalyticsTracker(applicationContext) }
+    private val entitlementManager by lazy { EntitlementManager.getInstance(applicationContext) }
     private var lastElements: List<UiElement> = emptyList()
     private var loopJob: Job? = null
 
@@ -317,6 +320,32 @@ class FloatingButtonAmadeusService : Service() {
         ).apply {
             gravity = Gravity.BOTTOM
         }
+        windowManager.addView(agentOverlayView, params)
+    }
+
+    private fun showAgentLimitOverlay() {
+        hideAgentOverlay()
+        val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
+        val view = LayoutInflater.from(themedContext).inflate(R.layout.layout_agent_limit_overlay, null)
+        view.findViewById<View>(R.id.agentLimitUpgradeButton).setOnClickListener {
+            startActivity(
+                Intent(this, AmadeusProActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            hideAgentOverlay()
+        }
+        view.findViewById<View>(R.id.agentLimitDismissButton).setOnClickListener {
+            hideAgentOverlay()
+        }
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            overlayType(),
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM
+        }
+        agentOverlayView = view
         windowManager.addView(agentOverlayView, params)
     }
 
@@ -799,6 +828,15 @@ class FloatingButtonAmadeusService : Service() {
     }
 
     private fun runGeminiLoop(goal: String, allActions: MutableList<ActionIntent>) {
+        val isRemoteProvider = geminiInterpreter !is LiteRTCommandInterpreter
+        if (isRemoteProvider) {
+            if (!entitlementManager.canUseAgent()) {
+                showAgentLimitOverlay()
+                return
+            }
+            entitlementManager.recordAgentUsage()
+        }
+
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
         val maxSteps = 30
