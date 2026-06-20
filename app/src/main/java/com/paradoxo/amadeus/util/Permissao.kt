@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
 const val PERMISSAO_ACESSO_MICROFONE = 1
+const val PERMISSAO_ACESSO_NOTIFICACOES = 3
 
 fun Context.canDrawOverlays(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -62,6 +63,21 @@ object Permissao {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
         ActivityCompat.requestPermissions(activity, arrayOf(permissao), 2)
+    }
+
+    fun solicitarPermissaoNotificacoes(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                PERMISSAO_ACESSO_NOTIFICACOES
+            )
+        }
     }
 
     fun Context.hasRecordAudioPermission(): Boolean {

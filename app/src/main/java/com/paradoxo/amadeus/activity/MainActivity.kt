@@ -53,6 +53,7 @@ import com.paradoxo.amadeus.service.GravaHistoricoService
 import com.paradoxo.amadeus.util.Animacoes.animarComFade
 import com.paradoxo.amadeus.util.DialogPermissao
 import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_MICROFONE
+import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_NOTIFICACOES
 import com.paradoxo.amadeus.util.Permissao
 import com.paradoxo.amadeus.util.Permissao.hasRecordAudioPermission
 import com.paradoxo.amadeus.util.Preferencias
@@ -70,6 +71,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -97,7 +99,9 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarServicosSegundoPlano()
         configurarIterface()
         processarAcoesDeIntent(intent)
+        abrirLinkDeNotificacao(intent)
         verificarEMostrarAviso()
+        Permissao.solicitarPermissaoNotificacoes(this)
 
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
@@ -111,9 +115,17 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         super.onNewIntent(intent)
         setIntent(intent)
         processarAcoesDeIntent(intent)
+        abrirLinkDeNotificacao(intent)
         if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
             trocarLayoutBottom(false)
         }
+    }
+
+    private fun abrirLinkDeNotificacao(intent: Intent?) {
+        Log.d("FCM_INTENT", "extras recebidos: ${intent?.extras?.keySet()}")
+        intent?.extras?.keySet()?.forEach { Log.d("FCM_INTENT", "  $it = ${intent.getStringExtra(it)}") }
+        val link = intent?.getStringExtra("link")?.takeIf { it.isNotBlank() } ?: return
+        startActivity(Intent(Intent.ACTION_VIEW, link.toUri()))
     }
 
     private fun processarAcoesDeIntent(intent: Intent?) {
@@ -645,6 +657,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
                     Log.w("Permissão", "Permissão de armazenamento concedida")
                 } else {
                     meuToast("Permissão de armazenamento negada", applicationContext)
+                }
+            }
+
+            PERMISSAO_ACESSO_NOTIFICACOES -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.w("Permissão", "Permissão de notificações concedida")
+                } else {
+                    Log.w("Permissão", "Permissão de notificações negada")
                 }
             }
         }
