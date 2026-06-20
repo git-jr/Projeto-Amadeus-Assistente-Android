@@ -27,6 +27,7 @@ import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,6 +46,7 @@ class SplashScreenActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // ── Etapa 0: buscar configurações remotas (prompts, modelo, provider) ─
             RemoteConfigManager.fetchAndActivate()
+            FirebaseMessaging.getInstance().subscribeToTopic(TOPICO_NOTIFICACOES_TODOS)
 
             // ── Etapa 1: dados legados (tabela mensagem) ────────────────────
             val bancoAntigoExiste = withContext(Dispatchers.IO) {
@@ -81,6 +83,8 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val TOPICO_NOTIFICACOES_TODOS = "all"
+
         private fun trocarTextoPreCarregamentoBanco(context: Activity) {
             context.findViewById<TextView>(R.id.subTituloTextView)?.text = context.getString(R.string.carregando_banco)
             context.findViewById<TextView>(R.id.subTituloTextView)?.text =
