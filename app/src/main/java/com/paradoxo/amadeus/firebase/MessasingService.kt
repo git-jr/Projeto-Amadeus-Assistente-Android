@@ -27,7 +27,10 @@ class MessasingService : FirebaseMessagingService() {
     override fun onNewToken(tk: String) {
         Log.d("Tk Firebase", "token Firebase: $tk")
         Preferencias.setPrefString(tk, "tk", this)
+
         FirebaseDatabase.getInstance().reference.child("tk").push().setValue(tk)
+            .addOnSuccessListener { Log.d("Tk Firebase", "token salvo no Realtime Database") }
+            .addOnFailureListener { e -> Log.e("Tk Firebase", "falha ao salvar token", e) }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
