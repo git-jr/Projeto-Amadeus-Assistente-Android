@@ -111,8 +111,7 @@ dependencies {
 
     // Firebase AI Logic (replaces standalone generativeai SDK)
     implementation 'com.google.firebase:firebase-ai'
-    implementation 'com.aallam.openai:openai-client:4.1.0'
-    implementation 'io.ktor:ktor-client-okhttp:3.4.3'
+    implementation 'com.google.firebase:firebase-functions'
 
     // Vosk (wake word detection, offline)
     implementation 'com.alphacephei:vosk-android:0.3.75'

@@ -43,14 +43,6 @@
 # ── Jsoup ─────────────────────────────────────────────────────────────────────
 -keep public class org.jsoup.** { *; }
 
-# ── Ktor (optional transitive deps not present at runtime) ───────────────────
--dontwarn io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration
--dontwarn io.ktor.client.plugins.HttpTimeout$Plugin
--dontwarn io.ktor.client.plugins.HttpTimeout
--dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation$Config
--dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation$Plugin
--dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-
 # ── App packages that use reflection / EventBus ───────────────────────────────
 -keep class com.paradoxo.amadeus.cognicao.** { *; }
 -keep class com.paradoxo.amadeus.dao.** { *; }

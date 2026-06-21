@@ -2,7 +2,6 @@ package com.paradoxo.amadeus.cognicao
 
 import android.content.Context
 import android.util.Log
-import com.paradoxo.amadeus.BuildConfig
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.util.Preferencias
 import kotlinx.coroutines.runBlocking
@@ -19,7 +18,7 @@ object AIProviderFactory {
             }
         return when (provider) {
             AIProvider.GEMINI -> GeminiCommandInterpreter()
-            AIProvider.OPENAI -> OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+            AIProvider.OPENAI -> OpenAICommandInterpreter(context)
             AIProvider.LOCAL -> {
                 val active = runBlocking {
                     AmadeusDatabase.getInstance(context).localModelDAO().getActive()
@@ -28,7 +27,7 @@ object AIProviderFactory {
                     LiteRTCommandInterpreter(context, active.filePath)
                 } else {
                     Log.w("AIProviderFactory", "LOCAL selecionado mas nenhum modelo ativo. Fallback OPENAI.")
-                    OpenAICommandInterpreter(BuildConfig.OPENAI_API_KEY)
+                    OpenAICommandInterpreter(context)
                 }
             }
         }

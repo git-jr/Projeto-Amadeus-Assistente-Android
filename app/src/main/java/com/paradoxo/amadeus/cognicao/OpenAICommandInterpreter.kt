@@ -1,46 +1,39 @@
 package com.paradoxo.amadeus.cognicao
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
-import com.aallam.openai.api.chat.ChatCompletionRequest
-import com.aallam.openai.api.chat.ChatMessage
-import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.chat.ImagePart
-import com.aallam.openai.api.chat.TextPart
-import com.aallam.openai.api.exception.OpenAIException
-import com.aallam.openai.api.model.ModelId
-import com.aallam.openai.client.OpenAI
+import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.functions.FirebaseFunctionsException
+import com.paradoxo.amadeus.auth.AuthManager
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.AgentStepResult
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 
-class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
+class OpenAICommandInterpreter(private val context: Context) : AgentInterpreter {
 
-    private val client by lazy { OpenAI(token = apiKey) }
+    private val functions by lazy { FirebaseFunctions.getInstance() }
 
     override suspend fun interpret(command: String, elements: List<UiElement>): List<ActionIntent> {
-        if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return emptyList()
-
         val elementsList = AgentPromptBuilder.buildElementsList(elements)
         if (elementsList.isBlank()) return emptyList()
 
         val prompt = AgentPromptBuilder.buildSingleShotPrompt(elementsList, command)
 
         return try {
-            val response = withRetry {
-                client.chatCompletion(
-                    ChatCompletionRequest(
-                        model = ModelId(RemoteConfigManager.openaiModelSingleShot),
-                        messages = listOf(ChatMessage(role = ChatRole.User, content = prompt)),
-                        maxTokens = 1028
-                    )
+            AuthManager.getInstance(context).ensureAnonymousUser()
+            val text = withRetry {
+                callChatCompletion(
+                    model = RemoteConfigManager.openaiModelSingleShot,
+                    messages = listOf(mapOf("role" to "user", "content" to prompt)),
+                    maxTokens = 1028
                 )
             }
-            val text = response.choices.firstOrNull()?.message?.content ?: return emptyList()
             AgentResponseParser.parseActions(text)
         } catch (e: Exception) {
             Log.e("OpenAIInterpreter", "Erro ao interpretar comando: ${e.message}")
@@ -56,8 +49,6 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
         fewShotExamples: List<MacroExample>,
         onRetry: (suspend (attempt: Int, waitMs: Long) -> Unit)?
     ): AgentStepResult {
-        if (apiKey.isBlank() || apiKey == "sua_chave_aqui") return AgentStepResult(done = true, reason = "API key não configurada")
-
         val elementsList = AgentPromptBuilder.buildElementsList(elements)
             .ifEmpty { "Nenhum elemento interativo encontrado" }
         val historyText = if (history.isEmpty()) "Nenhum — este é o primeiro passo" else history.joinToString("\n")
@@ -67,35 +58,42 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
         Log.w("AgenteLog", "AgenteLog, prompt enviado OpenAI: \n$userTurn")
 
         return try {
+            AuthManager.getInstance(context).ensureAnonymousUser()
             val base64Image = bitmapToBase64(mapBitmap)
-            val response = withRetry(onRetry = onRetry) {
-                client.chatCompletion(
-                    ChatCompletionRequest(
-                        model = ModelId(RemoteConfigManager.openaiModelAgent),
-                        messages = listOf(
-                            ChatMessage(
-                                role = ChatRole.System,
-                                content = systemPrompt
-                            ),
-                            ChatMessage(
-                                role = ChatRole.User,
-                                content = listOf(
-                                    ImagePart(imageUrl = ImagePart.ImageURL(url = "data:image/jpeg;base64,$base64Image")),
-                                    TextPart(text = userTurn)
-                                )
+            val text = withRetry(onRetry = onRetry) {
+                callChatCompletion(
+                    model = RemoteConfigManager.openaiModelAgent,
+                    messages = listOf(
+                        mapOf("role" to "system", "content" to systemPrompt),
+                        mapOf(
+                            "role" to "user",
+                            "content" to listOf(
+                                mapOf("type" to "image_url", "image_url" to mapOf("url" to "data:image/jpeg;base64,$base64Image")),
+                                mapOf("type" to "text", "text" to userTurn)
                             )
-                        ),
-//                        maxTokens = 1028
+                        )
                     )
                 )
             }
-            val text = response.choices.firstOrNull()?.message?.content
-            Log.w("AgenteLog", "AgenteLog, resposta do modelo: ${text}")
-            AgentResponseParser.parseStepResult(text ?: return AgentStepResult(done = true, reason = "Resposta vazia"))
+            Log.w("AgenteLog", "AgenteLog, resposta do modelo: $text")
+            AgentResponseParser.parseStepResult(text.ifBlank { return AgentStepResult(done = true, reason = "Resposta vazia") })
         } catch (e: Exception) {
             Log.e("OpenAIInterpreter", "Erro no passo do loop: ${e.message}", e)
             AgentStepResult(done = true, reason = "Erro: ${e.message}")
         }
+    }
+
+    private suspend fun callChatCompletion(
+        model: String,
+        messages: List<Map<String, Any>>,
+        maxTokens: Int? = null
+    ): String {
+        val data = mutableMapOf<String, Any>("model" to model, "messages" to messages)
+        if (maxTokens != null) data["maxTokens"] = maxTokens
+        val result = functions.getHttpsCallable("chatCompletion").call(data).await()
+        @Suppress("UNCHECKED_CAST")
+        val payload = result.data as? Map<String, Any>
+        return payload?.get("text") as? String ?: ""
     }
 
     private fun bitmapToBase64(bitmap: Bitmap): String {
@@ -114,12 +112,14 @@ class OpenAICommandInterpreter(private val apiKey: String) : AgentInterpreter {
     }
 
     private fun isRetryable(e: Exception): Boolean {
-        if (e is OpenAIException) {
-            val msg = e.message ?: ""
-            return msg.contains("rate", ignoreCase = true) ||
-                   msg.contains("429") ||
-                   msg.contains("503") ||
-                   msg.contains("timeout", ignoreCase = true)
+        if (e is FirebaseFunctionsException) {
+            return when (e.code) {
+                FirebaseFunctionsException.Code.RESOURCE_EXHAUSTED,
+                FirebaseFunctionsException.Code.UNAVAILABLE,
+                FirebaseFunctionsException.Code.INTERNAL,
+                FirebaseFunctionsException.Code.DEADLINE_EXCEEDED -> true
+                else -> false
+            }
         }
         val msg = e.message ?: e.cause?.message ?: ""
         return msg.contains("timeout", ignoreCase = true) ||
