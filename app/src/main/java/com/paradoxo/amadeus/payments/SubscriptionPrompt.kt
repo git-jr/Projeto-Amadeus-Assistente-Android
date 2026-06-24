@@ -37,7 +37,10 @@ fun SubscriptionPromptDialog(
         confirmButton = {
             TextButton(
                 enabled = !state.purchasing && !authState.loading,
-                onClick = onSubscribe
+                onClick = {
+                    onSubscribe()
+                    onDismiss()
+                }
             ) {
                 Text(
                     if (authState.isGoogleSignedIn) "Assinar" else "Entrar com Google",
