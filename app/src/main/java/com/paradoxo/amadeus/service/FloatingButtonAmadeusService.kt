@@ -304,23 +304,42 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun showAgentOverlay() {
         if (agentOverlayView != null) return
+        val dp = resources.displayMetrics.density
         val themedContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
-        agentOverlayView =
+        val view =
             LayoutInflater.from(themedContext).inflate(R.layout.layout_agent_overlay, null)
-        agentOverlayView?.findViewById<View>(R.id.agentCancelButton)?.setOnClickListener {
+        view.findViewById<View>(R.id.agentCancelButton)?.setOnClickListener {
             loopJob?.cancel()
             hideAgentOverlay()
         }
+
+        agentOverlayView = view
+
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             overlayType(),
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.BOTTOM
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = (20 * dp).toInt()
         }
-        windowManager.addView(agentOverlayView, params)
+
+        view.alpha = 0f
+        view.scaleX = 0.85f
+        view.scaleY = 0.85f
+        windowManager.addView(view, params)
+        view.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(300)
+            .setInterpolator(android.view.animation.OvershootInterpolator(2.5f))
+            .start()
     }
 
     private fun showAgentLimitOverlay() {
