@@ -90,6 +90,15 @@ class FloatingButtonAmadeusService : Service() {
     private var lastElements: List<UiElement> = emptyList()
     private var loopJob: Job? = null
 
+    private data class AgentSessionState(
+        val originalGoal: String,
+        val history: List<String>,
+        val completedSuccessfully: Boolean,
+        val finishedAt: Long
+    )
+    private var lastSession: AgentSessionState? = null
+    private val sessionContextTimeoutMs = 5 * 60 * 1000L
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -793,19 +802,56 @@ class FloatingButtonAmadeusService : Service() {
             return
         }
 
+        val previousSession = lastSession?.takeIf {
+            !it.completedSuccessfully &&
+            (System.currentTimeMillis() - it.finishedAt) < sessionContextTimeoutMs
+        }
+        val effectiveGoal = if (previousSession != null && isContinuationCommand(goal)) {
+            previousSession.originalGoal
+        } else {
+            goal
+        }
+
         val allActions = mutableListOf<ActionIntent>()
 
         loopJob = CoroutineScope(Dispatchers.IO).launch {
-            val macro = memoryManager.recallMacro(goal)
+            val macro = if (previousSession == null) memoryManager.recallMacro(effectiveGoal) else null
             if (macro != null) {
                 val actions = memoryManager.resolveActionsReferences(
                     memoryManager.deserializeActions(macro.actionsJson)
                 )
-                withContext(Dispatchers.Main) { executeMacro(macro, goal, actions) } // ação conhecida para esse comando → executar direto
+                withContext(Dispatchers.Main) { executeMacro(macro, effectiveGoal, actions) }
             } else {
-                withContext(Dispatchers.Main) { runGeminiLoop(goal, allActions) } // ação desconhecida → rodar IA loop, deixar ela executar e aprender
+                withContext(Dispatchers.Main) { runGeminiLoop(effectiveGoal, allActions, previousSession) }
             }
         }
+    }
+
+    private fun isContinuationCommand(goal: String): Boolean {
+        val lower = goal.lowercase().trim()
+
+        // Grupo A: intenção pura, não carregam ação, logo nunca são um novo objetivo.
+        val unconditional = listOf(
+            "continue", "continuar", "continua",
+            "de novo", "novamente", "outra vez",
+            "retry", "repetir"
+        )
+        if (unconditional.any { lower.contains(it) }) return true
+
+        // Grupo B: verbos/descritores que precisam de um objeto para formar um novo objetivo.
+        // "falhou" ou "tente" sozinhos → retry; "tente abrir o Spotify" → novo objetivo.
+        // Heurística: ≤ 3 palavras = sem objeto específico = retry.
+        val wordCount = lower.split(Regex("\\s+")).size
+        if (wordCount <= 3) {
+            val conditionalShort = listOf(
+                "tente", "tenta", "tentar",
+                "não conseguiu", "nao conseguiu",
+                "falhou", "não funcionou", "nao funcionou"
+            )
+            if (conditionalShort.any { lower.contains(it) }) return true
+        }
+
+        return false
     }
 
     private fun executeMacro(macro: com.paradoxo.amadeus.dao.room.entities.AgentMacroEntity, goal: String, actions: List<ActionIntent>) {
@@ -820,6 +866,7 @@ class FloatingButtonAmadeusService : Service() {
             onFeedback = { updateAgentMessage(it) },
             onDone = {
                 CoroutineScope(Dispatchers.IO).launch { memoryManager.markMacroSuccess(macro) }
+                lastSession = AgentSessionState(goal, emptyList(), true, System.currentTimeMillis())
                 updateAgentMessage("✓ Concluído via macro")
                 Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 1500)
             }
@@ -846,7 +893,11 @@ class FloatingButtonAmadeusService : Service() {
             }
     }
 
-    private fun runGeminiLoop(goal: String, allActions: MutableList<ActionIntent>) {
+    private fun runGeminiLoop(
+        goal: String,
+        allActions: MutableList<ActionIntent>,
+        previousSession: AgentSessionState? = null
+    ) {
         val isRemoteProvider = geminiInterpreter !is LiteRTCommandInterpreter
         if (isRemoteProvider) {
             if (!entitlementManager.canUseAgent()) {
@@ -858,6 +909,12 @@ class FloatingButtonAmadeusService : Service() {
 
         val sessionId = System.currentTimeMillis().toString()
         val history = mutableListOf<String>()
+        if (previousSession != null) {
+            history.add("⬆ TENTATIVA ANTERIOR (meta: \"${previousSession.originalGoal}\"):")
+            history.addAll(previousSession.history.takeLast(10))
+            history.add("⚠ A tentativa anterior não concluiu. Analise o estado atual e tente abordagem diferente.")
+            history.add("▶ NOVA TENTATIVA:")
+        }
         val maxSteps = 30
         val reusarMacrosNoPrompt = getPrefBool(
             ConfigPrimariaActivity.PREF_REUSAR_MACROS_PROMPT_GEMINI,
@@ -872,6 +929,7 @@ class FloatingButtonAmadeusService : Service() {
 
         fun runStep() {
             if (step >= maxSteps) {
+                lastSession = AgentSessionState(goal, history.toList(), false, System.currentTimeMillis())
                 updateAgentMessage("Limite de $maxSteps passos atingido")
                 Handler(Looper.getMainLooper()).postDelayed({ hideAgentOverlay() }, 2000)
                 return
@@ -909,6 +967,7 @@ class FloatingButtonAmadeusService : Service() {
                                     memoryManager.recordExecution(goal, allActions)
                                 }
                             }
+                            lastSession = AgentSessionState(goal, history.toList(), true, System.currentTimeMillis())
                             updateAgentMessage("✓ ${result.reason.ifBlank { "Concluído" }}")
                             Handler(Looper.getMainLooper()).postDelayed(
                                 { hideAgentOverlay() },
@@ -917,6 +976,7 @@ class FloatingButtonAmadeusService : Service() {
                         }
 
                         result.actions.isEmpty() -> {
+                            lastSession = AgentSessionState(goal, history.toList(), false, System.currentTimeMillis())
                             updateAgentMessage(
                                 getString(R.string.acessibilidade_texto_nao_encontrado, goal)
                             )
@@ -940,6 +1000,7 @@ class FloatingButtonAmadeusService : Service() {
                                 }
                             )
                             if (!sent) {
+                                lastSession = AgentSessionState(goal, history.toList(), false, System.currentTimeMillis())
                                 updateAgentMessage(getString(R.string.acessibilidade_nao_ativa))
                                 Handler(Looper.getMainLooper()).postDelayed(
                                     { hideAgentOverlay() },
