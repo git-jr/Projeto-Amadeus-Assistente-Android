@@ -803,6 +803,7 @@ class FloatingButtonAmadeusService : Service() {
         }
 
         val previousSession = lastSession?.takeIf {
+            entitlementManager.state.value.isPremium &&
             !it.completedSuccessfully &&
             (System.currentTimeMillis() - it.finishedAt) < sessionContextTimeoutMs
         }
