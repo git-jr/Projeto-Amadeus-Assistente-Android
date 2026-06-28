@@ -123,9 +123,14 @@ class AuthManager private constructor(private val context: Context) {
         }
     }
 
-    fun signInWithGoogleAsync(activity: Activity, onResult: ((Boolean) -> Unit)? = null) {
+    fun signInWithGoogleAsync(
+        activity: Activity,
+        onResult: ((success: Boolean, displayName: String?, errorMessage: String?) -> Unit)? = null
+    ) {
         scope.launch {
-            onResult?.invoke(signInWithGoogle(activity))
+            val success = signInWithGoogle(activity)
+            val snap = _state.value
+            onResult?.invoke(success, snap.displayName, snap.errorMessage)
         }
     }
 

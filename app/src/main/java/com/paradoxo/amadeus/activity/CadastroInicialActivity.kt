@@ -50,16 +50,14 @@ class CadastroInicialActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.okButton).setOnClickListener { verificarNomes() }
         findViewById<View>(R.id.googleSignInButton).setOnClickListener {
-            authManager.signInWithGoogleAsync(this) { success ->
+            authManager.signInWithGoogleAsync(this) { success, displayName, errorMessage ->
                 if (success) {
-                    authManager.state.value.displayName?.let { nome ->
-                        if (nomeUsuarioEditText.text.isNullOrBlank()) {
-                            nomeUsuarioEditText.setText(nome)
-                        }
+                    if (!displayName.isNullOrBlank() && nomeUsuarioEditText.text.isNullOrBlank()) {
+                        nomeUsuarioEditText.setText(displayName)
                     }
                     meuToast(getString(R.string.conta_conectada), this)
                 } else {
-                    authManager.state.value.errorMessage?.let { meuToast(it, this) }
+                    errorMessage?.let { meuToast(it, this) }
                 }
             }
         }
