@@ -385,14 +385,10 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     currentRemoteProvider = currentRemoteProvider,
                     canUseAdvancedModels = entitlementState.canUseAdvancedModels,
                     onLockedClick = { signatureDialogOpened = true },
-                    onProviderSelected = { provider ->
-                        Preferencias.setPrefString(provider.name, Preferencias.PREF_AI_REMOTE_PROVIDER, context)
-                        currentRemoteProvider = provider
-                        if (currentProvider != AIProvider.LOCAL) {
-                            Preferencias.setPrefString(provider.name, Preferencias.PREF_AI_PROVIDER, context)
-                            currentProvider = provider
-                            restartFloatingServiceIfActive()
-                        }
+                    onOpenSelector = {
+                        context.startActivity(
+                            Intent(context, AIProviderSelectorActivity::class.java)
+                        )
                     }
                 )
             }
@@ -872,9 +868,8 @@ private fun IntelligenceSelectorRow(
     currentRemoteProvider: AIProvider,
     canUseAdvancedModels: Boolean,
     onLockedClick: () -> Unit,
-    onProviderSelected: (AIProvider) -> Unit
+    onOpenSelector: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val (icon, descricao) = when (currentRemoteProvider) {
         AIProvider.GEMINI -> Icons.Rounded.Hub to "Google Gemini (Firebase AI)"
         else -> Icons.Rounded.AutoAwesome to "OpenAI"
@@ -883,7 +878,7 @@ private fun IntelligenceSelectorRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (canUseAdvancedModels) expanded = true else onLockedClick()
+                if (canUseAdvancedModels) onOpenSelector() else onLockedClick()
             }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -926,17 +921,5 @@ private fun IntelligenceSelectorRow(
             tint = Color(0xFFBDBDBD),
             modifier = Modifier.size(14.dp)
         )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text("Google Gemini") },
-                leadingIcon = { Icon(Icons.Rounded.Hub, contentDescription = null) },
-                onClick = { expanded = false; onProviderSelected(AIProvider.GEMINI) }
-            )
-            DropdownMenuItem(
-                text = { Text("OpenAI") },
-                leadingIcon = { Icon(Icons.Rounded.AutoAwesome, contentDescription = null) },
-                onClick = { expanded = false; onProviderSelected(AIProvider.OPENAI) }
-            )
-        }
     }
 }

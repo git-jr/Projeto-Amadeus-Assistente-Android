@@ -129,6 +129,10 @@
             android:name=".activity.LiteRTModelManagerActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activity.AIProviderSelectorActivity"
+            android:exported="false" />
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
