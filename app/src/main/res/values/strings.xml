@@ -103,7 +103,7 @@
     <string name="agora_nao">Agora não</string>
     <string name="permissao_overlay_nao_concedida">Sem essa permissão, o botão flutuante não pode ser ativado.</string>
     <string name="observar_tela">Observar tela</string>
-    <string name="acessibilidade_descricao">Permite ao Amadeus escanear e interagir com elementos na tela</string>
+    <string name="acessibilidade_descricao">Permite a Amadeus escanear e interagir com elementos na tela</string>
     <string name="acessibilidade_nao_ativa">Ative o serviço de acessibilidade da Amadeus nas configurações</string>
     <string name="acessibilidade_rationale_titulo">Ative a acessibilidade da Amadeus</string>
     <string name="acessibilidade_rationale_mensagem">O botão flutuante da Amadeus depende do serviço de acessibilidade para observar a tela e interagir com elementos de outros apps. Ative essa opção nas configurações para concluir a ativação.</string>

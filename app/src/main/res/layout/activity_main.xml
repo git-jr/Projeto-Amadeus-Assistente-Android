@@ -44,8 +44,9 @@
                             app:tint="@color/colorSecondaryDark3" />
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="0.8"
                             android:layout_marginStart="@dimen/text_margin"
                             android:orientation="vertical">
 
@@ -66,6 +67,16 @@
                                 android:textSize="20sp" />
 
                         </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="@dimen/size_icone_image"
+                            android:contentDescription="@string/seta_ir_para"
+                            android:src="@drawable/ic_settings"
+                            android:alpha="0.7"
+                            app:tint="@color/gray_700" />
 
                     </LinearLayout>
 
@@ -311,7 +322,6 @@
                         android:background="@color/gray_200" />
 
                     <LinearLayout
-
                         android:id="@+id/layoutOuvindo"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
