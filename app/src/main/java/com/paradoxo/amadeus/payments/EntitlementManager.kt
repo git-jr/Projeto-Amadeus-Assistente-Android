@@ -51,6 +51,13 @@ class EntitlementManager private constructor(private val context: Context) {
 
             if (playPurchases.isNotEmpty()) {
                 processPurchases(playPurchases)
+                // Patch expiry from backend — processPurchases não tem acesso à data real do Google Play
+                val backendExpiry = backendEntitlement?.expiresAtMillis
+                if (backendExpiry != null) {
+                    val patched = _state.value.entitlement.copy(expiresAtMillis = backendExpiry)
+                    cacheEntitlement(patched)
+                    _state.update { it.copy(entitlement = patched) }
+                }
                 return@launch
             }
 
@@ -141,8 +148,11 @@ class EntitlementManager private constructor(private val context: Context) {
             activePurchase != null -> {
                 withContext(Dispatchers.IO) {
                     runCatching { billingRepository.acknowledgeIfNeeded(activePurchase) }
+                        .onFailure { android.util.Log.e("Entitlement", "compra acknowledge falhou", it) }
                     runCatching { submitGooglePlayPurchaseForVerification(activePurchase) }
+                        .onFailure { android.util.Log.e("Entitlement", "compra submitVerification falhou", it) }
                 }
+                android.util.Log.d("Entitlement", "compra ativa processada: orderId=${activePurchase.orderId} token=${activePurchase.purchaseToken.take(20)}")
                 val entitlement = Entitlement(
                     planId = BillingRepository.PRODUCT_PREMIUM_MONTHLY,
                     features = setOf(EntitlementFeature.ADVANCED_MODELS),
@@ -194,9 +204,11 @@ class EntitlementManager private constructor(private val context: Context) {
             "packageName" to context.packageName,
             "submittedAt" to System.currentTimeMillis()
         )
+        val safeKey = (purchase.orderId ?: purchase.purchaseToken.hashCode().toString())
+            .replace(Regex("[.#\$\\[\\]]"), "_")
         database.child("pending_purchase_verifications")
             .child(uid)
-            .child(purchase.orderId ?: purchase.purchaseToken.hashCode().toString())
+            .child(safeKey)
             .setValue(payload)
             .await()
     }
@@ -272,7 +284,12 @@ private fun DataSnapshot.toEntitlement(): Entitlement {
     val status = runCatching {
         EntitlementStatus.valueOf(child("status").getValue(String::class.java).orEmpty())
     }.getOrDefault(EntitlementStatus.INACTIVE)
-    val expiresAt = child("expiresAtMillis").getValue(Long::class.java)
+    val expiresAt = when (val raw = child("expiresAtMillis").value) {
+        is Long -> raw
+        is Double -> raw.toLong()
+        is String -> raw.toLongOrNull()
+        else -> null
+    }
     val features = child("features").children.mapNotNull { item ->
         val key = item.getValue(String::class.java) ?: item.key
         EntitlementFeature.entries.firstOrNull { it.key == key }
