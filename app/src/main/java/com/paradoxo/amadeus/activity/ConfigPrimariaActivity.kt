@@ -39,6 +39,7 @@ import coil3.compose.AsyncImage
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,11 +87,18 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.auth.AuthManager
 import com.paradoxo.amadeus.auth.AuthUiState
+import com.paradoxo.amadeus.payments.EntitlementManager
+import com.paradoxo.amadeus.payments.EntitlementSource
+import com.paradoxo.amadeus.payments.EntitlementStatus
+import com.paradoxo.amadeus.payments.EntitlementUiState
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.canDrawOverlays
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private val CfgColorPrimary = Color(0xFFF50057)
 private val CfgColorDarkPurple = Color(0xFF290f3e)
@@ -157,6 +165,8 @@ private fun ConfigPrimariaScreen(
     val focusManager = LocalFocusManager.current
     val authManager = remember { AuthManager.getInstance(context) }
     val authState by authManager.state.collectAsState()
+    val entitlementManager = remember { EntitlementManager.getInstance(context) }
+    val entitlementState by entitlementManager.state.collectAsState()
 
     // Toggle state
     var modoFalaAtivo by remember { mutableStateOf(false) }
@@ -339,6 +349,7 @@ private fun ConfigPrimariaScreen(
             // Profile / account card
             AccountHeaderCard(
                 authState = authState,
+                entitlementState = entitlementState,
                 onSignIn = { onSignIn() },
                 onSignOut = { authManager.signOut() }
             )
@@ -603,8 +614,103 @@ private fun ConfigPrimariaScreen(
 }
 
 @Composable
+private fun SubscriptionInfoSection(entitlementState: EntitlementUiState) {
+    val e = entitlementState.entitlement
+    val isPremium = entitlementState.isPremium
+
+    val (statusLabel, statusColor) = when (e.status) {
+        EntitlementStatus.ACTIVE -> "Ativo" to Color(0xFF2E7D32)
+        EntitlementStatus.EXPIRED -> "Expirado" to Color(0xFFC62828)
+        EntitlementStatus.CANCELED -> "Cancelado" to Color(0xFFE65100)
+        EntitlementStatus.PENDING -> "Pendente" to Color(0xFFF57F17)
+        EntitlementStatus.INACTIVE -> "Inativo" to Color(0xFF757575)
+    }
+
+    val sourceLabel = when (e.source) {
+        EntitlementSource.GOOGLE_PLAY -> "via Google Play"
+        EntitlementSource.STRIPE -> "via Stripe"
+        EntitlementSource.MANUAL -> "concedido manualmente"
+        EntitlementSource.UNKNOWN -> ""
+    }
+
+    val expiryLabel = e.expiresAtMillis?.let {
+        val fmt = SimpleDateFormat("dd 'de' MMM. 'de' yyyy", Locale("pt", "BR"))
+        "Válida até ${fmt.format(Date(it))}"
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isPremium) CfgColorPrimary.copy(alpha = 0.06f) else Color(0xFFF5F5F5))
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isPremium) CfgColorPrimary.copy(alpha = 0.15f)
+                        else Color.Black.copy(alpha = 0.06f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.WorkspacePremium,
+                    contentDescription = null,
+                    tint = if (isPremium) CfgColorPrimary else Color(0xFF9E9E9E),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (isPremium) "Amadeus Pro" else "Plano gratuito",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = if (isPremium) CfgColorPrimary else Color(0xFF616161)
+                )
+                if (isPremium) {
+                    if (sourceLabel.isNotBlank()) {
+                        Text(
+                            text = sourceLabel,
+                            fontSize = 12.sp,
+                            color = Color(0xFF757575)
+                        )
+                    }
+                    if (expiryLabel != null) {
+                        Text(
+                            text = expiryLabel,
+                            fontSize = 12.sp,
+                            color = Color(0xFF757575)
+                        )
+                    }
+                }
+            }
+            if (isPremium) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(statusColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = statusLabel,
+                        fontSize = 11.sp,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun AccountHeaderCard(
     authState: AuthUiState,
+    entitlementState: EntitlementUiState,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit
 ) {
@@ -670,7 +776,9 @@ private fun AccountHeaderCard(
                     color = Color.Black.copy(alpha = 0.75f),
                     fontSize = 13.sp
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(14.dp))
+                SubscriptionInfoSection(entitlementState)
+                Spacer(Modifier.height(14.dp))
                 OutlinedButton(
                     onClick = {
                         signingOut = true
