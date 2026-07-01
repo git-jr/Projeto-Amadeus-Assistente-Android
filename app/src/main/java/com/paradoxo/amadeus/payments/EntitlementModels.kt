@@ -39,7 +39,8 @@ data class EntitlementUiState(
     val errorMessage: String? = null
 ) {
     val isPremium: Boolean
-        get() = entitlement.status == EntitlementStatus.ACTIVE
+        get() = entitlement.status == EntitlementStatus.ACTIVE &&
+                (entitlement.expiresAtMillis == null || entitlement.expiresAtMillis > System.currentTimeMillis())
 
     val canUseAdvancedModels: Boolean
         get() = entitlement.hasFeature(EntitlementFeature.ADVANCED_MODELS)

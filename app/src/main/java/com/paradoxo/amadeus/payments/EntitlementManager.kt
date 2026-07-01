@@ -61,7 +61,12 @@ class EntitlementManager private constructor(private val context: Context) {
                 return@launch
             }
 
-            val entitlement = backendEntitlement ?: Entitlement()
+            val entitlement = (backendEntitlement ?: Entitlement()).let { e ->
+                val pastExpiry = e.expiresAtMillis != null && e.expiresAtMillis <= System.currentTimeMillis()
+                if (e.status == EntitlementStatus.ACTIVE && pastExpiry)
+                    e.copy(status = EntitlementStatus.EXPIRED)
+                else e
+            }
             cacheEntitlement(entitlement)
             _state.update {
                 it.copy(entitlement = entitlement, loading = false, purchasing = false)
