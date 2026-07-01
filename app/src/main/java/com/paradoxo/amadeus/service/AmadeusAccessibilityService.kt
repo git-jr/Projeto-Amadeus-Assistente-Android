@@ -220,7 +220,10 @@ class AmadeusAccessibilityService : AccessibilityService() {
 
     fun getVisibleElements(): List<UiElement> {
         val result = mutableListOf<UiElement>()
-        windows.mapNotNull { it.root }.forEach { root -> extractNodes(root, result) }
+        windows
+            .mapNotNull { it.root }
+            .filter { it.packageName?.toString() != packageName }
+            .forEach { root -> extractNodes(root, result) }
         return result
     }
 
@@ -254,6 +257,7 @@ class AmadeusAccessibilityService : AccessibilityService() {
     private fun findAndClick(targetText: String, onResult: (Boolean) -> Unit) {
         val nodes = windows
             .mapNotNull { it.root }
+            .filter { it.packageName?.toString() != packageName }
             .flatMap { root -> root.findAccessibilityNodeInfosByText(targetText) ?: emptyList() }
 
         val node = nodes.firstOrNull {
