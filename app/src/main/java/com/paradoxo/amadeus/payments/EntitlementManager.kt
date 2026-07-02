@@ -89,7 +89,7 @@ class EntitlementManager private constructor(private val context: Context) {
         Preferencias.setPrefLong(PREF_AGENT_USAGE_COUNT, count + 1, context)
     }
 
-    private fun dailyAgentUsageCount(): Long {
+    fun dailyAgentUsageCount(): Long {
         val today = currentDayKey()
         return if (Preferencias.getPrefString(PREF_AGENT_USAGE_DATE, context) == today) {
             Preferencias.getPrefLong(PREF_AGENT_USAGE_COUNT, context)

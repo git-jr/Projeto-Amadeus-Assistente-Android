@@ -52,6 +52,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -145,6 +146,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
     var currentProvider by remember { mutableStateOf(AIProvider.OPENAI) }
     var currentRemoteProvider by remember { mutableStateOf(AIProvider.OPENAI) }
     var signatureDialogOpened by remember { mutableStateOf(false) }
+    var dailyAgentUsageCount by remember { mutableStateOf(0L) }
     // Sinaliza que o usuário saiu desta tela para conceder uma permissão necessária ao agente.
     // Quando voltar com todas as permissões satisfeitas, o botão flutuante é iniciado automaticamente.
     var pendingActivation by remember { mutableStateOf(false) }
@@ -152,6 +154,7 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
 
     fun refreshState() {
         entitlementManager.refreshEntitlements()
+        dailyAgentUsageCount = entitlementManager.dailyAgentUsageCount()
         acessibilidadeAtiva = AmadeusAccessibilityService.isActive(context)
         overlayAtivo = context.canDrawOverlays()
         microfoneAtivo = ContextCompat.checkSelfPermission(
@@ -231,6 +234,8 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
 
             if (!entitlementState.isPremium) {
                 AmadeusProPromoCard(
+                    usedToday = dailyAgentUsageCount.toInt(),
+                    dailyLimit = EntitlementManager.DAILY_FREE_AGENT_LIMIT,
                     onClick = { context.startActivity(Intent(context, AmadeusProActivity::class.java)) }
                 )
             }
@@ -547,45 +552,67 @@ private fun AgentStatusCard(isRunning: Boolean) {
 }
 
 @Composable
-private fun AmadeusProPromoCard(onClick: () -> Unit) {
-    Row(
+private fun AmadeusProPromoCard(usedToday: Int, dailyLimit: Int, onClick: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Brush.horizontalGradient(listOf(ColorPrimary, Color(0xFFD50000))))
             .clickable(onClick = onClick)
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(20.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.WorkspacePremium,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Amadeus Pro", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    "Ações ilimitadas, memória entre sessões e mais",
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
+            }
             Icon(
-                imageVector = Icons.Rounded.WorkspacePremium,
+                imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                 contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(14.dp)
             )
         }
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text("Amadeus Pro", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(
-                "Ações ilimitadas, memória entre sessões e mais",
-                color = Color.White.copy(alpha = 0.85f),
-                fontSize = 12.sp,
-                lineHeight = 16.sp
-            )
-        }
-        Icon(
-            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.85f),
-            modifier = Modifier.size(14.dp)
+        Spacer(Modifier.height(16.dp))
+        val remaining = (dailyLimit - usedToday).coerceAtLeast(0)
+        Text(
+            text = if (remaining > 0)
+                "Você usou $usedToday de $dailyLimit ações grátis hoje"
+            else
+                "Você atingiu o limite grátis de hoje ($dailyLimit ações)",
+            color = Color.White,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp
+        )
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = { (usedToday.toFloat() / dailyLimit).coerceIn(0f, 1f) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp)),
+            color = Color.White,
+            trackColor = Color.White.copy(alpha = 0.25f)
         )
     }
 }
