@@ -24,6 +24,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
@@ -191,6 +192,7 @@ class FloatingButtonAmadeusService : Service() {
 
     private fun setupMainButton() {
         val mainButton = buttonView.findViewById<View>(R.id.botaoPrincipal)
+        val touchSlop = ViewConfiguration.get(this).scaledTouchSlop
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -211,7 +213,7 @@ class FloatingButtonAmadeusService : Service() {
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
-                    if (dx * dx + dy * dy > 25) moved = true
+                    if (dx * dx + dy * dy > touchSlop * touchSlop) moved = true
                     layoutParams.x = initialX + dx
                     layoutParams.y = initialY + dy
                     windowManager.updateViewLayout(buttonView, layoutParams)
@@ -219,8 +221,7 @@ class FloatingButtonAmadeusService : Service() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    startListening()
-//                    if (!moved) toggleMenu() // Ativar menu
+                    if (!moved) startListening()
                     true
                 }
 
