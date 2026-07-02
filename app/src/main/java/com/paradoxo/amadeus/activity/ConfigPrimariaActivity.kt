@@ -60,6 +60,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -135,8 +136,12 @@ class ConfigPrimariaActivity : ComponentActivity() {
                     initialActivateFloatingAfterAccessibility = activateAfterAcessibilidade,
                     onSignIn = {
                         AuthManager.getInstance(this).signInWithGoogleAsync(this) { success, _, errorMessage ->
-                            if (success) meuToast(getString(R.string.conta_conectada), this)
-                            else errorMessage?.let { meuToast(it, this) }
+                            if (success) {
+                                EntitlementManager.getInstance(this).refreshEntitlements()
+                                meuToast(getString(R.string.conta_conectada), this)
+                            } else {
+                                errorMessage?.let { meuToast(it, this) }
+                            }
                         }
                     },
                     onBack = { finish() }
@@ -167,6 +172,12 @@ private fun ConfigPrimariaScreen(
     val authState by authManager.state.collectAsState()
     val entitlementManager = remember { EntitlementManager.getInstance(context) }
     val entitlementState by entitlementManager.state.collectAsState()
+
+    // Atualiza ao abrir a tela e sempre que o usuário autenticado mudar,
+    // independentemente de onde o login tenha sido realizado.
+    LaunchedEffect(authState.uid) {
+        entitlementManager.refreshEntitlements()
+    }
 
     // Toggle state
     var modoFalaAtivo by remember { mutableStateOf(false) }
