@@ -11,6 +11,7 @@ import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.AgentStepResult
 import com.paradoxo.amadeus.modelo.MacroExample
 import com.paradoxo.amadeus.modelo.UiElement
+import com.paradoxo.amadeus.payments.EntitlementManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
@@ -57,12 +58,15 @@ class OpenAICommandInterpreter(private val context: Context) : AgentInterpreter 
 
         Log.w("AgenteLog", "AgenteLog, prompt enviado OpenAI: \n$userTurn")
 
+        val isPremium = EntitlementManager.getInstance(context).state.value.isPremium
+        val model = if (isPremium) RemoteConfigManager.openaiModelAgentPro else RemoteConfigManager.openaiModelAgent
+
         return try {
             AuthManager.getInstance(context).ensureAnonymousUser()
             val base64Image = bitmapToBase64(mapBitmap)
             val text = withRetry(onRetry = onRetry) {
                 callChatCompletion(
-                    model = RemoteConfigManager.openaiModelAgent,
+                    model = model,
                     messages = listOf(
                         mapOf("role" to "system", "content" to systemPrompt),
                         mapOf(

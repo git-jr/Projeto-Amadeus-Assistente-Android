@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,7 +69,7 @@ private val SelColorDarkPurple = Color(0xFF290f3e)
 private val SelColorSurface = Color(0xFFF5F5F5)
 
 private data class ProviderOption(
-    val provider: AIProvider,
+    val provider: AIProvider?, // null representa o modelo básico (sem override, padrão do app)
     val name: String,
     val model: String,
     val description: String,
@@ -102,7 +103,7 @@ private fun AIProviderSelectorScreen(onBack: () -> Unit) {
     val authManager = remember { AuthManager.getInstance(context) }
     val authState by authManager.state.collectAsState()
 
-    var currentProvider by remember {
+    var currentRemoteProvider by remember {
         val saved = Preferencias.getPrefString(Preferencias.PREF_AI_REMOTE_PROVIDER, context)
         mutableStateOf(
             runCatching { AIProvider.valueOf(saved.uppercase()) }
@@ -110,13 +111,24 @@ private fun AIProviderSelectorScreen(onBack: () -> Unit) {
                 .let { if (it == AIProvider.LOCAL) AIProvider.OPENAI else it }
         )
     }
+    var isBasicActive by remember {
+        mutableStateOf(Preferencias.getPrefString(Preferencias.PREF_AI_PROVIDER, context).isBlank())
+    }
     var showSubscriptionDialog by remember { mutableStateOf(false) }
 
     val options = listOf(
         ProviderOption(
+            provider = null,
+            name = "Básico",
+            model = "Padrão do app",
+            description = "Modelo padrão, usado automaticamente por todos os usuários, sem necessidade de assinatura.",
+            icon = Icons.Rounded.Star,
+            accentColor = Color(0xFF757575)
+        ),
+        ProviderOption(
             provider = AIProvider.OPENAI,
             name = "OpenAI",
-            model = RemoteConfigManager.openaiModelAgent,
+            model = RemoteConfigManager.openaiModelAgentPro,
             description = "Modelos rápidos e versáteis, ideais para tarefas cotidianas e respostas precisas do agente.",
             icon = Icons.Rounded.AutoAwesome,
             accentColor = Color(0xFF10A37F)
@@ -131,7 +143,26 @@ private fun AIProviderSelectorScreen(onBack: () -> Unit) {
         )
     )
 
-    fun selectProvider(provider: AIProvider) {
+    fun restartFloatingServiceIfActive() {
+        val botaoAtivo =
+            Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, context, false) &&
+                context.canDrawOverlays() &&
+                AmadeusAccessibilityService.isActive(context)
+        if (botaoAtivo) {
+            context.stopService(Intent(context, FloatingButtonAmadeusService::class.java))
+            context.startService(Intent(context, FloatingButtonAmadeusService::class.java))
+        }
+    }
+
+    fun selectProvider(provider: AIProvider?) {
+        if (provider == null) {
+            // Básico: remove o override e volta a usar o provedor padrão do app (RemoteConfig).
+            Preferencias.setPrefString("", Preferencias.PREF_AI_PROVIDER, context)
+            isBasicActive = true
+            restartFloatingServiceIfActive()
+            return
+        }
+
         Preferencias.setPrefString(provider.name, Preferencias.PREF_AI_REMOTE_PROVIDER, context)
         val mainProvider = runCatching {
             AIProvider.valueOf(
@@ -141,16 +172,10 @@ private fun AIProviderSelectorScreen(onBack: () -> Unit) {
 
         if (mainProvider != AIProvider.LOCAL) {
             Preferencias.setPrefString(provider.name, Preferencias.PREF_AI_PROVIDER, context)
-            val botaoAtivo =
-                Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, context, false) &&
-                    context.canDrawOverlays() &&
-                    AmadeusAccessibilityService.isActive(context)
-            if (botaoAtivo) {
-                context.stopService(Intent(context, FloatingButtonAmadeusService::class.java))
-                context.startService(Intent(context, FloatingButtonAmadeusService::class.java))
-            }
+            isBasicActive = false
+            restartFloatingServiceIfActive()
         }
-        currentProvider = provider
+        currentRemoteProvider = provider
     }
 
     Scaffold(
@@ -201,12 +226,15 @@ private fun AIProviderSelectorScreen(onBack: () -> Unit) {
             }
 
             options.forEach { option ->
+                val isLocked = option.provider != null && !entitlementState.canUseAdvancedModels
                 ProviderCard(
                     option = option,
-                    isSelected = option.provider == currentProvider,
-                    isLocked = !entitlementState.canUseAdvancedModels,
+                    isSelected = if (option.provider == null) isBasicActive else {
+                        !isBasicActive && option.provider == currentRemoteProvider
+                    },
+                    isLocked = isLocked,
                     onClick = {
-                        if (!entitlementState.canUseAdvancedModels) {
+                        if (isLocked) {
                             showSubscriptionDialog = true
                         } else {
                             selectProvider(option.provider)

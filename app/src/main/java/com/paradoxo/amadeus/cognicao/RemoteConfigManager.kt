@@ -11,6 +11,7 @@ object RemoteConfigManager {
     private const val KEY_AI_PROVIDER = "ai_provider"
     private const val KEY_OPENAI_MODEL_SINGLE = "openai_model_single_shot"
     private const val KEY_OPENAI_MODEL_AGENT = "openai_model_agent"
+    private const val KEY_OPENAI_MODEL_AGENT_PRO = "openai_model_agent_pro"
     private const val KEY_GEMINI_MODEL = "gemini_model"
     private const val KEY_SYSTEM_PROMPT = "system_prompt"
     private const val KEY_SINGLE_SHOT_TEMPLATE = "single_shot_prompt_template"
@@ -28,6 +29,7 @@ object RemoteConfigManager {
                     KEY_AI_PROVIDER to "OPENAI",
                     KEY_OPENAI_MODEL_SINGLE to "gpt-4o-mini",
                     KEY_OPENAI_MODEL_AGENT to "gpt-5.4-nano",
+                    KEY_OPENAI_MODEL_AGENT_PRO to "gpt-5.4",
                     KEY_GEMINI_MODEL to "gemini-3.1-flash-lite-preview",
                     KEY_SYSTEM_PROMPT to AgentPromptBuilder.DEFAULT_SYSTEM_PROMPT,
                     KEY_SINGLE_SHOT_TEMPLATE to AgentPromptBuilder.DEFAULT_SINGLE_SHOT_TEMPLATE,
@@ -40,6 +42,7 @@ object RemoteConfigManager {
     val aiProvider: String get() = config.getString(KEY_AI_PROVIDER).ifBlank { "OPENAI" }
     val openaiModelSingleShot: String get() = config.getString(KEY_OPENAI_MODEL_SINGLE).ifBlank { "gpt-4o-mini" }
     val openaiModelAgent: String get() = config.getString(KEY_OPENAI_MODEL_AGENT).ifBlank { "gpt-5.4-nano" }
+    val openaiModelAgentPro: String get() = config.getString(KEY_OPENAI_MODEL_AGENT_PRO).ifBlank { "gpt-5.4" }
     val geminiModel: String get() = config.getString(KEY_GEMINI_MODEL).ifBlank { "gemini-3.1-flash-lite-preview" }
     val systemPrompt: String get() = config.getString(KEY_SYSTEM_PROMPT).ifBlank { AgentPromptBuilder.DEFAULT_SYSTEM_PROMPT }
     val singleShotTemplate: String get() = config.getString(KEY_SINGLE_SHOT_TEMPLATE).ifBlank { AgentPromptBuilder.DEFAULT_SINGLE_SHOT_TEMPLATE }
