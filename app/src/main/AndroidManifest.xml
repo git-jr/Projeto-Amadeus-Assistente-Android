@@ -114,24 +114,28 @@
 
         <activity
             android:name=".activity.AgentDashboardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
             android:name=".activity.AmadeusProActivity"
             android:exported="false"
-            android:theme="@style/Theme.Amadeus.Light.NoActionBar" />
+            android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
             android:name=".activity.DemoActionsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
             android:name=".activity.LiteRTModelManagerActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
             android:name=".activity.AIProviderSelectorActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Amadeus.Compose" />
 
         <meta-data
             android:name="preloaded_fonts"

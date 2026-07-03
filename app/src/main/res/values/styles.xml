@@ -74,4 +74,14 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
+    <!-- Activities Compose com conteúdo escuro sob a status bar. -->
+    <style name="Theme.Amadeus.Compose" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
 </resources>
