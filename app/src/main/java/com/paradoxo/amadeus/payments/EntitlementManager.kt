@@ -39,38 +39,28 @@ class EntitlementManager private constructor(private val context: Context) {
     val state: StateFlow<EntitlementUiState> = _state
 
     fun refreshEntitlements() {
-        scope.launch {
-            _state.update { it.copy(loading = true, errorMessage = null) }
-            val backendEntitlement = runCatching { fetchBackendEntitlement() }.getOrNull()
-            val playPurchases = runCatching {
-                withContext(Dispatchers.IO) { billingRepository.queryActiveSubscriptionPurchases() }
-            }.getOrElse {
-                _state.update { current -> current.copy(errorMessage = it.message) }
-                emptyList()
-            }
+        scope.launch { refreshEntitlementsInternal() }
+    }
 
-            if (playPurchases.isNotEmpty()) {
-                processPurchases(playPurchases)
-                // Patch expiry from backend — processPurchases não tem acesso à data real do Google Play
-                val backendExpiry = backendEntitlement?.expiresAtMillis
-                if (backendExpiry != null) {
-                    val patched = _state.value.entitlement.copy(expiresAtMillis = backendExpiry)
-                    cacheEntitlement(patched)
-                    _state.update { it.copy(entitlement = patched) }
-                }
-                return@launch
-            }
+    private suspend fun refreshEntitlementsInternal() {
+        _state.update { it.copy(loading = true, errorMessage = null) }
+        val backendEntitlement = runCatching { fetchBackendEntitlement() }.getOrNull()
+        val playPurchases = runCatching {
+            withContext(Dispatchers.IO) { billingRepository.queryActiveSubscriptionPurchases() }
+        }.getOrElse {
+            _state.update { current -> current.copy(errorMessage = it.message) }
+            emptyList()
+        }
 
-            val entitlement = (backendEntitlement ?: Entitlement()).let { e ->
-                val pastExpiry = e.expiresAtMillis != null && e.expiresAtMillis <= System.currentTimeMillis()
-                if (e.status == EntitlementStatus.ACTIVE && pastExpiry)
-                    e.copy(status = EntitlementStatus.EXPIRED)
-                else e
-            }
-            cacheEntitlement(entitlement)
-            _state.update {
-                it.copy(entitlement = entitlement, loading = false, purchasing = false)
-            }
+        if (playPurchases.isNotEmpty()) {
+            processPurchases(playPurchases)
+            return
+        }
+
+        val entitlement = normalizeEntitlement(backendEntitlement ?: Entitlement())
+        cacheEntitlement(entitlement)
+        _state.update {
+            it.copy(entitlement = entitlement, loading = false, purchasing = false)
         }
     }
 
@@ -125,6 +115,15 @@ class EntitlementManager private constructor(private val context: Context) {
                 return@launch
             }
 
+            // Ao entrar com a Conta Google, o UID do Firebase passa a ser o mesmo usado
+            // em outros aparelhos com essa conta — revalida antes de abrir uma nova compra
+            // para reconhecer uma assinatura já feita em outro dispositivo.
+            refreshEntitlementsInternal()
+            if (_state.value.isPremium) {
+                _state.update { it.copy(purchasing = false) }
+                return@launch
+            }
+
             val launched = withContext(Dispatchers.IO) {
                 billingRepository.launchPremiumPurchase(activity)
             }
@@ -157,16 +156,27 @@ class EntitlementManager private constructor(private val context: Context) {
                     runCatching { submitGooglePlayPurchaseForVerification(activePurchase) }
                         .onFailure { android.util.Log.e("Entitlement", "compra submitVerification falhou", it) }
                 }
-                android.util.Log.d("Entitlement", "compra ativa processada: orderId=${activePurchase.orderId} token=${activePurchase.purchaseToken.take(20)}")
-                val entitlement = Entitlement(
+                // A compra informada pelo cliente não concede acesso. Somente o entitlement
+                // gravado pelo backend após validar o purchaseToken pode ativar o premium.
+                val verifiedEntitlement = runCatching { fetchBackendEntitlement() }
+                    .getOrNull()
+                    ?.let(::normalizeEntitlement)
+                    ?.takeIf { it.status == EntitlementStatus.ACTIVE }
+                val entitlement = verifiedEntitlement ?: Entitlement(
                     planId = BillingRepository.PRODUCT_PREMIUM_MONTHLY,
-                    features = setOf(EntitlementFeature.ADVANCED_MODELS),
                     source = EntitlementSource.GOOGLE_PLAY,
-                    status = EntitlementStatus.ACTIVE
+                    status = EntitlementStatus.PENDING
                 )
                 cacheEntitlement(entitlement)
                 _state.update {
-                    it.copy(entitlement = entitlement, loading = false, purchasing = false)
+                    it.copy(
+                        entitlement = entitlement,
+                        loading = false,
+                        purchasing = false,
+                        errorMessage = if (verifiedEntitlement == null) {
+                            "Compra recebida. Aguardando validação da assinatura."
+                        } else null
+                    )
                 }
             }
 
@@ -194,9 +204,20 @@ class EntitlementManager private constructor(private val context: Context) {
 
     private suspend fun fetchBackendEntitlement(): Entitlement? {
         val uid = ensureUid()
+        android.util.Log.d("Entitlement", "Buscando entitlement em entitlements/$uid")
         val snapshot = database.child("entitlements").child(uid).get().await()
         if (!snapshot.exists()) return null
         return snapshot.toEntitlement()
+    }
+
+    private fun normalizeEntitlement(entitlement: Entitlement): Entitlement {
+        val pastExpiry = entitlement.expiresAtMillis != null &&
+            entitlement.expiresAtMillis <= System.currentTimeMillis()
+        return if (entitlement.status == EntitlementStatus.ACTIVE && pastExpiry) {
+            entitlement.copy(status = EntitlementStatus.EXPIRED)
+        } else {
+            entitlement
+        }
     }
 
     private suspend fun submitGooglePlayPurchaseForVerification(purchase: Purchase) {
