@@ -23,6 +23,12 @@
         <item name="android:statusBarColor">@color/colorPrimaryDark</item>
     </style>
 
+    <!-- Starting window do app: evita a status bar vermelha antes do onCreate da Splash. -->
+    <style name="Theme.Amadeus.Splash" parent="Theme.AppCompat.Light.NoActionBar.Transparent">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
     <style name="TextAppearance.App.Hint.Personalizado" parent="@android:style/TextAppearance">
         <item name="colorControlActivated">@color/colorSecondaryDark2</item>
         <item name="colorControlHighlight">@color/colorSecondaryDark2</item>
