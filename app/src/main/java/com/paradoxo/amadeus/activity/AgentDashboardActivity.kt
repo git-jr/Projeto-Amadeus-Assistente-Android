@@ -326,6 +326,42 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
 
             }
 
+            SectionHeader("Inteligência")
+
+            ShortcutCard {
+                IntelligenceSelectorRow(
+                    currentRemoteProvider = currentRemoteProvider,
+                    canUseAdvancedModels = entitlementState.canUseAdvancedModels,
+                    onLockedClick = { signatureDialogOpened = true },
+                    onOpenSelector = {
+                        context.startActivity(
+                            Intent(context, AIProviderSelectorActivity::class.java)
+                        )
+                    }
+                )
+            }
+
+            SectionHeader("Modelo de IA")
+
+            ShortcutCard {
+                ProviderSelectorRow(
+                    currentProvider = currentProvider,
+                    onModeSelected = { isLocal ->
+                        val newProvider = if (isLocal) AIProvider.LOCAL else currentRemoteProvider
+                        Preferencias.setPrefString(newProvider.name, Preferencias.PREF_AI_PROVIDER, context)
+                        currentProvider = newProvider
+                        restartFloatingServiceIfActive()
+                    }
+                )
+                Divider()
+                ShortcutRow(
+                    icon = Icons.Rounded.SmartToy,
+                    label = "Modelos Locais",
+                    descricao = "Baixar e gerenciar modelos offline",
+                    onClick = { context.startActivity(Intent(context, LiteRTModelManagerActivity::class.java)) }
+                )
+            }
+
             SectionHeader("Atalhos")
 
             ShortcutCard {
@@ -364,42 +400,6 @@ private fun AgentDashboardScreen(onBack: () -> Unit) {
                     label = "Configurações Gerais",
                     descricao = "Nomes, voz, dados e mais",
                     onClick = { context.startActivity(Intent(context, ConfigPrimariaActivity::class.java)) }
-                )
-            }
-
-            SectionHeader("Modelo de IA")
-
-            ShortcutCard {
-                ProviderSelectorRow(
-                    currentProvider = currentProvider,
-                    onModeSelected = { isLocal ->
-                        val newProvider = if (isLocal) AIProvider.LOCAL else currentRemoteProvider
-                        Preferencias.setPrefString(newProvider.name, Preferencias.PREF_AI_PROVIDER, context)
-                        currentProvider = newProvider
-                        restartFloatingServiceIfActive()
-                    }
-                )
-                Divider()
-                ShortcutRow(
-                    icon = Icons.Rounded.SmartToy,
-                    label = "Modelos Locais",
-                    descricao = "Baixar e gerenciar modelos offline",
-                    onClick = { context.startActivity(Intent(context, LiteRTModelManagerActivity::class.java)) }
-                )
-            }
-
-            SectionHeader("Inteligência")
-
-            ShortcutCard {
-                IntelligenceSelectorRow(
-                    currentRemoteProvider = currentRemoteProvider,
-                    canUseAdvancedModels = entitlementState.canUseAdvancedModels,
-                    onLockedClick = { signatureDialogOpened = true },
-                    onOpenSelector = {
-                        context.startActivity(
-                            Intent(context, AIProviderSelectorActivity::class.java)
-                        )
-                    }
                 )
             }
 
@@ -585,7 +585,7 @@ private fun AmadeusProPromoCard(usedToday: Int, dailyLimit: Int, onClick: () -> 
             Column(modifier = Modifier.weight(1f)) {
                 Text("Amadeus Pro", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
-                    "Ações ilimitadas, memória entre sessões e mais",
+                    "Mais inteligente, lembra das suas conversas e mais!",
                     color = Color.White.copy(alpha = 0.85f),
                     fontSize = 12.sp,
                     lineHeight = 16.sp
@@ -902,10 +902,11 @@ private fun IntelligenceSelectorRow(
     onLockedClick: () -> Unit,
     onOpenSelector: () -> Unit
 ) {
-    val (icon, descricao) = when (currentRemoteProvider) {
-        AIProvider.GEMINI -> Icons.Rounded.Hub to "Google Gemini (Firebase AI)"
-        else -> Icons.Rounded.AutoAwesome to "OpenAI"
+    val icon = when (currentRemoteProvider) {
+        AIProvider.GEMINI -> Icons.Rounded.Hub
+        else -> Icons.Rounded.AutoAwesome
     }
+    val descricao = "Muito mais inteligentes e poderosos"
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -932,7 +933,7 @@ private fun IntelligenceSelectorRow(
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Modelo avançado",
+                "Modelos avançados",
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 color = Color(0xFF212121)
