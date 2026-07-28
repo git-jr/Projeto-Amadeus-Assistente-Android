@@ -21,9 +21,10 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 23
         targetSdk 36
-        versionCode 393
+        versionCode 394
         versionName "3.0.0 | Agent Alpha 1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "boolean", "FORCE_PREMIUM_FOR_TESTS", "false"
         ndk {
             abiFilters "arm64-v8a", "x86_64"
         }
@@ -33,6 +34,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            buildConfigField "boolean", "FORCE_PREMIUM_FOR_TESTS", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             ndk {
                 debugSymbolLevel 'FULL'
@@ -40,6 +42,7 @@ android {
         }
         debug {
             debuggable true
+            buildConfigField "boolean", "FORCE_PREMIUM_FOR_TESTS", "true"
         }
     }
 

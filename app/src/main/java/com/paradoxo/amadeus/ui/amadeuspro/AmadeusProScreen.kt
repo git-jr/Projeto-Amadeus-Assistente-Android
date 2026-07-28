@@ -1,10 +1,5 @@
-package com.paradoxo.amadeus.activity
+package com.paradoxo.amadeus.ui.amadeuspro
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,12 +37,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,51 +49,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.auth.AuthManager
-import com.paradoxo.amadeus.payments.EntitlementManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.paradoxo.amadeus.payments.findActivity
 
 private val ColorPrimary = Color(0xFFF50057)
 private val ColorDarkPurple = Color(0xFF290f3e)
 private val ColorSuccess = Color(0xFF4CAF50)
 
-class AmadeusProActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
-        )
-        setContent {
-            MaterialTheme {
-                AmadeusProScreen(onBack = { finish() })
-            }
-        }
-    }
-
-    override fun finish() {
-        super.finish()
-        @Suppress("DEPRECATION")
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AmadeusProScreen(onBack: () -> Unit) {
+internal fun AmadeusProScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val authManager = remember { AuthManager.getInstance(context) }
-    val authState by authManager.state.collectAsState()
-    val entitlementManager = remember { EntitlementManager.getInstance(context) }
-    val entitlementState by entitlementManager.state.collectAsState()
-
-    var priceLabel by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        entitlementManager.refreshEntitlements()
-        priceLabel = entitlementManager.fetchPremiumPriceLabel()
-    }
+    val vm: AmadeusProViewModel = viewModel()
+    val uiState by vm.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -120,13 +79,13 @@ private fun AmadeusProScreen(onBack: () -> Unit) {
         },
         bottomBar = {
             ProBottomBar(
-                isPremium = entitlementState.isPremium,
-                purchasing = entitlementState.purchasing,
-                authLoading = authState.loading,
-                errorMessage = entitlementState.errorMessage,
-                priceLabel = priceLabel,
+                isPremium = uiState.entitlementState.isPremium,
+                purchasing = uiState.entitlementState.purchasing,
+                authLoading = uiState.authState.loading,
+                errorMessage = uiState.entitlementState.errorMessage,
+                priceLabel = uiState.priceLabel,
                 onSubscribe = {
-                    context.findActivity()?.let { entitlementManager.purchasePremium(it) }
+                    context.findActivity()?.let { vm.subscribe(it) }
                 }
             )
         },

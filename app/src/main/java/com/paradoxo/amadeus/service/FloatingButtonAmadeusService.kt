@@ -36,9 +36,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.AgentDashboardActivity
-import com.paradoxo.amadeus.activity.AmadeusProActivity
 import com.paradoxo.amadeus.activity.ConfigPrimariaActivity
 import com.paradoxo.amadeus.activity.MainActivity
+import com.paradoxo.amadeus.ui.amadeuspro.AmadeusProActivity
 import com.paradoxo.amadeus.cognicao.AIProviderFactory
 import com.paradoxo.amadeus.cognicao.AgentInterpreter
 import com.paradoxo.amadeus.cognicao.LiteRTCommandInterpreter

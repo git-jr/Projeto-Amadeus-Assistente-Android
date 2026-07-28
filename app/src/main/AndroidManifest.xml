@@ -118,17 +118,17 @@
             android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
-            android:name=".activity.AmadeusProActivity"
+            android:name=".ui.amadeuspro.AmadeusProActivity"
             android:exported="false"
             android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
-            android:name=".activity.DemoActionsActivity"
+            android:name=".ui.demoactions.DemoActionsActivity"
             android:exported="false"
             android:theme="@style/Theme.Amadeus.Compose" />
 
         <activity
-            android:name=".activity.LiteRTModelManagerActivity"
+            android:name=".ui.litertmodelmanager.LiteRTModelManagerActivity"
             android:exported="false"
             android:theme="@style/Theme.Amadeus.Compose" />
 

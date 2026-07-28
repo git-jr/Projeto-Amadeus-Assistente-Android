@@ -1,5 +1,7 @@
 package com.paradoxo.amadeus.payments
 
+import com.paradoxo.amadeus.BuildConfig
+
 enum class EntitlementFeature(val key: String) {
     ADVANCED_MODELS("ADVANCED_MODELS")
 }
@@ -27,6 +29,8 @@ data class Entitlement(
     val expiresAtMillis: Long? = null
 ) {
     fun hasFeature(feature: EntitlementFeature): Boolean {
+        if (BuildConfig.FORCE_PREMIUM_FOR_TESTS) return true
+
         val notExpired = expiresAtMillis == null || expiresAtMillis > System.currentTimeMillis()
         return status == EntitlementStatus.ACTIVE && notExpired && feature in features
     }
@@ -39,7 +43,8 @@ data class EntitlementUiState(
     val errorMessage: String? = null
 ) {
     val isPremium: Boolean
-        get() = entitlement.status == EntitlementStatus.ACTIVE &&
+        get() = BuildConfig.FORCE_PREMIUM_FOR_TESTS ||
+                entitlement.status == EntitlementStatus.ACTIVE &&
                 (entitlement.expiresAtMillis == null || entitlement.expiresAtMillis > System.currentTimeMillis())
 
     val canUseAdvancedModels: Boolean

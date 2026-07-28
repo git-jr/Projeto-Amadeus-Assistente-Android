@@ -1,11 +1,5 @@
-package com.paradoxo.amadeus.activity
+package com.paradoxo.amadeus.ui.litertmodelmanager
 
-import android.app.Application
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Key
@@ -33,17 +26,6 @@ import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,6 +35,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -70,121 +54,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.paradoxo.amadeus.R
-import com.paradoxo.amadeus.cognicao.localmodel.LocalModelDownloadManager
 import com.paradoxo.amadeus.cognicao.localmodel.SupportedModels
-import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.dao.room.entities.LocalModelEntity
 import com.paradoxo.amadeus.dao.room.entities.ModelStatus
-import com.paradoxo.amadeus.util.Preferencias
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 private val ColorPrimary = Color(0xFFF50057)
 private val ColorDarkPurple = Color(0xFF290f3e)
 private val ColorSuccess = Color(0xFF4CAF50)
 private val ColorSurface = Color(0xFFF5F5F5)
 
-class LiteRTModelManagerActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
-        )
-        setContent {
-            MaterialTheme {
-                ModelManagerScreen(onBack = { finish() })
-            }
-        }
-    }
-
-    override fun finish() {
-        super.finish()
-        @Suppress("DEPRECATION")
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-    }
-}
-
-class LiteRTModelManagerViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val db = AmadeusDatabase.getInstance(application)
-    private val dao = db.localModelDAO()
-    private val downloadManager = LocalModelDownloadManager(application)
-
-    val models: StateFlow<List<LocalModelEntity>> = dao.getAll()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    init {
-        startProgressPolling()
-    }
-
-    private fun startProgressPolling() {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                val downloading = models.value.filter { it.status == ModelStatus.DOWNLOADING }
-                for (model in downloading) {
-                    if (model.downloadManagerId >= 0) {
-                        downloadManager.checkProgress(model.modelId, model.downloadManagerId)
-                    }
-                }
-                delay(2_000)
-            }
-        }
-    }
-
-    fun downloadModel(descriptor: SupportedModels.ModelDescriptor) {
-        viewModelScope.launch(Dispatchers.IO) {
-            downloadManager.enqueueDownload(descriptor)
-        }
-    }
-
-    fun cancelDownload(model: LocalModelEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            downloadManager.cancelDownload(model.modelId, model.downloadManagerId)
-        }
-    }
-
-    fun setActive(modelId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dao.setActive(modelId)
-        }
-    }
-
-    fun deleteModel(entity: LocalModelEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            downloadManager.deleteModel(entity)
-        }
-    }
-
-    fun saveHfToken(token: String) {
-        Preferencias.setPrefString(token, Preferencias.PREF_HF_TOKEN, getApplication())
-    }
-
-    fun getHfToken(): String =
-        Preferencias.getPrefString(Preferencias.PREF_HF_TOKEN, getApplication())
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ModelManagerScreen(onBack: () -> Unit) {
+internal fun LiteRTModelManagerScreen(onBack: () -> Unit) {
     val vm: LiteRTModelManagerViewModel = viewModel()
-    val models by vm.models.collectAsState()
-    val activeModel = models.firstOrNull { it.isActive }
-    val totalUsedBytes = models.filter { it.status == ModelStatus.DOWNLOADED }
-        .sumOf { it.sizeBytes }
-    var hfToken by remember { mutableStateOf(vm.getHfToken()) }
+    val uiState by vm.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -218,29 +115,26 @@ private fun ModelManagerScreen(onBack: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ActiveModelCard(activeModel)
+            ActiveModelCard(uiState.activeModel)
 
-            StorageCard(totalUsedBytes)
+            StorageCard(uiState.totalUsedBytes)
 
             val hasGatedModel = SupportedModels.CATALOG.any { it.requiresHfToken }
             if (hasGatedModel) {
                 HfTokenCard(
-                    token = hfToken,
-                    onTokenChange = {
-                        hfToken = it
-                        vm.saveHfToken(it)
-                    }
+                    token = uiState.hfToken,
+                    onTokenChange = { vm.updateHfToken(it) }
                 )
             }
 
             SectionHeader("Modelos Disponíveis")
 
-            models.forEach { model ->
+            uiState.models.forEach { model ->
                 val descriptor = SupportedModels.CATALOG.firstOrNull { it.modelId == model.modelId }
                 ModelCard(
                     model = model,
                     descriptor = descriptor,
-                    hfToken = hfToken,
+                    hfToken = uiState.hfToken,
                     onDownload = { descriptor?.let { vm.downloadModel(it) } },
                     onCancel = { vm.cancelDownload(model) },
                     onSetActive = { vm.setActive(model.modelId) },
@@ -315,7 +209,7 @@ private fun StorageCard(totalBytes: Long) {
         Text(
             label,
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
             color = Color(0xFF212121)
         )
     }
@@ -327,7 +221,7 @@ private fun SectionHeader(title: String) {
         text = title.uppercase(),
         color = ColorDarkPurple,
         fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
         letterSpacing = 1.sp,
         modifier = Modifier.padding(start = 4.dp, top = 4.dp)
     )
@@ -359,7 +253,7 @@ private fun ModelCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     model.displayName,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     fontSize = 15.sp,
                     color = Color(0xFF212121)
                 )
@@ -385,7 +279,6 @@ private fun ModelCard(
             }
         }
 
-        // Progresso durante download
         if (model.status == ModelStatus.DOWNLOADING) {
             val progress = if (model.sizeBytes > 0) {
                 model.downloadedBytes.toFloat() / model.sizeBytes.toFloat()
@@ -404,7 +297,6 @@ private fun ModelCard(
             )
         }
 
-        // Status chip + ações
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -478,11 +370,11 @@ private fun ModelCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Excluir modelo?", fontWeight = FontWeight.SemiBold) },
+            title = { Text("Excluir modelo?", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold) },
             text = { Text("O arquivo de ${formatBytes(model.sizeBytes)} será removido do dispositivo.") },
             confirmButton = {
                 TextButton(onClick = { showDeleteDialog = false; onDelete() }) {
-                    Text("Excluir", color = ColorPrimary, fontWeight = FontWeight.SemiBold)
+                    Text("Excluir", color = ColorPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
                 }
             },
             dismissButton = {
@@ -508,7 +400,7 @@ private fun StatusChip(status: ModelStatus) {
             .background(bg)
             .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
-        Text(label, fontSize = 12.sp, color = fg, fontWeight = FontWeight.Medium)
+        Text(label, fontSize = 12.sp, color = fg, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
     }
 }
 
@@ -535,7 +427,7 @@ private fun HfTokenCard(token: String, onTokenChange: (String) -> Unit) {
             }
             Spacer(Modifier.width(10.dp))
             Column {
-                Text("Token HuggingFace", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF212121))
+                Text("Token HuggingFace", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF212121))
                 Text(
                     "Necessário para baixar modelos Gemma (restritos).",
                     fontSize = 12.sp, color = Color(0xFF757575), lineHeight = 16.sp
@@ -563,7 +455,7 @@ private fun HfTokenCard(token: String, onTokenChange: (String) -> Unit) {
                 focusedBorderColor = ColorPrimary,
                 unfocusedBorderColor = Color(0xFFE0E0E0)
             ),
-            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp)
+            textStyle = TextStyle(fontSize = 13.sp)
         )
         Text(
             text = buildAnnotatedString {

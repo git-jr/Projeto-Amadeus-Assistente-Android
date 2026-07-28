@@ -1,10 +1,5 @@
-package com.paradoxo.amadeus.activity
+package com.paradoxo.amadeus.ui.demoactions
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,28 +41,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.paradoxo.amadeus.modelo.ActionIntent
 import com.paradoxo.amadeus.modelo.ActionType
-import com.paradoxo.amadeus.service.AmadeusAccessibilityService
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-private data class DemoScenario(
+private data class DemoScenarioDisplay(
     val id: String,
     val title: String,
     val description: String,
@@ -77,8 +68,12 @@ private data class DemoScenario(
     val isReadScreen: Boolean = false,
 )
 
+private val ColorPrimary = Color(0xFFF50057)
+private val ColorDarkPurple = Color(0xFF290f3e)
+private val ColorSuccess = Color(0xFF4CAF50)
+
 private val DEMOS = listOf(
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "open_app",
         title = "Abrir apps",
         description = "Abre YouTube por comando, volta Amadeus",
@@ -94,7 +89,7 @@ private val DEMOS = listOf(
             ActionIntent(ActionType.HOME),
         )
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "read_screen",
         title = "Ler o conteúdo da tela",
         description = "Analisa todos os elementos visíveis na tela atual",
@@ -103,7 +98,7 @@ private val DEMOS = listOf(
         actions = emptyList(),
         isReadScreen = true,
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "tap",
         title = "Executar toques",
         description = "Abre YouTube e clica em alguns elementos da tela",
@@ -117,7 +112,7 @@ private val DEMOS = listOf(
             ActionIntent(ActionType.CLICK, target = "Tudo"),
         )
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "type",
         title = "Digitar textos",
         description = "Abre pesquisa e digita texto automaticamente",
@@ -126,13 +121,13 @@ private val DEMOS = listOf(
         actions = listOf(
             ActionIntent(ActionType.OPEN_APP, target = "Google"),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            ActionIntent(ActionType.CLICK_COORDS, value = "500,580"), // clicar na barra de pesquisa
+            ActionIntent(ActionType.CLICK_COORDS, value = "500,580"),
             ActionIntent(ActionType.TYPE, value = "Olá, eu sou Amadeus"),
             ActionIntent(ActionType.WAIT, value = "1000"),
             ActionIntent(ActionType.HOME),
         )
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "scroll",
         title = "Deslizar pela tela",
         description = "Rola para baixo e para cima em Configurações",
@@ -150,7 +145,7 @@ private val DEMOS = listOf(
             ActionIntent(ActionType.HOME),
         )
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "navigation",
         title = "Ações de navegação",
         description = "Abre app Play Store, volta, abre recentes, vai para home",
@@ -168,33 +163,29 @@ private val DEMOS = listOf(
             ActionIntent(ActionType.OPEN_APP, target = "Amadeus"),
         )
     ),
-    DemoScenario(
+    DemoScenarioDisplay(
         id = "all",
         title = "Tudo em sequência",
         description = "Roda todas as demos em sequência para GIF completo",
         icon = Icons.Rounded.AutoAwesome,
         color = Color(0xFFE91E63),
         actions = listOf(
-            // abrir app
             ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
             ActionIntent(ActionType.WAIT, value = "2500"),
             ActionIntent(ActionType.HOME),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            // toque
             ActionIntent(ActionType.OPEN_APP, target = "Configurações"),
             ActionIntent(ActionType.WAIT, value = "1500"),
             ActionIntent(ActionType.CLICK, target = "Aplicativos"),
             ActionIntent(ActionType.WAIT, value = "1500"),
             ActionIntent(ActionType.HOME),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            // digitar
             ActionIntent(ActionType.OPEN_APP, target = "Google"),
             ActionIntent(ActionType.WAIT, value = "2000"),
             ActionIntent(ActionType.TYPE, value = "Olá, eu sou Amadeus"),
             ActionIntent(ActionType.WAIT, value = "2000"),
             ActionIntent(ActionType.HOME),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            // scroll
             ActionIntent(ActionType.OPEN_APP, target = "Configurações"),
             ActionIntent(ActionType.WAIT, value = "1500"),
             ActionIntent(ActionType.SCROLL, value = "down"),
@@ -202,7 +193,6 @@ private val DEMOS = listOf(
             ActionIntent(ActionType.SCROLL, value = "up"),
             ActionIntent(ActionType.HOME),
             ActionIntent(ActionType.WAIT, value = "1000"),
-            // navegação
             ActionIntent(ActionType.OPEN_APP, target = "WhatsApp"),
             ActionIntent(ActionType.WAIT, value = "2000"),
             ActionIntent(ActionType.BACK),
@@ -214,88 +204,11 @@ private val DEMOS = listOf(
     ),
 )
 
-class DemoActionsActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, darkScrim = android.graphics.Color.DKGRAY),
-        )
-        setContent {
-            MaterialTheme {
-                DemoActionsScreen(onBack = { finish() })
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DemoActionsScreen(onBack: () -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-
-    var runningId by remember { mutableStateOf<String?>(null) }
-    var countdown by remember { mutableIntStateOf(0) }
-    var statusText by remember { mutableStateOf("") }
-    var readResult by remember { mutableStateOf("") }
-
-    val serviceActive = AmadeusAccessibilityService.isActive(context)
-
-    fun runDemo(demo: DemoScenario) {
-        if (runningId != null) return
-        runningId = demo.id
-        statusText = ""
-        readResult = ""
-
-        scope.launch {
-            // 3s countdown
-            for (i in 3 downTo 1) {
-                countdown = i
-                delay(1000)
-            }
-            countdown = 0
-
-            if (demo.isReadScreen) {
-                val elements = AmadeusAccessibilityService.getVisibleElements()
-
-                // ordenar pelos que têm texto, depois contentDescription, depois labelLegivel, e por último os sem texto
-                val sorted = elements.sortedByDescending { e ->
-                    when {
-                        !e.text.isNullOrBlank() -> 3
-                        !e.contentDescription.isNullOrBlank() -> 2
-                        !e.labelLegivel.isNullOrBlank() -> 1
-                        else -> 0
-                    }
-                }
-
-                val preview = sorted.take(5).joinToString("\n") { e ->
-                    "• ${e.text?.take(40) ?: e.contentDescription?.take(40) ?: e.labelLegivel.take(40) ?: "(sem texto)"}"
-                }
-                readResult = "${elements.size} elementos encontrados:\n$preview"
-                delay(4000)
-                runningId = null
-                statusText = "Concluído"
-                return@launch
-            }
-
-            val sent = AmadeusAccessibilityService.executeActions(
-                demo.actions,
-                onFeedback = { msg -> statusText = msg },
-                onDone = {
-                    statusText = "Concluído"
-                    scope.launch {
-                        delay(2000)
-                        runningId = null
-                    }
-                }
-            )
-            if (!sent) {
-                statusText = "Serviço de acessibilidade não está ativo"
-                delay(2000)
-                runningId = null
-            }
-        }
-    }
+internal fun DemoActionsScreen(onBack: () -> Unit) {
+    val vm: DemoActionsViewModel = viewModel()
+    val uiState by vm.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -320,7 +233,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (!serviceActive) {
+            if (!uiState.serviceActive) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -336,7 +249,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                 }
             }
 
-            if (countdown > 0) {
+            if (uiState.countdown > 0) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -357,7 +270,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                             color = Color.White
                         )
                         Text(
-                            text = "$countdown",
+                            text = "${uiState.countdown}",
                             fontSize = 64.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -366,7 +279,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                 }
             }
 
-            if (statusText.isNotEmpty()) {
+            if (uiState.statusText.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -374,11 +287,11 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                         .background(Color(0xFFF3F4F6))
                         .padding(12.dp)
                 ) {
-                    Text(statusText, fontSize = 13.sp, color = Color(0xFF374151))
+                    Text(uiState.statusText, fontSize = 13.sp, color = Color(0xFF374151))
                 }
             }
 
-            if (readResult.isNotEmpty()) {
+            if (uiState.readResult.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -386,16 +299,26 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
                         .background(Color(0xFFE3F2FD))
                         .padding(12.dp)
                 ) {
-                    Text(readResult, fontSize = 12.sp, color = Color(0xFF0D47A1))
+                    Text(uiState.readResult, fontSize = 12.sp, color = Color(0xFF0D47A1))
                 }
             }
 
             DEMOS.forEach { demo ->
                 DemoCard(
                     demo = demo,
-                    isRunning = runningId == demo.id,
-                    isDisabled = runningId != null && runningId != demo.id,
-                    onRun = { runDemo(demo) }
+                    isRunning = uiState.runningId == demo.id,
+                    isDisabled = uiState.runningId != null && uiState.runningId != demo.id,
+                    onRun = {
+                        vm.runDemo(
+                            DemoScenario(
+                                id = demo.id,
+                                title = demo.title,
+                                description = demo.description,
+                                actions = demo.actions,
+                                isReadScreen = demo.isReadScreen
+                            )
+                        )
+                    }
                 )
             }
 
@@ -406,7 +329,7 @@ private fun DemoActionsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun DemoCard(
-    demo: DemoScenario,
+    demo: DemoScenarioDisplay,
     isRunning: Boolean,
     isDisabled: Boolean,
     onRun: () -> Unit,
@@ -487,7 +410,6 @@ private fun DemoCard(
             }
         }
 
-        // Expand toggle
         Row(
             modifier = Modifier
                 .fillMaxWidth()

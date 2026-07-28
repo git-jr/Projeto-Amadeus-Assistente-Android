@@ -101,6 +101,9 @@ import com.paradoxo.amadeus.payments.SubscriptionPromptDialog
 import com.paradoxo.amadeus.payments.findActivity
 import com.paradoxo.amadeus.service.AmadeusAccessibilityService
 import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
+import com.paradoxo.amadeus.ui.amadeuspro.AmadeusProActivity
+import com.paradoxo.amadeus.ui.demoactions.DemoActionsActivity
+import com.paradoxo.amadeus.ui.litertmodelmanager.LiteRTModelManagerActivity
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.canDrawOverlays
 
