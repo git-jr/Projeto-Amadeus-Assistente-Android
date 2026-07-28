@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId "com.paradoxo.amadeus"
-        minSdk 23
+        minSdk 24
         targetSdk 36
         versionCode 394
         versionName "3.0.0 | Agent Alpha 1"
@@ -120,7 +120,7 @@ dependencies {
     implementation 'com.alphacephei:vosk-android:0.3.75'
 
     // LiteRT-LM (on-device local LLM inference)
-    implementation 'com.google.ai.edge.litertlm:litertlm-android:latest.release'
+    implementation 'com.google.ai.edge.litertlm:litertlm-android:0.18.0'
 
     // Jetpack Compose
     def composeBom = platform('androidx.compose:compose-bom:2026.03.00')
