@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -20,6 +19,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.paradoxo.amadeus.R
 import com.paradoxo.amadeus.activity.MainActivity
 import com.paradoxo.amadeus.util.Preferencias
+import com.paradoxo.amadeus.util.Validadora
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -57,8 +57,9 @@ class MessasingService : FirebaseMessagingService() {
     }
 
     private fun construirPendingIntent(link: String?): PendingIntent {
-        val intent = if (!link.isNullOrBlank()) {
-            Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
+        val uri = Validadora.uriHttpsValida(link)
+        val intent = if (uri != null) {
+            Intent(Intent.ACTION_VIEW, uri).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
         } else {

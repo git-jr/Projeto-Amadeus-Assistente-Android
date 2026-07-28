@@ -62,6 +62,7 @@ import com.paradoxo.amadeus.util.Toasts.meuToastLong
 import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
+import com.paradoxo.amadeus.util.Validadora.uriHttpsValida
 import com.paradoxo.amadeus.util.Validadora.validarTexto
 import com.paradoxo.amadeus.util.voz.EscutadaoraService
 import com.paradoxo.amadeus.util.voz.TextoParaVoz
@@ -71,7 +72,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -124,8 +124,8 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     private fun abrirLinkDeNotificacao(intent: Intent?) {
         Log.d("FCM_INTENT", "extras recebidos: ${intent?.extras?.keySet()}")
         intent?.extras?.keySet()?.forEach { Log.d("FCM_INTENT", "  $it = ${intent.getStringExtra(it)}") }
-        val link = intent?.getStringExtra("link")?.takeIf { it.isNotBlank() } ?: return
-        startActivity(Intent(Intent.ACTION_VIEW, link.toUri()))
+        val uri = uriHttpsValida(intent?.getStringExtra("link")) ?: return
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
     }
 
     private fun processarAcoesDeIntent(intent: Intent?) {
