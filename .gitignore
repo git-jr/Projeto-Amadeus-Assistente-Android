@@ -20,3 +20,6 @@
 
 # OAuth server credentials
 **/client_secret_*.json
+
+# Notas, specs e transcrições locais do Claude Code (o CLAUDE.md da raiz continua versionado)
+/.claude/
