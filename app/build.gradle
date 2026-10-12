@@ -21,8 +21,8 @@ android {
         applicationId "com.paradoxo.amadeus"
         minSdk 24
         targetSdk 36
-        versionCode 394
-        versionName "3.0.0 | Agent Alpha 1"
+        versionCode 395
+        versionName "3.0.0 | Agent Alpha 2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "boolean", "FORCE_PREMIUM_FOR_TESTS", "false"
         ndk {
