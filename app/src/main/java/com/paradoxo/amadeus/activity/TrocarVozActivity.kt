@@ -23,6 +23,7 @@ import com.paradoxo.amadeus.modelo.Voz
 import com.paradoxo.amadeus.util.Preferencias.getPrefString
 import com.paradoxo.amadeus.util.Preferencias.setPrefString
 import com.paradoxo.amadeus.util.Toasts.meuToast
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import java.util.Locale
 
@@ -103,6 +104,7 @@ class TrocarVozActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trocar_voz)
+        aplicarInsets(findViewById(R.id.trocarVozLayout))
         configurarFala()
         configurarInterface()
     }

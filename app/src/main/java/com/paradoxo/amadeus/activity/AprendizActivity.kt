@@ -14,7 +14,8 @@ import com.paradoxo.amadeus.dao.AcaoDAO
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
 import com.paradoxo.amadeus.util.Preferencias.getPrefBool
 import com.paradoxo.amadeus.util.Preferencias.setPrefBool
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.Util.aplicarInsets
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,12 +47,13 @@ class AprendizActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aprendiz)
+        aplicarInsets(findViewById(R.id.aprendizLayout2))
         configurarInterface()
         carregarInfosBancoAtual(this)
     }
 
     private fun configurarInterface() {
-        configurarToolBarBranca(this)
+        setupToolbar(getString(R.string.aprendizado))
         configurarChips()
         configurarToggleButton()
     }

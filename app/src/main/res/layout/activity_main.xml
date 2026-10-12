@@ -14,6 +14,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -38,17 +39,15 @@
                             android:layout_width="72dp"
                             android:layout_height="72dp"
                             android:layout_marginStart="@dimen/size_icone_image"
-                            android:layout_marginLeft="@dimen/size_icone_image"
                             android:contentDescription="@string/seta_ir_para"
                             android:src="@drawable/ic_logo_white"
-                            android:tint="@color/colorSecondaryDark3"
-                            />
+                            app:tint="@color/colorSecondaryDark3" />
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="0.8"
                             android:layout_marginStart="@dimen/text_margin"
-                            android:layout_marginLeft="@dimen/text_margin"
                             android:orientation="vertical">
 
                             <TextView
@@ -57,17 +56,27 @@
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/colorSecondaryDark3"
                                 android:textSize="22sp"
-                                tools:text="Paradoxo"/>
+                                tools:text="Paradoxo" />
 
                             <TextView
                                 android:id="@+id/nomeUsuarioTextView"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:text="@string/app_name"
                                 android:textColor="@color/subtitulo"
-                                android:textSize="20sp"
-                                android:text="@string/app_name"/>
+                                android:textSize="20sp" />
 
                         </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="@dimen/size_icone_image"
+                            android:contentDescription="@string/seta_ir_para"
+                            android:src="@drawable/ic_settings"
+                            android:alpha="0.7"
+                            app:tint="@color/gray_700" />
 
                     </LinearLayout>
 
@@ -89,16 +98,14 @@
                             android:layout_width="@dimen/size_icone_image"
                             android:layout_height="@dimen/size_icone_image"
                             android:layout_marginStart="@dimen/size_icone_image"
-                            android:layout_marginLeft="@dimen/size_icone_image"
                             android:contentDescription="@string/seta_ir_para"
                             android:src="@drawable/ic_timeline"
-                            android:tint="@color/conteudo_card" />
+                            app:tint="@color/conteudo_card" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/text_margin"
-                            android:layout_marginLeft="@dimen/text_margin"
                             android:orientation="vertical">
 
                             <TextView
@@ -132,16 +139,14 @@
                             android:layout_width="@dimen/size_icone_image"
                             android:layout_height="@dimen/size_icone_image"
                             android:layout_marginStart="@dimen/size_icone_image"
-                            android:layout_marginLeft="@dimen/size_icone_image"
                             android:contentDescription="@string/seta_ir_para"
                             android:src="@drawable/ic_mic_settings"
-                            android:tint="@color/conteudo_card" />
+                            app:tint="@color/conteudo_card" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/text_margin"
-                            android:layout_marginLeft="@dimen/text_margin"
                             android:orientation="vertical">
 
                             <TextView
@@ -163,28 +168,26 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="@dimen/item_menu"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:visibility="gone">
 
                         <ImageView
                             android:layout_width="@dimen/size_icone_image"
                             android:layout_height="@dimen/size_icone_image"
                             android:layout_marginStart="@dimen/size_icone_image"
-                            android:layout_marginLeft="@dimen/size_icone_image"
                             android:contentDescription="@string/seta_ir_para"
                             android:src="@drawable/ic_support"
-                            android:tint="@color/conteudo_card" />
+                            app:tint="@color/conteudo_card" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/text_margin"
-                            android:layout_marginLeft="@dimen/text_margin"
                             android:orientation="vertical">
 
                             <TextView
@@ -206,6 +209,47 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/macrosLayout"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/item_menu"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/size_icone_image"
+                            android:layout_height="@dimen/size_icone_image"
+                            android:layout_marginStart="@dimen/size_icone_image"
+                            android:contentDescription="@string/seta_ir_para"
+                            android:src="@drawable/ic_eye"
+                            app:tint="@color/conteudo_card" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/text_margin"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/meus_aprendizados"
+                                android:textColor="@android:color/black"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/meus_aprendizados_desc"
+                                android:textColor="@color/subtitulo"
+                                android:textSize="14sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:id="@+id/sobreLayout"
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:layout_width="match_parent"
@@ -218,16 +262,14 @@
                             android:layout_width="@dimen/size_icone_image"
                             android:layout_height="@dimen/size_icone_image"
                             android:layout_marginStart="@dimen/size_icone_image"
-                            android:layout_marginLeft="@dimen/size_icone_image"
                             android:contentDescription="@string/seta_ir_para"
                             android:src="@drawable/ic_sobre"
-                            android:tint="@color/conteudo_card" />
+                            app:tint="@color/conteudo_card" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/text_margin"
-                            android:layout_marginLeft="@dimen/text_margin"
                             android:orientation="vertical">
 
                             <TextView
@@ -269,6 +311,8 @@
                     android:layout_height="@dimen/item_lista"
                     android:layout_gravity="bottom"
                     android:orientation="vertical"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     app:layout_anchorGravity="bottom"
                     app:layout_constraintBottom_toBottomOf="parent">
 
@@ -278,15 +322,14 @@
                         android:background="@color/gray_200" />
 
                     <LinearLayout
-
-                        tools:visibility="visible"
                         android:id="@+id/layoutOuvindo"
-                        android:visibility="gone"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
                         android:background="@android:color/white"
-                        android:orientation="vertical">
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        tools:visibility="visible">
 
                         <TextView
                             android:id="@+id/textoOuvidoTextView"
@@ -305,9 +348,9 @@
 
                         <com.airbnb.lottie.LottieAnimationView
                             android:id="@+id/lottieAnimationView"
-                            android:alpha="0.5"
                             android:layout_width="200dp"
                             android:layout_height="match_parent"
+                            android:alpha="0.5"
                             android:scaleType="centerCrop"
                             app:lottie_autoPlay="true"
                             app:lottie_fileName="lottie_animation_listening_ slowly.json"
@@ -322,7 +365,8 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingStart="12dp"
-                        android:paddingLeft="12dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         tools:ignore="RtlSymmetry">
 
                         <EditText
@@ -332,15 +376,44 @@
                             android:layout_weight="9"
                             android:background="@android:color/transparent"
                             android:hint="@string/diga_algo"
-                            android:lines="1"
-                            android:inputType="text"
                             android:imeOptions="actionGo"
+                            android:inputType="text"
+                            android:lines="1"
                             android:selectAllOnFocus="false"
                             android:textColorHint="@color/gray_300"
                             tools:ignore="Autofill,TextFields" />
 
+                        <FrameLayout
+                            android:layout_width="24dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <View
+                                android:id="@+id/agentButtonGlow"
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:layout_gravity="center"
+                                android:alpha="0"
+                                android:background="@drawable/agent_button_glow" />
+
+                            <ImageView
+                                android:id="@+id/agentButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="?selectableItemBackground"
+                                android:clickable="true"
+                                android:contentDescription="@string/botao_enviar"
+                                android:focusable="true"
+                                android:padding="12dp"
+                                android:src="@drawable/ic_logo_white"
+                                android:tag="@string/tag_mic"
+                                app:tint="@color/colorSecondaryDark3" />
+
+                        </FrameLayout>
+
                         <ImageView
-                            android:tag="@string/tag_mic"
                             android:id="@+id/enviarButton"
                             android:layout_width="24dp"
                             android:layout_height="match_parent"
@@ -351,7 +424,8 @@
                             android:focusable="true"
                             android:padding="12dp"
                             android:src="@drawable/ic_mic"
-                            android:tint="@color/colorPrimary" />
+                            android:tag="@string/tag_mic"
+                            app:tint="@color/colorPrimary" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -374,7 +448,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                android:fitsSystemWindows="true"
                 android:theme="@style/Theme.AppCompat.Light.NoActionBar.Transparent"
                 android:visibility="visible"
                 app:elevation="0dp">

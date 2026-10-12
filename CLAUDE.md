@@ -18,7 +18,7 @@ Amadeus is an Android virtual assistant app with voice interaction (STT/TTS), ch
 ./gradlew lint                # Run lint checks
 ```
 
-- **compileSdk / targetSdk:** 35 | **minSdk:** 21 | **JVM:** 17
+- **compileSdk / targetSdk:** 36 | **minSdk:** 21 | **JVM:** 17
 - **App ID:** `com.paradoxo.amadeus` | **Version:** 3.0.0-beta-01
 
 ## Architecture

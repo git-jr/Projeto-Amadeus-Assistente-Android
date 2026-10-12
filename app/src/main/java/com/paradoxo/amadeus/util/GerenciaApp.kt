@@ -16,6 +16,7 @@ object GerenciaApp {
 
     @JvmStatic
     fun encontrarApp(entrada: String, context: Context) {
+        val entradaNormalizada = entrada.trim().lowercase()
         val packageManager = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
@@ -25,7 +26,7 @@ object GerenciaApp {
         for (packageInfo in appsInstalados) {
             val nomeApp = packageInfo.loadLabel(packageManager).toString().lowercase()
             try {
-                if (nomeApp == entrada) {
+                if (nomeApp == entradaNormalizada) {
                     val intentAppParaAbrir = packageManager.getLaunchIntentForPackage(packageInfo.activityInfo.packageName)
                     context.startActivity(intentAppParaAbrir)
                     Log.e(TAG, "Abrindo$nomeApp")
@@ -38,14 +39,14 @@ object GerenciaApp {
             }
         }
 
-        val indexEspaco = entrada.indexOf(" ")
+        val indexEspaco = entradaNormalizada.indexOf(" ")
         if (indexEspaco == -1) {
-            notificarOutputErroApp(entrada, context)
+            notificarOutputErroApp(entradaNormalizada, context)
             return
         }
-        val nomeDoApp = entrada.substring(indexEspaco).trim()
-        if (entrada.length == nomeDoApp.length) {
-            notificarOutputErroApp(entrada, context)
+        val nomeDoApp = entradaNormalizada.substring(indexEspaco).trim()
+        if (entradaNormalizada.length == nomeDoApp.length) {
+            notificarOutputErroApp(entradaNormalizada, context)
         } else {
             encontrarApp(nomeDoApp, context)
             Log.e(TAG, "ERROAo listar o app")

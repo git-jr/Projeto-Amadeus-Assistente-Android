@@ -3,10 +3,25 @@ package com.paradoxo.amadeus.util
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+
+const val PERMISSAO_ACESSO_MICROFONE = 1
+const val PERMISSAO_ACESSO_NOTIFICACOES = 3
+
+fun Context.canDrawOverlays(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        Settings.canDrawOverlays(this)
+    } else {
+        true
+    }
+}
 
 object Permissao {
 
@@ -19,19 +34,25 @@ object Permissao {
         return ContextCompat.checkSelfPermission(context, permissao) == PackageManager.PERMISSION_GRANTED
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun getIntentSolicitarSobreposicao(packageName: String): Intent {
+        return Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            "package:$packageName".toUri()
+        )
+    }
+
     fun solicitarPermissaoMicrofone(activity: Activity) {
         if (ContextCompat.checkSelfPermission(
                 activity,
                 Manifest.permission.RECORD_AUDIO
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val PERMISSAO_ACESSO_MICROFONE = 1
-                activity.requestPermissions(
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    PERMISSAO_ACESSO_MICROFONE
-                )
-            }
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                PERMISSAO_ACESSO_MICROFONE
+            )
         }
     }
 
@@ -43,6 +64,28 @@ object Permissao {
         }
         ActivityCompat.requestPermissions(activity, arrayOf(permissao), 2)
     }
+
+    fun solicitarPermissaoNotificacoes(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                PERMISSAO_ACESSO_NOTIFICACOES
+            )
+        }
+    }
+
+    fun Context.hasRecordAudioPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    }
+
 }
 
 /*

@@ -1,0 +1,160 @@
+package com.paradoxo.amadeus.cognicao
+
+import com.paradoxo.amadeus.modelo.MacroExample
+import com.paradoxo.amadeus.modelo.UiElement
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
+
+object AgentPromptBuilder {
+
+    // ── Defaults (usados como fallback e como valores iniciais do Remote Config) ──
+
+    val DEFAULT_SYSTEM_PROMPT = """
+        Você é um assistente que controla um celular Android via acessibilidade.
+
+        Ações disponíveis e quando usar cada uma:
+        - CLICK        → toca em um elemento; "target" = texto exato do elemento
+        - CLICK_COORDS → toca em coordenadas exatas; "target" = descrição opcional, "value" = "x,y" das coordenadas da lista
+        - TYPE         → digita texto em campo editável; "target" = texto do campo, "value" = texto a digitar
+        - OPEN_APP     → abre um aplicativo; "target" = nome do app
+        - SCROLL       → rola verticalmente; "target" = "up" ou "down"
+        - SCROLL_HORIZONTAL → rola horizontalmente; "target" = "left" ou "right"
+        - IME_ACTION   → pressiona o botão de enviar/buscar/ir do teclado; target e value vazios
+        - BACK         → pressiona o botão Voltar do Android; target e value vazios
+        - HOME         → vai para a tela inicial do Android; target e value vazios
+        - RECENTS      → abre a lista de apps recentes; target e value vazios
+        - NOTIFICATIONS → abre a barra de notificações; target e value vazios
+        - QUICK_SETTINGS → abre as configurações rápidas; target e value vazios
+        - WAIT          → aguarda carregamento; "value" = tempo em ms (ex: "2000"). Use após OPEN_APP se o app for lento.
+
+        Regras imutáveis:
+        - MACROS CONFIRMADOS: se houver macros de referência com meta similar, siga a mesma sequência de tipos de ação, ajustando o "target" para o texto exato visível. Não invente abordagem diferente quando sequência confirmada existe.
+        - Use o texto EXATO do elemento como "target" nas ações CLICK e TYPE.
+        - Não use TYPE em campo EDITÁVEL que já está (preenchido:) com o conteúdo correto para a meta.
+        - Não use TYPE + IME_ACTION se resultados relevantes já são visíveis na tela.
+        - Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão de confirmação visível na tela.
+        - Use CLICK_COORDS para elementos do tipo IMAGEM com coordenadas na lista. O value deve ser EXATAMENTE as coordenadas fornecidas.
+        - Ao selecionar um item por nome (contato, conversa, grupo, app), prefira o elemento cujo texto seja correspondência EXATA ou mais próxima ao nome alvo — mesmo que seja do tipo IMAGEM (use CLICK_COORDS). Evite elementos cujo texto seja uma descrição composta contendo o nome mais palavras extras como "imagem do grupo", "foto de perfil", "avatar" etc. Exemplo: para abrir "Nozes", prefira [IMAGEM texto:"Nozes"] a [CLICÁVEL texto:"Nozes, imagem do grupo"].
+        - Use BACK para fechar diálogos, popups ou navegar à tela anterior.
+        - Prefira sequências curtas e diretas — facilita o aprendizado de macros.
+        - Se a tela não mudou após um passo, tente uma abordagem diferente em vez de repetir.
+        - Retorne APENAS o JSON sem markdown, sem explicação.
+    """.trimIndent()
+
+    // Placeholders: {{ELEMENTS_LIST}}, {{COMMAND}}
+    val DEFAULT_SINGLE_SHOT_TEMPLATE = """
+        Você é um assistente que controla um celular Android via acessibilidade.
+
+        Elementos interativos visíveis na tela:
+        {{ELEMENTS_LIST}}
+
+        Comando do usuário: "{{COMMAND}}"
+
+        Retorne as ações necessárias como um array JSON. Regras:
+        - Apenas JSON puro, sem markdown, sem bloco de código, sem explicação
+        - "target" deve ser EXATAMENTE o texto do elemento como aparece na lista acima
+        - Para enviar mensagem: TYPE no campo editável + CLICK no botão de enviar
+        - Se não for possível executar com os elementos disponíveis, retorne []
+
+        Ações disponíveis:
+        - {"action":"CLICK","target":"texto exato do elemento","value":""}
+        - {"action":"CLICK_COORDS","target":"descrição opcional","value":"x,y"}  ← toca em coordenadas (use para elementos IMAGEM da lista)
+        - {"action":"TYPE","target":"texto do campo","value":"texto a digitar"}
+        - {"action":"OPEN_APP","target":"nome do app","value":""}
+        - {"action":"SCROLL","target":"up ou down","value":""}           ← rola a tela verticalmente
+        - {"action":"SCROLL_HORIZONTAL","target":"left ou right","value":""}  ← rola horizontalmente
+        - {"action":"IME_ACTION","target":"","value":""}                 ← pressiona o botão de busca/enviar/ir do teclado
+        - {"action":"BACK","target":"","value":""}                       ← botão Voltar do Android
+        - {"action":"HOME","target":"","value":""}                       ← vai para a tela inicial
+        - {"action":"RECENTS","target":"","value":""}                    ← abre a lista de apps recentes
+        - {"action":"NOTIFICATIONS","target":"","value":""}              ← abre a barra de notificações
+        - {"action":"QUICK_SETTINGS","target":"","value":""}             ← abre as configurações rápidas
+        - {"action":"WAIT","target":"","value":"2000"}                   ← aguarda N ms (use após OPEN_APP se o app for lento)
+
+        PRINCÍPIO: leia o estado atual antes de agir. Se resultados relevantes à meta já são visíveis (sugestões, listas, elementos IMAGEM relacionados), interaja com eles — não refaça buscas nem redigite campos EDITÁVEL que já aparecem como (preenchido:).
+        Não use TYPE em campo EDITÁVEL (preenchido:) com conteúdo correto. Não use TYPE + IME_ACTION se resultados relevantes já estão na tela.
+        Para confirmar/enviar após TYPE: prefira CLICK no botão visível (ex: "Enviar", "Send", seta de envio). Use IME_ACTION apenas quando não houver botão visível na tela (ex: barra de busca do Twitter/X, YouTube).
+        Use CLICK_COORDS para elementos do tipo IMAGEM que aparecem na lista com coordenadas — quando não há nó clicável correspondente (ex: banners de imagem na Netflix). O value deve ser EXATAMENTE as coordenadas fornecidas na lista.
+        Ao selecionar um item por nome (contato, conversa, grupo, app), prefira o elemento cujo texto seja correspondência EXATA ou mais próxima ao nome alvo, mesmo que seja do tipo IMAGEM (use CLICK_COORDS). Elementos CLICÁVEL cujo texto contenha o nome mais sufixos descritivos ("imagem do grupo", "foto de perfil", etc.) são candidatos inferiores ao elemento cujo texto seja apenas o nome.
+        Use BACK para cancelar, fechar diálogos ou navegar para a tela anterior.
+        Use HOME quando precisar sair de qualquer app e retornar à tela inicial.
+
+        Responda apenas com o array JSON:
+    """.trimIndent()
+
+    // Placeholders: {{APP}}, {{GOAL}}, {{HISTORY}}, {{FEW_SHOT_BLOCK}}, {{ELEMENTS_LIST}}
+    val DEFAULT_USER_TURN_TEMPLATE = """
+        App aberto: {{APP}}
+        Meta do usuário: "{{GOAL}}"
+
+        Passos já executados:
+        {{HISTORY}}
+        {{FEW_SHOT_BLOCK}}
+        Elementos interativos visíveis na tela atual (a imagem mostra cada elemento marcado com [N]):
+        {{ELEMENTS_LIST}}
+
+        A meta foi concluída com base no estado atual da tela?
+        Retorne APENAS este JSON sem markdown:
+        {
+          "done": false,
+          "reason": "motivo curto",
+          "actions": [
+            {"action":"CLICK","target":"texto exato","value":""}
+          ]
+        }
+        Se a meta foi concluída: {"done":true,"reason":"motivo curto","actions":[]}
+        Se não há como prosseguir: {"done":true,"reason":"não foi possível completar","actions":[]}
+    """.trimIndent()
+
+    // ── Builders (leem do Remote Config, usam defaults como fallback) ─────────
+
+    fun buildElementsList(elements: List<UiElement>): String {
+        val interactive = elements.filter {
+            (it.isClickable || it.isEditable || it.text != null || it.contentDescription != null) && it.labelLegivel.isNotBlank()
+        }
+        return interactive.mapIndexed { i, el ->
+            val tipo = when {
+                el.isEditable -> "EDITÁVEL"
+                el.isClickable -> "CLICÁVEL"
+                else -> "IMAGEM"
+            }
+            val classe = el.className?.substringAfterLast('.') ?: "View"
+            val coords = if (!el.isClickable && !el.isEditable) " | coords: ${el.bounds.centerX()},${el.bounds.centerY()}" else ""
+            val labelPart = if (el.isEditable) "(preenchido: \"${el.labelLegivel}\")" else "| texto: \"${el.labelLegivel}\""
+            "[$i] $tipo $labelPart | classe: $classe$coords"
+        }.joinToString("\n")
+    }
+
+    fun buildSingleShotPrompt(elementsList: String, command: String): String =
+        RemoteConfigManager.singleShotTemplate
+            .replace("{{ELEMENTS_LIST}}", elementsList)
+            .replace("{{COMMAND}}", command)
+
+    fun buildFewShotBlock(examples: List<MacroExample>): String {
+        if (examples.isEmpty()) return ""
+        val sb = StringBuilder(
+            "\n⚡ MACROS CONFIRMADOS — sequências que já funcionaram para metas similares." +
+            " Siga a mesma ordem de ações, adaptando apenas o \"target\" para o texto exato visível na tela:\n"
+        )
+        examples.forEach { ex ->
+            val json = ex.actions.joinToString(",", "[", "]") { a ->
+                """{"action":"${a.type.name}","target":"${a.target}","value":"${a.value}"}"""
+            }
+            sb.append("• \"${ex.goalKey}\" → $json\n")
+        }
+        return sb.toString()
+    }
+
+    fun buildSystemPrompt(): String = RemoteConfigManager.systemPrompt
+
+    fun buildUserTurn(
+        goal: String,
+        historyText: String,
+        elementsList: String,
+        fewShotExamples: List<MacroExample> = emptyList()
+    ): String = RemoteConfigManager.userTurnTemplate
+        .replace("{{APP}}", AmadeusAccessibilityService.currentForegroundPackage.ifEmpty { "desconhecido" })
+        .replace("{{GOAL}}", goal)
+        .replace("{{HISTORY}}", historyText)
+        .replace("{{FEW_SHOT_BLOCK}}", buildFewShotBlock(fewShotExamples))
+        .replace("{{ELEMENTS_LIST}}", elementsList)
+}

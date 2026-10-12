@@ -9,6 +9,7 @@
     <string name="seta_ir_para">Seta ir para</string>
     <string name="diga_algo">Diga algo</string>
     <string name="update_pretty">Update Pretty</string>
+    <string name="update_agent">Agent Update</string>
     <string name="botao_enviar">Botão enviar</string>
     <string name="aprendizado">Aprendizado</string>
     <string name="edite_perguntas_respostas_acoes">Gerencie respostas, sinônimos, entidades…</string>
@@ -18,12 +19,23 @@
     <string name="dicas_duvidas_bugs_sugestoes">Dicas, dúvidas, bugs, sugestões…</string>
     <string name="sobre">Sobre</string>
     <string name="versao_e_licencas">Versão, licenças e 42</string>
+    <string name="meus_aprendizados">Meus aprendizados</string>
+    <string name="meus_aprendizados_desc">Ver e editar ações gravadas pelo agente</string>
     <string name="adicionar_sentenca">Adicionar sentença</string>
     <string name="pesquisar_por">Pesquisar por…</string>
     <string name="digite_seu_nome">Digite seu nome</string>
     <string name="digite_um_nome_para_ia">Digite um nome para IA</string>
     <string name="configure_seu_perfil">Configure seu perfil</string>
+    <string name="ao_continuar_termos">Ao continuar, você concorda com nossos termos e política de privacidade</string>
+    <string name="termos_e_politica">termos e política de privacidade</string>
     <string name="configuracao_inicial">Configuração inicial</string>
+    <string name="conta">Conta</string>
+    <string name="entrar_com_google">Entrar com Google</string>
+    <string name="sair_da_conta">Sair da conta</string>
+    <string name="conta_conectada">Conta conectada</string>
+    <string name="conta_nao_conectada">Nenhuma conta conectada</string>
+    <string name="login_google_compra_desc">Use sua Conta Google para assinar e recuperar seu acesso.</string>
+    <string name="login_google_opcional_desc">Opcional. O app continua funcionando sem login.</string>
     <string name="modo_fala">Voz da IA</string>
     <string name="configs_podem_ser_alteradas_depois">As configurações podem ser\nalteradas mais tarde</string>
 
@@ -56,6 +68,8 @@
     <string name="cornfimar_exclusao_item">Tem certeza que deseja excluir esse item?</string>
     <string name="ok">OK</string>
     <string name="cancelar">Cancelar</string>
+    <string name="minimizar">Minimizar</string>
+    <string name="ir_para_amadeus">Amadeus</string>
     <string name="erro_excluir_sentenca">Erro ao tentar excluir sentença</string>
     <string name="sem_sentencas_no_momento" tools:ignore="Typos">Não há sentenças gravadas no momento</string>
     <string name="excluido_com_sucesso">Excluído com sucesso</string>
@@ -72,6 +86,41 @@
     <string name="negar">Negar</string>
     <string name="nome_invalido">Nome inválido</string>
     <string name="permitir_uso_de_dados">Permitir uso de dados</string>
+    <string name="permitir_uso_de_dados_descri_curta">Permitir melhorias na Amadeus com dados de uso não vinculados a você.</string>
+    <string name="botao_flutuante">Botão flutuante</string>
+    <string name="botao_flutuante_ativo">Toque para abrir a Amadeus</string>
+    <string name="escuta_frase_ativacao">Escutar frase de ativação</string>
+    <string name="escuta_frase_ativacao_desc">Ativar ao falar \"Amadeus\"</string>
+    <string name="reusar_macros_prompt_gemini">Reusar macros no prompt do Gemini</string>
+    <string name="reusar_macros_prompt_gemini_desc">Usa macros confirmadas como referência no prompt do agente; não afeta macros executadas diretamente</string>
+    <string name="escuta_requer_botao_flutuante">Ative o botão flutuante primeiro</string>
+    <string name="definir_assistente_voz">Definir como Assistente de Voz</string>
+    <string name="definir_assistente_voz_desc">Abrir configurações do sistema para selecionar o assistente padrão</string>
+    <string name="permissao_overlay_necessaria">Permita a exibição sobre outros apps nas configurações</string>
+    <string name="permissao_overlay_rationale_titulo">Permissão para exibir sobre outros apps</string>
+    <string name="permissao_overlay_rationale_mensagem">A Amadeus usa essa permissão para mostrar o botão flutuante por cima de outros apps, permitindo abrir o assistente rapidamente de qualquer tela.</string>
+    <string name="ir_para_configuracoes">Ir para configurações</string>
+    <string name="agora_nao">Agora não</string>
+    <string name="permissao_overlay_nao_concedida">Sem essa permissão, o botão flutuante não pode ser ativado.</string>
+    <string name="observar_tela">Observar tela</string>
+    <string name="acessibilidade_descricao">Permite a Amadeus escanear e interagir com elementos na tela</string>
+    <string name="acessibilidade_nao_ativa">Ative o serviço de acessibilidade da Amadeus nas configurações</string>
+    <string name="acessibilidade_rationale_titulo">Ative a acessibilidade da Amadeus</string>
+    <string name="acessibilidade_rationale_mensagem">O botão flutuante da Amadeus depende do serviço de acessibilidade para observar a tela e interagir com elementos de outros apps. Ative essa opção nas configurações para concluir a ativação.</string>
+    <string name="acessibilidade_nao_concedida">Sem ativar a acessibilidade da Amadeus, o botão flutuante não pode ser usado.</string>
+    <string name="permissao_microfone_necessaria">Permissão de microfone necessária. Abra o app para conceder.</string>
+    <string name="permissao_microfone_rationale_titulo">Permissão de microfone</string>
+    <string name="permissao_microfone_rationale_mensagem">Para ouvir seus comandos de voz pelo botão flutuante, o Amadeus precisa acessar o microfone do aparelho.</string>
+    <string name="permissao_microfone_nao_concedida">Sem a permissão de microfone, o botão flutuante não consegue ouvir comandos de voz.</string>
+    <string name="acessibilidade_tela_indisponivel">Não foi possível acessar o conteúdo da tela</string>
+    <string name="acessibilidade_texto_nao_encontrado">Texto \"%s\" não encontrado na tela</string>
+    <string name="acessibilidade_elemento_nao_clicavel">Elemento \"%s\" encontrado mas não é clicável</string>
+    <string name="tirar_print">Tirar print</string>
+    <string name="tooltip_permissoes_ausentes">Permissões ausentes, o agente pode não funcionar direito</string>
+    <string name="ouvir">Ouvir</string>
+    <string name="ouvir_dica">Peça Amadeus para fazer algo</string>
+    <string name="print_salvo">Print salvo na galeria</string>
+    <string name="erro_captura_tela">Não foi possível capturar a tela</string>
     <string name="link_politica_privaicade">https://paradoxostudios.blogspot.com/2018/11/amadeus-politica-de-privacidade.html</string>
     <string name="politica_privaicade">Política de privacidade</string>
     <string name="sinonimos">Sinônimos</string>
@@ -142,5 +191,21 @@
     <string name="erro_abrir_app">Erro ao tentar abrir o app </string>
     <string name="app_nao_encontrado">App não encontrado</string>
     <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, não está instalado no momento, toque no card para fazer uma busca</string>
-
+    <string name="thinking">Pensando…</string>
+    <string name="loading">Carregando…</string>
+    <string name="iniciar">Iniciar</string>
+    <string name="parar">Parar</string>
+    <string name="action_type_click">Clicar em elemento</string>
+    <string name="action_type_click_coords">Clicar em coordenadas</string>
+    <string name="action_type_type">Digitar texto</string>
+    <string name="action_type_open_app">Abrir app</string>
+    <string name="action_type_scroll">Rolar tela</string>
+    <string name="action_type_scroll_horizontal">Rolar horizontalmente</string>
+    <string name="action_type_ime_action">Ação do teclado</string>
+    <string name="action_type_back">Voltar</string>
+    <string name="action_type_home">Tela inicial</string>
+    <string name="action_type_recents">Recentes</string>
+    <string name="action_type_notifications">Notificações</string>
+    <string name="action_type_quick_settings">Configurações rápidas</string>
+    <string name="action_type_wait">Aguardar</string>
 </resources>

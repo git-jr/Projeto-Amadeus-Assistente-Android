@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Amadeus</string>
+
+    <string name="logo_amadeus">Amadeus Logo</string>
+    <string name="projeto_amadeus">Project Amadeus</string>
+
+    <string name="Lorem_ipsum_dolor">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do bibendum enim. In massa tempor nec feugiat.</string>
+    <string name="dica">Tip</string>
+    <string name="seta_ir_para">Arrow go to</string>
+    <string name="diga_algo">Say something</string>
+    <string name="update_pretty">Update Pretty</string>
+    <string name="update_agent">Agent Update</string>
+    <string name="botao_enviar">Send button</string>
+    <string name="aprendizado">Learning</string>
+    <string name="edite_perguntas_respostas_acoes">Manage responses, synonyms, entities…</string>
+    <string name="voz">Voice</string>
+    <string name="altere_a_voz_quando_e_o_que_falar">Change the voice, when and what to say</string>
+    <string name="suporte">Support</string>
+    <string name="dicas_duvidas_bugs_sugestoes">Tips, questions, bugs, suggestions…</string>
+    <string name="sobre">About</string>
+    <string name="versao_e_licencas">Version, licenses and 42</string>
+    <string name="meus_aprendizados">My Learnings</string>
+    <string name="meus_aprendizados_desc">View and edit actions recorded by the agent</string>
+    <string name="adicionar_sentenca">Add sentence</string>
+    <string name="pesquisar_por">Search for…</string>
+    <string name="digite_seu_nome">Enter your name</string>
+    <string name="digite_um_nome_para_ia">Enter a name for the AI</string>
+    <string name="configure_seu_perfil">Set up your profile</string>
+    <string name="ao_continuar_termos">By continuing, you agree to our terms and privacy policy</string>
+    <string name="termos_e_politica">terms and privacy policy</string>
+    <string name="configuracao_inicial">Initial setup</string>
+    <string name="modo_fala">AI Voice</string>
+    <string name="configs_podem_ser_alteradas_depois">Settings can be\nchanged later</string>
+
+    <string name="link_start">Link Start</string>
+    <string name="musica_encerrada">Music stopped</string>
+    <string name="nehuma_musica_em_reproducao" tools:ignore="Typos">I\'m not playing any music right now</string>
+    <string name="versao">Version</string>
+    <string name="erro_iniciar_app">Error, unable to start the app, please try again</string>
+
+    <string name="tag_enviar">send</string>
+    <string name="tag_mic">mic</string>
+    <string name="ouvindo">Listening…</string>
+
+    <string name="entidade">Entity</string>
+
+    <string name="licencas">Code licenses</string>
+    <string name="entrada">Input</string>
+    <string name="respostas">Responses</string>
+    <string name="exemplo_ola">Example: Hello</string>
+    <string name="digite_uma_resposta">Enter a response</string>
+    <string name="salvar">Save</string>
+    <string name="descricao_img_botao_add_resposta">button to add more responses</string>
+    <string name="salvando_dados">Saving data</string>
+    <string name="entrada_invalida">Invalid input</string>
+    <string name="resposta_invalida">Invalid response</string>
+    <string name="deve_haver_ao_menos_uma_reposta">There must be at least one response</string>
+    <string name="limite_de_respostas_atingido">This is the limit of responses you can add for now</string>
+    <string name="aviso_se_mais_de_uma_resposta_for_inserida">If more than one response is registered, it will be chosen randomly when needed</string>
+    <string name="cornfimar_exclusao_item">Are you sure you want to delete this item?</string>
+    <string name="ok">OK</string>
+    <string name="cancelar">Cancel</string>
+    <string name="minimizar">Minimize</string>
+    <string name="ir_para_amadeus">Go to Amadeus</string>
+    <string name="erro_excluir_sentenca">Error trying to delete sentence</string>
+    <string name="sem_sentencas_no_momento" tools:ignore="Typos">There are no saved sentences at the moment</string>
+    <string name="excluido_com_sucesso">Deleted successfully</string>
+
+    <string name="acesso_e_uso_dados_titulo">Data access and usage</string>
+    <string name="acesso_e_uso_dados_descri" tools:ignore="Typos">Want to help our AI become smarter and more realistic?
+        \n\nAllow us to collect your interactions within the app. This will be done anonymously
+        (nothing will be associated with you), stored indefinitely, and used only to improve
+        AI interactions. You can stop sending data at any time.
+    \n\nDo you authorize?
+
+    </string>
+    <string name="autorizar">Authorize</string>
+    <string name="negar">Deny</string>
+    <string name="nome_invalido">Invalid name</string>
+    <string name="permitir_uso_de_dados">Allow data usage</string>
+    <string name="permitir_uso_de_dados_descri_curta">Allow improvements to Amadeus using usage data not linked to you.</string>
+    <string name="botao_flutuante">Floating button</string>
+    <string name="botao_flutuante_ativo">Tap to open Amadeus</string>
+    <string name="escuta_frase_ativacao">Listen for activation phrase</string>
+    <string name="escuta_frase_ativacao_desc">Activate by saying \"Amadeus\"</string>
+    <string name="reusar_macros_prompt_gemini">Reuse macros in Gemini prompt</string>
+    <string name="reusar_macros_prompt_gemini_desc">Uses confirmed macros as reference in the agent prompt; does not affect directly executed macros</string>
+    <string name="escuta_requer_botao_flutuante">Enable the floating button first</string>
+    <string name="definir_assistente_voz">Set as Voice Assistant</string>
+    <string name="definir_assistente_voz_desc">Open system settings to select the default assistant</string>
+    <string name="permissao_overlay_necessaria">Allow display over other apps in settings</string>
+    <string name="permissao_overlay_rationale_titulo">Permission to display over other apps</string>
+    <string name="permissao_overlay_rationale_mensagem">Amadeus uses this permission to show the floating button on top of other apps, allowing you to open the assistant quickly from any screen.</string>
+    <string name="ir_para_configuracoes">Go to settings</string>
+    <string name="agora_nao">Not now</string>
+    <string name="permissao_overlay_nao_concedida">Without this permission, the floating button cannot be activated.</string>
+    <string name="observar_tela">Observe screen</string>
+    <string name="acessibilidade_descricao">Allows Amadeus to scan and interact with elements on the screen</string>
+    <string name="acessibilidade_nao_ativa">Enable Amadeus accessibility service in settings</string>
+    <string name="acessibilidade_rationale_titulo">Enable Amadeus Accessibility</string>
+    <string name="acessibilidade_rationale_mensagem">Amadeus\'s floating button relies on the accessibility service to observe the screen and interact with elements in other apps. Enable this option in settings to complete activation.</string>
+    <string name="acessibilidade_nao_concedida">Without enabling Amadeus accessibility, the floating button cannot be used.</string>
+    <string name="permissao_microfone_necessaria">Microphone permission required. Open the app to grant it.</string>
+    <string name="permissao_microfone_rationale_titulo">Microphone permission</string>
+    <string name="permissao_microfone_rationale_mensagem">To listen to your voice commands through the floating button, Amadeus needs access to the device\'s microphone.</string>
+    <string name="permissao_microfone_nao_concedida">Without microphone permission, the floating button cannot hear voice commands.</string>
+    <string name="acessibilidade_tela_indisponivel">Could not access screen content</string>
+    <string name="acessibilidade_texto_nao_encontrado">Text \"%s\" not found on screen</string>
+    <string name="acessibilidade_elemento_nao_clicavel">Element \"%s\" found but is not clickable</string>
+    <string name="tirar_print">Take screenshot</string>
+    <string name="ouvir">Listen</string>
+    <string name="ouvir_dica">Ask Amadeus to do something</string>
+    <string name="print_salvo">Screenshot saved to gallery</string>
+    <string name="erro_captura_tela">Could not capture the screen</string>
+    <string name="link_politica_privaicade">https://paradoxostudios.blogspot.com/2018/11/amadeus-politica-de-privacidade.html</string>
+    <string name="politica_privaicade">Privacy policy</string>
+    <string name="sinonimos">Synonyms</string>
+    <string name="editar_sinonimo">Edit synonym</string>
+    <string name="novo_sinonimo">New synonym</string>
+    <string name="aviso_sobre_lentidao_sinonimos">Note that the more synonyms there are, the slower the processing of responses that use this entity may be</string>
+    <string name="sim_sair">Yes, exit</string>
+    <string name="alteracao_ainda_nao_salva">Changes not yet saved, exit without saving?</string>
+    <string name="exemplo_casa">Example: house</string>
+    <string name="usar_sinonimos_nas_buscas">Use synonyms in searches</string>
+    <string name="descricao_busca_sinonimos">Uses different words with the same meaning when trying to find a response; this increases search time</string>
+    <string name="carregando_banco">Loading database</string>
+    <string name="sentencas">Sentences</string>
+    <string name="entidades">Entities</string>
+    <string name="acoes">Actions</string>
+    <string name="nao_e_possivel_editar_acoes">It is not possible to edit actions at this time</string>
+    <string name="descricao_voz_sem_resposta">Prevents responses like \"I didn\'t understand\" from being spoken aloud (may slow down speech)</string>
+    <string name="falar_respostas_nao_encontradas">Speak responses not found</string>
+    <string name="trocar_tipo_da_voz">Change voice type</string>
+    <string name="respostas_em_voz_alta">AI responses will be spoken aloud</string>
+    <string name="digite_algo_para_teste">Type something to test</string>
+    <string name="confirmar">Confirm</string>
+    <string name="voltar_para_voz_padrao">Restore default voice</string>
+    <string name="carregar_todas">Load all</string>
+    <string name="voz_padrao_selecionada">Voice changed to system default</string>
+    <string name="aviso_vozes_repetidas">Some voices may sound very similar to others depending on your device\'s current settings. Even so, enabling this option may show voices that were not previously available.</string>
+    <string name="agora">Now</string>
+    <string name="reiniciar_depois">Later</string>
+    <string name="estilo_voz_de_voz_alterado">Voice style changed</string>
+    <string name="reiniciar">Restart now?</string>
+    <string name="alteracao_realizada">To apply the changes, you need to restart the app. Do you want to do this now?</string>
+    <string name="mudancas_serao_aplicadas">Changes will be applied the next time the app is opened</string>
+    <string name="numero_vozes_econtradas">Voices found</string>
+    <string name="estilo_atual">Current voice style</string>
+    <string name="padrao">Default</string>
+    <string name="paradoxo_studios_junior_obom">Paradoxo Studios | Junior Obom</string>
+    <string name="no_youtube">On YouTube!</string>
+    <string name="veja_a_serie_no_yt">Watch the series that gave rise to this app</string>
+    <string name="feedback">Feedback</string>
+    <string name="conte_o_que_achou">Tell us what you think of the app and what to improve</string>
+    <string name="o_codigo_por_tras_de_tudo_isso">The code behind all of this</string>
+    <string name="codigo_aberto">Open source</string>
+
+    <string name="licencas_animacoes">Lottie API Animations</string>
+    <string name="creditos_lottie_api_1">Scaling loader | by Bryan Vogel</string>
+    <string name="creditos_lottie_api_2">Siri Style Loading | by Daris Ali Mufti</string>
+
+    <string name="link_playlist_amadeus_yt">https://www.youtube.com/playlist?list=PLgkr0bcGnH6YtPQO1774MBPhJB4tVBk8L</string>
+    <string name="linkAmadeusGooglePlayStore">https://play.google.com/store/apps/details?id=com.paradoxo.amadeus</string>
+    <string name="linkAmadeusGitHub">https://github.com/git-jr/Projeto-Amadeus-Chatbot-Android</string>
+    <string name="link_lottie_api_1">https://lottiefiles.com/1808-scaling-loader#</string>
+    <string name="link_lottie_api_2">https://lottiefiles.com/6778-siri-style-loading</string>
+    <string name="banco_redesenhado_explicacao">We redesigned Amadeus\'s database to be faster and more functional than in previous versions.
+        \nYou have data from an older version that can be imported for use in the new one.
+        \n\nHowever, we DO NOT RECOMMEND doing this as it may cause slowdowns in some parts of the app due to the structure of responses in the original database</string>
+    <string name="versao_antiga_detectada">Old version detected</string>
+    <string name="imporatr">IMPORT</string>
+    <string name="nao_imporatr">DON\'T IMPORT</string>
+    <string name="liberando_espaco_do_banco_original">Freeing space from original database</string>
+    <string name="importando_banco">Importing database…</string>
+    <string name="abrindo">opening…</string>
+    <string name="confirmar_exclusao">Confirm deletion</string>
+    <string name="tem_certeza_que_deseja_exluir_esse_item">Are you sure you want to delete this item?</string>
+    <string name="salvo">Saved</string>
+    <string name="lingua_nao_suportada">Language not supported</string>
+    <string name="forneca_acesso_ao_armazenamento">Provide access to device storage and try again</string>
+    <string name="acesso_a_memoria">Storage access</string>
+    <string name="erro_abrir_app">Error trying to open app </string>
+    <string name="app_nao_encontrado">App not found</string>
+    <string name="app_nao_instalado_no_momento" tools:ignore="Typos">, is not currently installed, tap the card to search</string>
+    <string name="thinking">Thinking…</string>
+    <string name="loading">Loading…</string>
+    <string name="iniciar">Start</string>
+    <string name="parar">Stop</string>
+    <string name="action_type_click">Click on element</string>
+    <string name="action_type_click_coords">Click on coordinates</string>
+    <string name="action_type_type">Type text</string>
+    <string name="action_type_open_app">Open app</string>
+    <string name="action_type_scroll">Scroll screen</string>
+    <string name="action_type_scroll_horizontal">Scroll horizontally</string>
+    <string name="action_type_ime_action">Keyboard action</string>
+    <string name="action_type_back">Back</string>
+    <string name="action_type_home">Home screen</string>
+    <string name="action_type_recents">Recents</string>
+    <string name="action_type_notifications">Notifications</string>
+    <string name="action_type_quick_settings">Quick settings</string>
+    <string name="action_type_wait">Wait</string>
+</resources>

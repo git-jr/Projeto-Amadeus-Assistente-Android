@@ -1,14 +1,22 @@
 package com.paradoxo.amadeus.activity
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
+import android.view.animation.AccelerateInterpolator
+import android.provider.Settings
 import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -16,6 +24,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -38,13 +47,22 @@ import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Acao
 import com.paradoxo.amadeus.modelo.EventoMensagem
 import com.paradoxo.amadeus.modelo.Sentenca
+import com.paradoxo.amadeus.service.AmadeusAccessibilityService
+import com.paradoxo.amadeus.service.FloatingButtonAmadeusService
 import com.paradoxo.amadeus.service.GravaHistoricoService
 import com.paradoxo.amadeus.util.Animacoes.animarComFade
+import com.paradoxo.amadeus.util.DialogPermissao
+import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_MICROFONE
+import com.paradoxo.amadeus.util.PERMISSAO_ACESSO_NOTIFICACOES
+import com.paradoxo.amadeus.util.Permissao
+import com.paradoxo.amadeus.util.Permissao.hasRecordAudioPermission
 import com.paradoxo.amadeus.util.Preferencias
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
 import com.paradoxo.amadeus.util.Util.esconderTeclado
+import com.paradoxo.amadeus.util.Validadora.uriHttpsValida
 import com.paradoxo.amadeus.util.Validadora.validarTexto
 import com.paradoxo.amadeus.util.voz.EscutadaoraService
 import com.paradoxo.amadeus.util.voz.TextoParaVoz
@@ -54,9 +72,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.util.ArrayList
-import android.content.pm.PackageManager
-import com.paradoxo.amadeus.util.Permissao
 
 class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
@@ -75,23 +90,94 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     private lateinit var menuSlidingPaneLayout: SlidingPaneLayout
 
     private var emTeste = false
+    private var aguardarPermissaoMicrofoneParaBotaoFlutuante = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        aplicarInsets(findViewById(R.id.menuSlidingPaneLayout))
         configurarServicosSegundoPlano()
         configurarIterface()
-        if (!Permissao.armazenamentoAcessivel(this)) {
-            Permissao.solicitarAcessoArmazenamento(this)
+        processarAcoesDeIntent(intent)
+        abrirLinkDeNotificacao(intent)
+        verificarEMostrarAviso()
+        Permissao.solicitarPermissaoNotificacoes(this)
+
+        if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
+            trocarLayoutBottom(false)
+        }
+//        if (Preferencias.getPrefBool(ConfigPrimariaActivity.PREF_BOTAO_FLUTUANTE, this, false)) {
+//            iniciarBotaoFlutuante()
+//        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        processarAcoesDeIntent(intent)
+        abrirLinkDeNotificacao(intent)
+        if (intent.getBooleanExtra(EXTRA_INICIAR_VOZ, false)) {
+            trocarLayoutBottom(false)
         }
     }
 
+    private fun abrirLinkDeNotificacao(intent: Intent?) {
+        Log.d("FCM_INTENT", "extras recebidos: ${intent?.extras?.keySet()}")
+        intent?.extras?.keySet()?.forEach { Log.d("FCM_INTENT", "  $it = ${intent.getStringExtra(it)}") }
+        val uri = uriHttpsValida(intent?.getStringExtra("link")) ?: return
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
+    }
+
+    private fun processarAcoesDeIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_SOLICITAR_PERMISSAO_MICROFONE, false) != true) return
+
+        if (hasRecordAudioPermission()) {
+            if (intent.getBooleanExtra(EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE, false)) {
+                startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
+                    action = FloatingButtonAmadeusService.ACTION_START_LISTENING
+                })
+            }
+            return
+        }
+
+        aguardarPermissaoMicrofoneParaBotaoFlutuante =
+            intent.getBooleanExtra(EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE, false)
+        if (aguardarPermissaoMicrofoneParaBotaoFlutuante) {
+            solicitarPermissaoMicrofoneComRationaleParaBotaoFlutuante()
+        } else {
+            Permissao.solicitarPermissaoMicrofone(this)
+        }
+    }
+
+    private fun solicitarPermissaoMicrofoneComRationaleParaBotaoFlutuante() {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.permissao_microfone_rationale_titulo),
+            mensagem = getString(R.string.permissao_microfone_rationale_mensagem),
+            textoConfirmar = getString(R.string.autorizar),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                Permissao.solicitarPermissaoMicrofone(this)
+            },
+            onCancelar = {
+                aguardarPermissaoMicrofoneParaBotaoFlutuante = false
+                meuToast(getString(R.string.permissao_microfone_nao_concedida), applicationContext)
+            }
+        )
+    }
+
     private fun configurarServicosSegundoPlano() {
-        escutadaoraServiceIntent = Intent(this, EscutadaoraService::class.java)
-        vozParaTexto = VozParaTexto(applicationContext)
+        initVozParaTexto()
         textoParaVoz = TextoParaVoz(applicationContext)
         processadora = Processadora(this)
         acionadora = Acionadora(this)
+    }
+
+    private fun initVozParaTexto() {
+        if (hasRecordAudioPermission()) {
+            escutadaoraServiceIntent = Intent(this, EscutadaoraService::class.java)
+            vozParaTexto = VozParaTexto(applicationContext)
+        }
     }
 
     private fun configurarIterface() {
@@ -111,11 +197,14 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarBotoaEnviarTeclado()
         val lottieAnimationView = findViewById<LottieAnimationView>(R.id.lottieAnimationView)
         lottieAnimationView.speed = 0.5f
+        animarBrilhoAgentButton()
     }
 
     private fun configurarNomesIaUsu() {
-        findViewById<TextView>(R.id.nomeIaTextView).text = Preferencias.getPrefString("nomeIA", this)
-        findViewById<TextView>(R.id.nomeUsuarioTextView).text = Preferencias.getPrefString("nomeUsu", this)
+        findViewById<TextView>(R.id.nomeIaTextView).text =
+            Preferencias.getPrefString("nomeIA", this)
+        findViewById<TextView>(R.id.nomeUsuarioTextView).text =
+            Preferencias.getPrefString("nomeUsu", this)
     }
 
     private fun configurarBotoaEnviarTeclado() {
@@ -153,14 +242,19 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         } else {
             textoParaVoz.configurarFalaIA(sentenca.respostas[0])
         }
-        Handler(mainLooper).postDelayed({ recyclerView.smoothScrollToPosition(adapter.itemCount) }, 250)
+        Handler(mainLooper).postDelayed(
+            { recyclerView.smoothScrollToPosition(adapter.itemCount) },
+            250
+        )
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            val id = AmadeusDatabase.getInstance(this@MainActivity)
-                .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
-            withContext(Dispatchers.Main) {
-                idUltimoHistoricoGravado = id
-                sentenca.id = id.toString()
+        if (sentenca.salvarNoBanco) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val id = AmadeusDatabase.getInstance(this@MainActivity)
+                    .sentencaDAO().inserirHistorico(sentenca.toHistoricoEntity())
+                withContext(Dispatchers.Main) {
+                    idUltimoHistoricoGravado = id
+                    sentenca.id = id.toString()
+                }
             }
         }
     }
@@ -181,12 +275,57 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_OVERLAY_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                if (AmadeusAccessibilityService.isActive(this)) {
+                    startService(Intent(this, FloatingButtonAmadeusService::class.java))
+                } else {
+                    abrirConfiguracaoPrimariaParaAcessibilidade()
+                }
+            } else {
+                meuToast(getString(R.string.permissao_overlay_nao_concedida), applicationContext)
+            }
+        }
+    }
+
     fun iniciarEscutadoraService() {
         startService(escutadaoraServiceIntent)
     }
 
     fun pararEscutadoraService() {
         stopService(escutadaoraServiceIntent)
+    }
+
+    private fun solicitarPermissaoOverlayComRationale() {
+        DialogPermissao.exibirRationale(
+            activity = this,
+            titulo = getString(R.string.permissao_overlay_rationale_titulo),
+            mensagem = getString(R.string.permissao_overlay_rationale_mensagem),
+            textoConfirmar = getString(R.string.ir_para_configuracoes),
+            textoCancelar = getString(R.string.agora_nao),
+            onConfirmar = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val intent = Permissao.getIntentSolicitarSobreposicao(packageName)
+                    startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
+                }
+            },
+            onCancelar = {
+                meuToast(getString(R.string.permissao_overlay_nao_concedida), applicationContext)
+            }
+        )
+    }
+
+    private fun abrirConfiguracaoPrimariaParaAcessibilidade() {
+        startActivity(Intent(this, ConfigPrimariaActivity::class.java).apply {
+            putExtra(ConfigPrimariaActivity.EXTRA_SOLICITAR_ACESSIBILIDADE, true)
+            putExtra(
+                ConfigPrimariaActivity.EXTRA_ATIVAR_BOTAO_FLUTUANTE_APOS_ACESSIBILIDADE,
+                true
+            )
+        })
     }
 
     private fun configurarEditeText() {
@@ -199,7 +338,43 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         })
     }
 
+    private fun animarBrilhoAgentButton() {
+        val glowView = findViewById<View>(R.id.agentButtonGlow)
+        val button = findViewById<ImageView>(R.id.agentButton)
+        val pulsos = 4
+
+        fun dispararPulso(restantes: Int) {
+            if (restantes == 0) return
+            glowView.alpha = 0.75f
+            glowView.scaleX = 0.5f
+            glowView.scaleY = 0.5f
+            val glow = ObjectAnimator.ofPropertyValuesHolder(
+                glowView,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 0.5f, 2.6f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 0.5f, 2.6f),
+                PropertyValuesHolder.ofFloat(View.ALPHA, 0.75f, 0f)
+            ).apply {
+                duration = 850
+                interpolator = AccelerateInterpolator(1.2f)
+            }
+            val pulse = ObjectAnimator.ofPropertyValuesHolder(
+                button,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.15f, 1f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.15f, 1f)
+            ).apply { duration = 850 }
+            glow.start()
+            pulse.start()
+            Handler(Looper.getMainLooper()).postDelayed({ dispararPulso(restantes - 1) }, 950)
+        }
+
+        Handler(Looper.getMainLooper()).postDelayed({ dispararPulso(pulsos) }, 600)
+    }
+
     private fun configurarBotaoEnviar() {
+        findViewById<ImageView>(R.id.agentButton).setOnClickListener {
+            startActivity(Intent(this, AgentDashboardActivity::class.java))
+        }
+
         botoaEnviar.setOnClickListener {
             val tag = botoaEnviar.tag.toString()
             if (tag == tagEnviar) {
@@ -215,6 +390,7 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         configurarClickItem(R.id.configPrimariaLayout, ConfigPrimariaActivity())
         configurarClickItem(R.id.aprendizadoLayout, AprendizActivity())
         configurarClickItem(R.id.vozLayout, VozConfigActivity())
+        configurarClickItem(R.id.macrosLayout, ListaMacrosActivity())
         configurarClickItem(R.id.sobreLayout, SobreActivity())
     }
 
@@ -225,7 +401,11 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
     }
 
     private fun trocarLayoutBottom(tipoTexto: Boolean) {
-        Permissao.solicitarPermissaoMicrofone(this)
+        if (!hasRecordAudioPermission()) {
+            Permissao.solicitarPermissaoMicrofone(this)
+            return
+        }
+
         val layoutEscrevendo = findViewById<LinearLayout>(R.id.layoutEscrevendo)
         val layoutOuvindo = findViewById<LinearLayout>(R.id.layoutOuvindo)
         if (tipoTexto) {
@@ -233,12 +413,18 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             animarComFade(layoutOuvindo, false)
             animarComFade(layoutEscrevendo, true)
         } else {
-            iniciarEscutadoraService()
-            esconderTeclado(this@MainActivity)
-            animarComFade(layoutEscrevendo, false)
-            animarComFade(layoutOuvindo, true)
-            findViewById<View>(R.id.layoutOuvindo).setOnClickListener { trocarLayoutBottom(true) }
+            iniciarModoVoz()
         }
+    }
+
+    private fun iniciarModoVoz() {
+        val layoutEscrevendo = findViewById<LinearLayout>(R.id.layoutEscrevendo)
+        val layoutOuvindo = findViewById<LinearLayout>(R.id.layoutOuvindo)
+        iniciarEscutadoraService()
+        esconderTeclado(this@MainActivity)
+        animarComFade(layoutEscrevendo, false)
+        animarComFade(layoutOuvindo, true)
+        findViewById<View>(R.id.layoutOuvindo).setOnClickListener { trocarLayoutBottom(true) }
     }
 
     private fun trocarIconeBotaoEnviar(textoDaBusca: String) {
@@ -269,9 +455,26 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.action_add -> startActivity(Intent(applicationContext, EditarSentencaActivity::class.java))
-                R.id.action_aprendizado -> startActivity(Intent(applicationContext, AprendizActivity::class.java))
-                R.id.action_sobre -> startActivity(Intent(applicationContext, SobreActivity::class.java))
+                R.id.action_add -> startActivity(
+                    Intent(
+                        applicationContext,
+                        EditarSentencaActivity::class.java
+                    )
+                )
+
+                R.id.action_aprendizado -> startActivity(
+                    Intent(
+                        applicationContext,
+                        AprendizActivity::class.java
+                    )
+                )
+
+                R.id.action_sobre -> startActivity(
+                    Intent(
+                        applicationContext,
+                        SobreActivity::class.java
+                    )
+                )
             }
             false
         }
@@ -370,6 +573,28 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
+    private fun verificarEMostrarAviso() {
+        val overlayOk = Settings.canDrawOverlays(this)
+        val accessibilityOk = AmadeusAccessibilityService.isActive(this)
+        if (!overlayOk || !accessibilityOk) {
+            val snackbar = Snackbar.make(
+                findViewById(android.R.id.content),
+                getString(R.string.tooltip_permissoes_ausentes),
+                3000
+            ).setAnchorView(R.id.layoutEscrevendo)
+                .setAction("Configurar") {
+                    startActivity(Intent(this, AgentDashboardActivity::class.java))
+                }
+                .setActionTextColor(resources.getColor(R.color.yellow, theme))
+            snackbar.view.translationY = -(resources.displayMetrics.density * 100)
+            snackbar.show()
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -385,7 +610,8 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
             return
         }
         try {
-            val uploadDadosAutorizado = Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
+            val uploadDadosAutorizado =
+                Preferencias.getPrefBool(PREF_UPLOAD_DADOS_AUTORIZADO, this, false)
             if (!uploadDadosAutorizado) return
             val idUltimoUpload = Preferencias.getPrefLong(PREF_ID_ULTIMO_UPLOAD, this)
             if (idUltimoUpload < idUltimoHistoricoGravado) {
@@ -398,21 +624,47 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            1 -> {
+            PERMISSAO_ACESSO_MICROFONE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    meuToast("Permissão de microfone concedida", applicationContext)
+                    Log.w("Permissão", "Permissão de microfone concedida")
+                    initVozParaTexto()
+                    if (aguardarPermissaoMicrofoneParaBotaoFlutuante) {
+                        startService(Intent(this, FloatingButtonAmadeusService::class.java).apply {
+                            action = FloatingButtonAmadeusService.ACTION_START_LISTENING
+                        })
+                    } else {
+                        iniciarModoVoz()
+                    }
                 } else {
-                    meuToast("Permissão de microfone negada", applicationContext)
+                    meuToastLong(
+                        "Sem a permissão de microfone, o recurso de voz não funcionará. Você pode conceder a permissão nas configurações do aplicativo.",
+                        applicationContext
+                    )
+                    Log.w("Permissão", "Permissão de microfone negada")
                 }
+                aguardarPermissaoMicrofoneParaBotaoFlutuante = false
             }
+
             2 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    meuToast("Permissão de armazenamento concedida", applicationContext)
+                    Log.w("Permissão", "Permissão de armazenamento concedida")
                 } else {
                     meuToast("Permissão de armazenamento negada", applicationContext)
+                }
+            }
+
+            PERMISSAO_ACESSO_NOTIFICACOES -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.w("Permissão", "Permissão de notificações concedida")
+                } else {
+                    Log.w("Permissão", "Permissão de notificações negada")
                 }
             }
         }
@@ -428,6 +680,12 @@ class MainActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface 
 
         const val PREF_ID_ULTIMO_UPLOAD = "idUltimoUpload"
         const val PREF_UPLOAD_DADOS_AUTORIZADO = "upload_dados_autorizado"
+
+        const val EXTRA_INICIAR_VOZ = "iniciar_voz"
+        const val EXTRA_SOLICITAR_PERMISSAO_MICROFONE = "solicitar_permissao_microfone"
+        const val EXTRA_RETORNAR_ESCUTA_BOTAO_FLUTUANTE =
+            "retornar_escuta_botao_flutuante"
+        private const val REQUEST_OVERLAY_PERMISSION = 3
 
         private fun atualizarRecycler(sentencas: List<Sentenca>, context: Activity) {
             adapter.addAll(sentencas)

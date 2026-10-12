@@ -11,7 +11,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.lifecycleScope
 import com.paradoxo.amadeus.R
+import com.paradoxo.amadeus.cognicao.RemoteConfigManager
+import com.paradoxo.amadeus.onboarding.OnboardingActivity
 import com.paradoxo.amadeus.dao.room.AmadeusDatabase
+import com.paradoxo.amadeus.dao.room.DefaultMacroSeeder
+import com.paradoxo.amadeus.dao.room.LocalModelSeeder
 import com.paradoxo.amadeus.dao.room.JsonAssetLoader
 import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.dao.room.toHistoricoEntity
@@ -21,7 +25,9 @@ import com.paradoxo.amadeus.util.Preferencias.appJaFoiAberto
 import com.paradoxo.amadeus.util.Preferencias.confirmarAberturaApp
 import com.paradoxo.amadeus.util.Toasts.meuToast
 import com.paradoxo.amadeus.util.Toasts.meuToastLong
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,12 +37,17 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
+        aplicarInsets(findViewById(R.id.splashScreenLayout))
         configurarToolBarBranca(this)
         iniciar()
     }
 
     private fun iniciar() {
         lifecycleScope.launch {
+            // ── Etapa 0: buscar configurações remotas (prompts, modelo, provider) ─
+            RemoteConfigManager.fetchAndActivate()
+            FirebaseMessaging.getInstance().subscribeToTopic(TOPICO_NOTIFICACOES_TODOS)
+
             // ── Etapa 1: dados legados (tabela mensagem) ────────────────────
             val bancoAntigoExiste = withContext(Dispatchers.IO) {
                 AmadeusDatabase.getInstance(this@SplashScreenActivity)
@@ -49,7 +60,14 @@ class SplashScreenActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // ── Etapa 2: carga inicial de assets ───────────────────────────
+            // ── Etapa 2: seed de macros padrão e modelos locais (idempotente) ──
+            withContext(Dispatchers.IO) {
+                val db = AmadeusDatabase.getInstance(this@SplashScreenActivity)
+                DefaultMacroSeeder.seed(db)
+                LocalModelSeeder.seed(db)
+            }
+
+            // ── Etapa 3: carga inicial de assets ───────────────────────────
             verificarBanco(appJaFoiAberto(this@SplashScreenActivity), this@SplashScreenActivity)
         }
     }
@@ -65,9 +83,12 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val TOPICO_NOTIFICACOES_TODOS = "all"
+
         private fun trocarTextoPreCarregamentoBanco(context: Activity) {
+            context.findViewById<TextView>(R.id.subTituloTextView)?.text = context.getString(R.string.carregando_banco)
             context.findViewById<TextView>(R.id.subTituloTextView)?.text =
-                context.getString(R.string.carregando_banco)
+                context.getString(R.string.loading)
             Animacoes.animarComFade(context.findViewById(R.id.logoAmadeusImageView), false)
             Animacoes.animarComFade(context.findViewById(R.id.progressoLayout), true)
         }
@@ -81,11 +102,16 @@ class SplashScreenActivity : AppCompatActivity() {
         }
 
         private fun decidirParaOndevai(context: Activity) {
-            if (Preferencias.getPrefString("nomeUsu", context).isNotEmpty()) {
-                context.startActivity(Intent(context.applicationContext, MainActivity::class.java))
-            } else {
-                context.startActivity(Intent(context.applicationContext, ConfigPrimariaActivity::class.java))
+            val onboardingVisto = Preferencias.getPrefBool(
+                Preferencias.PREF_ONBOARDING_AGENT_SEEN, context, false
+            )
+
+            val destino = when {
+                !onboardingVisto -> OnboardingActivity::class.java
+                Preferencias.getPrefString("nomeUsu", context).isEmpty() -> CadastroInicialActivity::class.java
+                else -> MainActivity::class.java
             }
+            context.startActivity(Intent(context.applicationContext, destino))
             context.finish()
         }
 

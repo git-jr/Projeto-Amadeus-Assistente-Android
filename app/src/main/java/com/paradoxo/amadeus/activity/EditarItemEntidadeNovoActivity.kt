@@ -23,8 +23,9 @@ import com.paradoxo.amadeus.dao.room.toEntity
 import com.paradoxo.amadeus.fragments.DialogSimples
 import com.paradoxo.amadeus.modelo.Entidade
 import com.paradoxo.amadeus.util.Toasts.meuToast
-import com.paradoxo.amadeus.util.Util.configurarToolBarBranca
+import com.paradoxo.amadeus.util.Util.aplicarInsets
 import com.paradoxo.amadeus.util.Util.esconderTeclado
+import com.paradoxo.amadeus.util.setupToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,15 +33,13 @@ import kotlinx.coroutines.withContext
 class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.FragmentDialogInterface {
 
     private var modificado = false
+    private var deletandoSignificado = false
 
     companion object {
         var entidadeEmUso: Entidade? = null
         var adapter: AdapterSinonimos? = null
+        var adapterSignificados: AdapterSinonimos? = null
         var entradaEditText: TextInputEditText? = null
-
-        private fun atualizarRecycler(sinonimos: List<String>) {
-            adapter?.addAll(sinonimos)
-        }
 
         private fun finalizarActivity(context: Activity) {
             context.startActivity(Intent(context, ListaEntidadeActivity::class.java))
@@ -55,7 +54,8 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
                 withContext(Dispatchers.Main) {
                     if (entidade == null) return@withContext
                     entradaEditText?.setText(entidade.nome)
-                    atualizarRecycler(entidade.sinonimos ?: emptyList())
+                    adapter?.addAll(entidade.sinonimos ?: emptyList())
+                    adapterSignificados?.addAll(entidade.significado ?: emptyList())
                 }
             }
         }
@@ -63,22 +63,22 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
         fun gravarDados(entradaValida: String, context: AppCompatActivity) {
             context.lifecycleScope.launch {
                 meuToast(context.getString(R.string.salvando_dados), context)
-
                 withContext(Dispatchers.IO) {
                     val dao = AmadeusDatabase.getInstance(context).entidadeDAO()
                     if (entidadeEmUso == null) {
                         val entidadeGravar = Entidade().apply {
                             nome = entradaValida
                             sinonimos = adapter!!.itens
+                            significado = adapterSignificados!!.itens
                         }
                         dao.inserir(entidadeGravar.toEntity())
                     } else {
                         entidadeEmUso!!.nome = entradaValida
                         entidadeEmUso!!.sinonimos = adapter!!.itens
+                        entidadeEmUso!!.significado = adapterSignificados!!.itens
                         dao.alterar(entidadeEmUso!!.toEntity())
                     }
                 }
-
                 meuToast(context.getString(R.string.salvo), context)
                 finalizarActivity(context)
             }
@@ -88,18 +88,19 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_editar_item_novo)
+        aplicarInsets(findViewById(R.id.editarItemEntidadeRootLayout))
         configurarInterface()
     }
 
     private fun configurarInterface() {
-        configurarToolBarBranca(this)
+        setupToolbar(getString(R.string.entidade))
         configurarTextInput()
         configuarBotaoLinkStart()
-        configuarBotaoAddResposta()
-        configurarRecycler()
+        configurarRecyclerSinonimos()
+        configurarRecyclerSignificados()
     }
 
-    private fun configurarRecycler() {
+    private fun configurarRecyclerSinonimos() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         adapter = AdapterSinonimos(mutableListOf())
         recyclerView.adapter = adapter
@@ -107,66 +108,76 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
 
         adapter?.setOnItemClickListener { _, _, pos, tipoDeletar ->
             if (tipoDeletar) {
+                deletandoSignificado = false
                 abrirDialogExcluir(pos)
             } else {
-                abrirDialogEditar(pos, true)
+                mostrarDialogItem(adapter!!, pos, editando = true)
             }
+        }
+
+        findViewById<View>(R.id.adicionarSinonimoButton).setOnClickListener {
+            mostrarDialogItem(adapter!!, null, editando = false)
         }
     }
 
-    private fun inserirSinonimo(novoSinonimo: String) {
-        adapter?.add(novoSinonimo)
-        modificado = true
+    private fun configurarRecyclerSignificados() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewSignificados)
+        adapterSignificados = AdapterSinonimos(mutableListOf())
+        recyclerView.adapter = adapterSignificados
+        recyclerView.addItemDecoration(DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL))
+
+        adapterSignificados?.setOnItemClickListener { _, _, pos, tipoDeletar ->
+            if (tipoDeletar) {
+                deletandoSignificado = true
+                abrirDialogExcluir(pos)
+            } else {
+                mostrarDialogItem(adapterSignificados!!, pos, editando = true)
+            }
+        }
+
+        findViewById<View>(R.id.adicionarSignificadoButton).setOnClickListener {
+            mostrarDialogItem(adapterSignificados!!, null, editando = false)
+        }
     }
 
-    private fun alterarSinonimo(pos: Int, novoSinonimo: String) {
-        adapter?.altera(pos, novoSinonimo)
-        modificado = true
-    }
-
-    private fun deletarSinonimo(pos: Int) {
-        adapter?.remove(pos)
-        modificado = true
-    }
-
-    fun abrirDialogEditar(posi: Int?, editando: Boolean) {
-        val alertDialogBuilder = Dialog(this)
-        alertDialogBuilder.setContentView(
+    private fun mostrarDialogItem(adap: AdapterSinonimos, posi: Int?, editando: Boolean) {
+        val dialog = Dialog(this)
+        dialog.setContentView(
             layoutInflater.inflate(R.layout.dialog_editar_sinonimo, findViewById(R.id.editarItemEntidadeLayout), false)
         )
 
-        val sinonimoEditText = alertDialogBuilder.findViewById<TextInputEditText>(R.id.sinonimoEditText)
+        val sinonimoEditText = dialog.findViewById<TextInputEditText>(R.id.sinonimoEditText)
         if (editando && posi != null) {
-            sinonimoEditText.setText(adapter?.itens?.get(posi))
-            sinonimoEditText.setSelection(adapter?.itens?.get(posi)?.length ?: 0)
+            sinonimoEditText.setText(adap.itens[posi])
+            sinonimoEditText.setSelection(adap.itens[posi].length)
         }
 
-        val sinonimoTextInput = alertDialogBuilder.findViewById<TextInputLayout>(R.id.sinonimoTextInput)
+        val sinonimoTextInput = dialog.findViewById<TextInputLayout>(R.id.sinonimoTextInput)
 
-        val botaoNegar = alertDialogBuilder.findViewById<TextView>(R.id.botaoCancelar)
-        botaoNegar.setOnClickListener { view ->
-            esconderTeclado(view, this@EditarItemEntidadeNovoActivity)
-            alertDialogBuilder.dismiss()
+        dialog.findViewById<TextView>(R.id.botaoCancelar).setOnClickListener { view ->
+            esconderTeclado(view, this)
+            dialog.dismiss()
         }
 
-        val botaoSalvar = alertDialogBuilder.findViewById<MaterialButton>(R.id.botaoSalvar)
-        botaoSalvar.setOnClickListener { view ->
-            if (sinonimoEditText.text.toString().isEmpty()) {
+        dialog.findViewById<MaterialButton>(R.id.botaoSalvar).setOnClickListener { view ->
+            val texto = sinonimoEditText.text.toString()
+            if (texto.isEmpty()) {
                 sinonimoTextInput.error = getString(R.string.entrada_invalida)
             } else {
                 if (editando && posi != null) {
-                    alterarSinonimo(posi, sinonimoEditText.text.toString())
+                    adap.altera(posi, texto)
                 } else {
-                    inserirSinonimo(sinonimoEditText.text.toString())
+                    adap.add(texto)
                 }
-                esconderTeclado(view, this@EditarItemEntidadeNovoActivity)
+                modificado = true
+                esconderTeclado(view, this)
                 sinonimoTextInput.isErrorEnabled = false
-                alertDialogBuilder.dismiss()
+                dialog.dismiss()
             }
         }
 
-        alertDialogBuilder.setCancelable(false)
-        alertDialogBuilder.show()
+        dialog.setCancelable(false)
+        dialog.show()
     }
 
     fun abrirDialogExcluir(posi: Int) {
@@ -181,7 +192,14 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
 
     override fun onClick(posi: Int, which: Int) {
         when (which) {
-            -1 -> deletarSinonimo(posi)
+            -1 -> {
+                if (deletandoSignificado) {
+                    adapterSignificados?.remove(posi)
+                } else {
+                    adapter?.remove(posi)
+                }
+                modificado = true
+            }
             -2 -> {}
         }
     }
@@ -198,14 +216,6 @@ class EditarItemEntidadeNovoActivity : AppCompatActivity(), DialogSimples.Fragme
 
     private fun configuarBotaoLinkStart() {
         findViewById<View>(R.id.okButton).setOnClickListener { validarInputs() }
-    }
-
-    private fun configuarBotaoAddResposta() {
-        findViewById<View>(R.id.adicionarSinonimoButton).setOnClickListener { adicionarMaisUmSinonimo() }
-    }
-
-    private fun adicionarMaisUmSinonimo() {
-        abrirDialogEditar(null, false)
     }
 
     fun validarInputs() {

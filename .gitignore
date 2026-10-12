@@ -9,5 +9,17 @@
 /captures
 .externalNativeBuild
 /app/google-services.json
+/app/google-services-*.json
 /.idea/
 /app/release
+
+# Signing credentials
+*.jks
+*.keystore
+*Chaves de assinatura*.rar
+
+# OAuth server credentials
+**/client_secret_*.json
+
+# Notas, specs e transcrições locais do Claude Code (o CLAUDE.md da raiz continua versionado)
+/.claude/

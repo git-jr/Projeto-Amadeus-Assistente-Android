@@ -8,8 +8,31 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.paradoxo.amadeus.R
 
 object Util {
+    fun aplicarInsets(view: View) {
+        val initialPaddingLeft = view.paddingLeft
+        val initialPaddingTop = view.paddingTop
+        val initialPaddingRight = view.paddingRight
+        val initialPaddingBottom = view.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val types = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
+            val bars = insets.getInsets(types)
+            v.setPadding(
+                initialPaddingLeft + bars.left,
+                initialPaddingTop + bars.top,
+                initialPaddingRight + bars.right,
+                initialPaddingBottom + bars.bottom
+            )
+            insets
+        }
+    }
     fun configurarToolBarBranca(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             activity.window.apply {
@@ -52,4 +75,13 @@ object Util {
             Log.e("Teclado", "Não pode ser carregado")
         }
     }
+}
+
+fun AppCompatActivity.setupToolbar(titulo: String? = null) {
+    Util.configurarToolBarBranca(this)
+    val toolbar = findViewById<Toolbar>(R.id.toolbar) ?: return
+    setSupportActionBar(toolbar)
+    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    if (titulo != null) title = titulo
+    toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 }
